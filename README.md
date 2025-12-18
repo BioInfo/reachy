@@ -146,6 +146,36 @@ Session logs documenting the journey:
 
 ---
 
+## 🎯 Custom Apps
+
+This repo includes custom apps built on top of the Reachy Mini SDK:
+
+| App | Description | Status |
+|:----|:------------|:-------|
+| [Focus Guardian](apps/focus-guardian/) | Productivity body-double with Pomodoro + attention tracking | In Development |
+
+### Running Apps
+
+```bash
+# Activate environment
+source venv/bin/activate
+
+# Run Focus Guardian (simulation mode)
+cd apps/focus-guardian
+pip install -r requirements.txt
+python app.py --simulation
+
+# With physical robot
+python app.py --host <reachy-mini-ip>
+```
+
+Each app has its own:
+- `README.md` - Usage instructions
+- `PRD.md` - Product requirements
+- `CLAUDE.md` - AI assistant context
+
+---
+
 ## 🤗 Build & Share Apps
 
 Create HuggingFace-compatible apps:
