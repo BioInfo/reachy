@@ -87,6 +87,8 @@ CLAUDE.md
 private/
 notes/
 *.private.md
+sessions/
+devlog/
 
 # =========================
 # Build & Test Artifacts
