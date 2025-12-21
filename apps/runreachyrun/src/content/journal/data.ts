@@ -1,0 +1,340 @@
+import { JournalEntry } from "@/types";
+
+export const journalEntries: JournalEntry[] = [
+  {
+    slug: "first-day",
+    title: "Day One: Setting Up the Documentation Site",
+    date: "2024-12-21",
+    summary:
+      "Launched runreachyrun.com to document the Reachy Mini build. Built with Next.js, Tailwind, and Claude Code. The meta-narrative begins.",
+    content: `
+Today marks the official start of documenting this build publicly. I've been working with the Reachy Mini Lite for about a week now, but everything before today was scattered notes and half-finished experiments.
+
+The site itself is part of the story. I'm using Claude Code to help build it, which means the tool I'm using to document the robot project is also being documented. It's recursive in a way that feels appropriate for an AI project.
+
+## Technical Decisions
+
+- **Next.js 14 with App Router**: Server components where possible, client components for interactivity
+- **Tailwind CSS**: No component libraries — building everything custom
+- **Framer Motion**: For animations that feel intentional, not decorative
+- **Dark mode only**: This is a dev journal, not a marketing site
+
+## What's Working
+
+The timeline component came together faster than expected. Claude Code helped iterate on the design — I described what I wanted, it generated options, I pushed back on the generic parts, and we landed somewhere interesting.
+
+## What's Next
+
+Need to add the journal section (you're reading the first entry), GitHub integration for live commit data, and eventually embed some HuggingFace Spaces.
+    `.trim(),
+    tags: ["meta", "launch", "claude-code", "next.js"],
+    mood: "excited",
+    readingTime: 3,
+    linkedTimeline: ["site-launch"],
+  },
+  {
+    slug: "first-movement",
+    title: "First Successful Coordinated Movement",
+    date: "2024-12-16",
+    summary:
+      "After 3 hours of coordinate system confusion, Reachy finally moved the way I intended. The breakthrough moment.",
+    content: `
+Three hours. That's how long it took to understand why my head movements were going the wrong direction.
+
+## The Problem
+
+I kept sending commands like \`goto_target(head=create_head_pose(z=20))\` expecting the head to tilt forward. Instead, it was tilting... somewhere else. The documentation mentioned "Z is forward/backward" but forward relative to what?
+
+## The Debugging Session
+
+Claude Code was actually helpful here. I described the behavior I was seeing:
+
+> "When I set z=20, the head tilts to the right instead of forward. When I set roll=20, it tilts forward."
+
+Claude's response pointed me to the coordinate frame origin. The SDK uses a body-centric coordinate system where:
+- **Z** is actually the vertical axis (up/down from the robot's perspective)
+- **Roll** controls the forward/backward tilt
+- **Yaw** controls left/right rotation
+
+## The Fix
+
+\`\`\`python
+# What I was doing (wrong mental model)
+head = create_head_pose(z=20, mm=True, degrees=True)
+
+# What I needed (correct mental model)
+head = create_head_pose(roll=10, mm=True, degrees=True)  # Forward tilt
+\`\`\`
+
+## The Moment
+
+When it finally worked — when Reachy turned its head to look at me and wiggled its antennas — I literally laughed out loud. There's something about a robot responding to your commands correctly for the first time that never gets old.
+
+## Lesson Learned
+
+Always verify coordinate systems empirically. Documentation can be ambiguous. Send small test commands and observe before building complex sequences.
+    `.trim(),
+    tags: ["software", "sdk", "debugging", "coordinates"],
+    mood: "win",
+    readingTime: 4,
+    linkedTimeline: ["first-movement"],
+    linkedCommits: ["def5678", "ghi9012"],
+  },
+  {
+    slug: "camera-debugging",
+    title: "Camera Integration: A Dead End (For Now)",
+    date: "2024-12-17",
+    summary:
+      "Attempted to integrate head pose detection via the robot's camera. Hit a wall with headless mode. Parking this for later.",
+    content: `
+Today was supposed to be the day I got head pose detection working. It wasn't.
+
+## The Goal
+
+I wanted Reachy to track faces and maintain eye contact during interactions. The SDK has camera support, so this seemed straightforward.
+
+## What Happened
+
+The camera works fine when running the daemon with a GUI window. But I'm running in headless mode (no physical display attached), and that's where things break.
+
+\`\`\`
+Camera timeout: no frames received in 5000ms
+\`\`\`
+
+## Debugging Attempts
+
+1. **Different camera initialization flags** — No effect
+2. **Forcing OpenCV backend** — Same timeout
+3. **Checking if MuJoCo sim provides camera** — It does, but only with the 3D window open
+4. **SDK source code dive** — The camera thread expects a running render loop
+
+## The Reality
+
+Headless mode and camera input are architecturally at odds in the current SDK. The camera depends on the render pipeline, which doesn't run without a window.
+
+## Options
+
+1. Run with a virtual framebuffer (Xvfb) — hacky but might work
+2. Use external camera + separate face detection pipeline — more work, but cleaner
+3. Wait for SDK update — there's a GitHub issue open about this
+4. Work around it — build features that don't need camera for now
+
+## Decision
+
+Parking this. I'll focus on apps that use the robot's movements and expressions without real-time vision. The Focus Guardian app can work with keyboard/manual input initially.
+
+## Mood
+
+Frustrated but realistic. Not every session ends with a win. Documenting the dead ends is part of the process.
+    `.trim(),
+    tags: ["software", "camera", "blocker", "debugging"],
+    mood: "struggle",
+    readingTime: 4,
+    linkedTimeline: ["camera-issues"],
+  },
+  {
+    slug: "focus-guardian-prd",
+    title: "Focus Guardian: The Concept",
+    date: "2024-12-18",
+    summary:
+      "Brainstorming session for a productivity app. Reachy as a body double that provides gentle accountability.",
+    content: `
+Had an idea while procrastinating (ironic): what if Reachy could be a body double?
+
+## The Concept
+
+"Body doubling" is a productivity technique where having another person present — even silently — helps you focus. It's especially useful for ADHD brains. The other person doesn't have to do anything; their presence creates gentle accountability.
+
+What if a robot could do this?
+
+## Focus Guardian Features (v1)
+
+- **Presence mode**: Reachy sits attentively, occasionally shifting position to feel "alive"
+- **Focus timer**: Pomodoro-style work sessions with animated transitions
+- **Gentle check-ins**: Subtle movements or sounds if you've been idle too long
+- **Celebration**: Antenna wiggles and happy expressions when you complete a session
+
+## Why This Could Work
+
+1. It's low-stakes — no judgment, no human awkwardness
+2. The robot is inherently engaging — you want to "perform" for it
+3. It gamifies focus without being annoying about it
+4. It works without camera (see yesterday's frustration)
+
+## Technical Approach
+
+- Gradio UI for the timer and controls
+- Keyboard input for "I'm working" / "I'm distracted" signals (for now)
+- Pre-built animation sequences for different states
+- Optional screen time tracking via system APIs
+
+## Open Questions
+
+- How often should it move to feel present without being distracting?
+- What's the right balance of encouragement vs. leaving you alone?
+- Should it track breaks, or just work sessions?
+
+## Next Steps
+
+Writing a proper PRD and starting the Gradio scaffold.
+    `.trim(),
+    tags: ["apps", "focus-guardian", "concept", "productivity"],
+    mood: "excited",
+    readingTime: 3,
+    linkedTimeline: ["focus-guardian-concept"],
+  },
+  {
+    slug: "simulation-setup",
+    title: "MuJoCo Simulation: Now We're Cooking",
+    date: "2024-12-14",
+    summary:
+      "Got the physics simulation running in headless mode. I can now develop without the physical robot.",
+    content: `
+Major infrastructure win today. The MuJoCo simulation is working, which means I can:
+
+1. Develop when the robot isn't connected
+2. Test potentially dangerous movements safely
+3. Iterate faster (no physical constraints)
+4. Record demos without the physical hardware
+
+## Setup
+
+The SDK ships with MuJoCo 3.3.0 support. Running in simulation mode:
+
+\`\`\`bash
+python -m reachy_mini.daemon.app.main --sim --headless --fastapi-port 8000
+\`\`\`
+
+The \`--headless\` flag is key for running from scripts/CI. Without it, MuJoCo tries to open a 3D window.
+
+## What Works
+
+- All movement commands
+- Antenna control
+- Head poses
+- Position feedback
+- The REST API at localhost:8000
+
+## What Doesn't
+
+- Camera (see future debugging session)
+- Audio (no physical speakers to simulate)
+- Some edge cases in collision detection
+
+## LaunchAgent Setup
+
+I set up a LaunchAgent so the daemon starts automatically on login:
+
+\`\`\`xml
+~/Library/LaunchAgents/com.bioinfo.reachy-daemon.plist
+\`\`\`
+
+Now I can just write code and trust the daemon is running. If it crashes, launchd restarts it.
+
+## Feeling
+
+Productive. Having the simulation layer means I can move faster on software without being blocked by hardware logistics.
+    `.trim(),
+    tags: ["software", "simulation", "mujoco", "infrastructure"],
+    mood: "win",
+    readingTime: 3,
+    linkedTimeline: ["simulation-working"],
+    linkedCommits: ["mno7890"],
+  },
+  {
+    slug: "dj-reactor-start",
+    title: "DJ Reactor: Making Reachy Dance",
+    date: "2024-12-20",
+    summary:
+      "Started work on a music-reactive app. Reachy will respond to beats with synchronized movements.",
+    content: `
+New app idea: DJ Reactor. Reachy reacts to music in real-time.
+
+## The Vision
+
+Play any song, and Reachy:
+- Bobs its head to the beat
+- Wiggles antennas on drops
+- Changes expressions based on energy level
+- Maybe tracks specific instruments
+
+## Technical Approach
+
+Using \`librosa\` for audio analysis:
+
+\`\`\`python
+import librosa
+
+# Load audio
+y, sr = librosa.load('track.mp3')
+
+# Beat tracking
+tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
+
+# Energy over time
+rms = librosa.feature.rms(y=y)
+\`\`\`
+
+Then mapping these features to robot movements:
+- Beat → head bob (quick up/down on Z)
+- Energy → antenna spread (more energy = wider)
+- Onset detection → eye reactions
+
+## Challenges
+
+1. **Latency**: Audio analysis needs to be fast enough for real-time response
+2. **Smoothing**: Raw beat detection is jittery; need to smooth movements
+3. **Not looking stupid**: Easy to make the robot look like it's having a seizure
+
+## First Prototype
+
+Got basic beat detection working. Reachy bobs on every detected beat. It's... okay. Needs work on timing and amplitude.
+
+## What's Next
+
+- Add energy-based modulation
+- Implement anticipation (move slightly before the beat, not after)
+- Build a simple Gradio UI for track selection
+
+This one's going to be fun.
+    `.trim(),
+    tags: ["apps", "dj-reactor", "audio", "librosa"],
+    mood: "excited",
+    readingTime: 3,
+    linkedTimeline: ["dj-reactor-start"],
+  },
+];
+
+// Helper to get entries sorted by date (newest first)
+export function getEntriesSorted(): JournalEntry[] {
+  return [...journalEntries].sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
+}
+
+// Helper to get entry by slug
+export function getEntryBySlug(slug: string): JournalEntry | undefined {
+  return journalEntries.find((entry) => entry.slug === slug);
+}
+
+// Helper to get entries by tag
+export function getEntriesByTag(tag: string): JournalEntry[] {
+  return journalEntries.filter((entry) => entry.tags.includes(tag));
+}
+
+// Helper to get entries by mood
+export function getEntriesByMood(mood: JournalEntry["mood"]): JournalEntry[] {
+  return journalEntries.filter((entry) => entry.mood === mood);
+}
+
+// Get all unique tags
+export function getAllTags(): string[] {
+  const tagSet = new Set<string>();
+  journalEntries.forEach((entry) => entry.tags.forEach((tag) => tagSet.add(tag)));
+  return Array.from(tagSet).sort();
+}
+
+// Get all slugs (for static generation)
+export function getAllSlugs(): string[] {
+  return journalEntries.map((entry) => entry.slug);
+}

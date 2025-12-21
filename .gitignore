@@ -93,7 +93,7 @@ devlog/
 # =========================
 # Work-in-Progress Apps
 # =========================
-apps/runreachyrun/
+# apps/runreachyrun/ - now tracked
 
 # =========================
 # Build & Test Artifacts

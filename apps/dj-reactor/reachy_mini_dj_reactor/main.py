@@ -220,8 +220,11 @@ class DJReactorApp(ReachyMiniApp):
     """DJ Reactor - Music visualizer for Reachy Mini."""
 
     custom_app_url: str | None = "http://localhost:7861"
+    dont_start_webserver: bool = True  # We handle Gradio ourselves
+    request_media_backend: str | None = "no_media"  # DJ Reactor doesn't need camera
 
     def __init__(self):
+        super().__init__()
         self.analyzer: Optional[AudioAnalyzer] = None
         self.controller: Optional[DanceController] = None
         self.is_vibing = False
@@ -355,6 +358,8 @@ class DJReactorApp(ReachyMiniApp):
 
 # For standalone testing
 if __name__ == "__main__":
-    import sys
-    print("DJ Reactor - Run via Reachy Mini dashboard or use standalone app.py")
-    print("Devices:", list_audio_devices())
+    app = DJReactorApp()
+    try:
+        app.wrapped_run()
+    except KeyboardInterrupt:
+        app.stop()

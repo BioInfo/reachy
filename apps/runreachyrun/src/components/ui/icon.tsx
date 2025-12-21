@@ -1,0 +1,172 @@
+import {
+  Activity,
+  AudioWaveform,
+  BarChart3,
+  Bot,
+  Clapperboard,
+  Disc3,
+  Eye,
+  Music,
+  Palette,
+  Settings,
+  Smile,
+  Sparkles,
+  Target,
+  Theater,
+  Timer,
+  LucideIcon,
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Github,
+  Clock,
+  Calendar,
+  Tag,
+  Code,
+  Terminal,
+  Cpu,
+  Zap,
+  Radio,
+  Wifi,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Info,
+  MessageSquare,
+  PenTool,
+  Lightbulb,
+  Bookmark,
+  Heart,
+  Star,
+  Send,
+  Shield,
+  RefreshCcw,
+  Crosshair,
+  Ruler,
+  BookOpen,
+} from "lucide-react";
+
+const iconMap: Record<string, LucideIcon> = {
+  Activity,
+  AudioWaveform,
+  BarChart3,
+  Bot,
+  BookOpen,
+  Clapperboard,
+  Crosshair,
+  Disc3,
+  Eye,
+  Music,
+  Palette,
+  RefreshCcw,
+  Ruler,
+  Settings,
+  Shield,
+  Smile,
+  Sparkles,
+  Target,
+  Theater,
+  Timer,
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Github,
+  Clock,
+  Calendar,
+  Tag,
+  Code,
+  Terminal,
+  Cpu,
+  Zap,
+  Radio,
+  Wifi,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Info,
+  MessageSquare,
+  PenTool,
+  Lightbulb,
+  Bookmark,
+  Heart,
+  Star,
+  Send,
+};
+
+interface IconProps {
+  name: string;
+  size?: number;
+  className?: string;
+  strokeWidth?: number;
+}
+
+export function Icon({ name, size = 24, className = "", strokeWidth = 2 }: IconProps) {
+  const LucideIcon = iconMap[name];
+
+  if (!LucideIcon) {
+    console.warn(`Icon "${name}" not found in icon map`);
+    return null;
+  }
+
+  return (
+    <LucideIcon
+      size={size}
+      className={className}
+      strokeWidth={strokeWidth}
+    />
+  );
+}
+
+// Export individual icons for direct use
+export {
+  Activity,
+  AudioWaveform,
+  BarChart3,
+  Bot,
+  BookOpen,
+  Clapperboard,
+  Crosshair,
+  Disc3,
+  Eye,
+  Music,
+  Palette,
+  RefreshCcw,
+  Ruler,
+  Settings,
+  Shield,
+  Smile,
+  Sparkles,
+  Target,
+  Theater,
+  Timer,
+  ArrowRight,
+  ArrowLeft,
+  ChevronDown,
+  ChevronUp,
+  ExternalLink,
+  Github,
+  Clock,
+  Calendar,
+  Tag,
+  Code,
+  Terminal,
+  Cpu,
+  Zap,
+  Radio,
+  Wifi,
+  AlertCircle,
+  CheckCircle,
+  XCircle,
+  Info,
+  MessageSquare,
+  PenTool,
+  Lightbulb,
+  Bookmark,
+  Heart,
+  Star,
+  Send,
+};
