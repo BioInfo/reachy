@@ -1,0 +1,16 @@
+# DJ Reactor - Music Visualizer for Reachy Mini
+# Install: pip install -r requirements.txt
+
+# Core audio processing
+numpy>=1.24.0
+sounddevice>=0.4.6
+
+# Audio analysis (beat detection, FFT)
+librosa>=0.10.0
+scipy>=1.10.0
+
+# Web UI
+gradio>=4.0.0
+
+# The reachy_mini SDK should be installed in the parent venv
+# pip install reachy-mini

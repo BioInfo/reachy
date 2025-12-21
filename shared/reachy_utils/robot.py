@@ -24,21 +24,10 @@ class ReachyConnection:
         # Always try to connect to real daemon first
         try:
             from reachy_mini import ReachyMini
-            # Disable camera to avoid 30s timeout - we use laptop webcam instead
-            self._robot = ReachyMini(camera=False)
+            # Use no-video backend to avoid camera timeout - we use laptop webcam instead
+            self._robot = ReachyMini(media_backend='default_no_video')
             logger.info("Connected to Reachy Mini daemon!")
             self._use_mock = False
-        except TypeError:
-            # Older SDK version might not support camera=False
-            try:
-                from reachy_mini import ReachyMini
-                self._robot = ReachyMini()
-                logger.info("Connected to Reachy Mini daemon!")
-                self._use_mock = False
-            except Exception as e:
-                logger.warning(f"Could not connect to daemon: {e}")
-                self._robot = MockReachy()
-                self._use_mock = True
         except ImportError:
             logger.warning("reachy_mini not installed, using mock")
             self._robot = MockReachy()
