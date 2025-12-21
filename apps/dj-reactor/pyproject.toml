@@ -1,0 +1,39 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reachy_mini_dj_reactor"
+version = "0.1.0"
+description = "DJ Reactor - Music visualizer for Reachy Mini that dances to your music"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Justin Johnson", email = "justin@rundata.run"}
+]
+keywords = ["reachy-mini", "robot", "music", "visualizer", "dance"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "reachy-mini>=1.0.0",
+    "numpy>=1.24.0",
+    "sounddevice>=0.4.6",
+    "gradio>=4.0.0",
+]
+
+[project.urls]
+Homepage = "https://huggingface.co/spaces/RyeCatcher/dj-reactor"
+
+[project.entry-points."reachy_mini_apps"]
+reachy_mini_dj_reactor = "reachy_mini_dj_reactor.main:DJReactorApp"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["reachy_mini_dj_reactor*"]

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DJ Reactor - Reachy Mini App</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="badge">Reachy Mini App</div>
+            <h1>DJ Reactor</h1>
+            <p class="tagline">Your Reachy Mini dances to the music</p>
+        </header>
+
+        <main>
+            <!-- Animated Robot Demo -->
+            <section class="demo-section">
+                <div class="demo-box">
+                    <div class="robot-icon">🤖</div>
+                    <div class="music-waves">
+                        <span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hero with 6 feature cards -->
+            <section class="hero">
+                <div class="feature-grid">
+                    <div class="feature">
+                        <div class="icon-box purple">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        </div>
+                        <h3>Real-time Audio</h3>
+                        <p>Analyzes bass, mid, and treble frequencies from any audio input</p>
+                    </div>
+                    <div class="feature">
+                        <div class="icon-box cyan">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                        </div>
+                        <h3>Beat Detection</h3>
+                        <p>Detects beats and estimates BPM for synchronized movements</p>
+                    </div>
+                    <div class="feature">
+                        <div class="icon-box amber">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="10" x="3" y="11" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" x2="8" y1="16" y2="16"/><line x1="16" x2="16" y1="16" y2="16"/></svg>
+                        </div>
+                        <h3>Full Body Dance</h3>
+                        <p>Sweeping body sway, head bob, and expressive antenna movements</p>
+                    </div>
+                    <div class="feature">
+                        <div class="icon-box green">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                        </div>
+                        <h3>Multiple Inputs</h3>
+                        <p>Works with microphones, system audio loopback, or any audio device</p>
+                    </div>
+                    <div class="feature">
+                        <div class="icon-box purple">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        </div>
+                        <h3>BPM Sync</h3>
+                        <p>Dance groove adjusts automatically to match the music tempo</p>
+                    </div>
+                    <div class="feature">
+                        <div class="icon-box cyan">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+                        </div>
+                        <h3>Adjustable Intensity</h3>
+                        <p>Control how dramatic the movements are with a simple slider</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Install Section -->
+            <section class="install">
+                <h2>Install on Your Reachy Mini</h2>
+                <div class="install-steps">
+                    <div class="step">
+                        <span class="step-num">1</span>
+                        <div class="step-content">
+                            <h4>Install the package</h4>
+                            <code>pip install git+https://huggingface.co/spaces/RyeCatcher/dj-reactor</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-num">2</span>
+                        <div class="step-content">
+                            <h4>Start the Reachy Mini daemon</h4>
+                            <code>reachy-mini-daemon</code>
+                        </div>
+                    </div>
+                    <div class="step">
+                        <span class="step-num">3</span>
+                        <div class="step-content">
+                            <h4>Launch from dashboard</h4>
+                            <p>Find DJ Reactor in Applications at <strong>localhost:8000</strong></p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- How it works -->
+            <section class="how-it-works">
+                <h2>How It Works</h2>
+                <div class="workflow">
+                    <div class="workflow-step">
+                        <div class="workflow-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" x2="12" y1="19" y2="22"/></svg>
+                        </div>
+                        <p>Select audio input</p>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20v-6M6 20V10M18 20V4"/></svg>
+                        </div>
+                        <p>Audio analyzed in real-time</p>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+                        </div>
+                        <p>Beats detected</p>
+                    </div>
+                    <div class="workflow-arrow">→</div>
+                    <div class="workflow-step">
+                        <div class="workflow-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="10" x="3" y="11" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" x2="8" y1="16" y2="16"/><line x1="16" x2="16" y1="16" y2="16"/></svg>
+                        </div>
+                        <p>Reachy dances!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Audio Setup -->
+            <section class="audio-setup">
+                <h2>System Audio Setup (macOS)</h2>
+                <p>To capture system audio (Spotify, YouTube, etc.) instead of microphone:</p>
+                <ol>
+                    <li>Install <a href="https://existential.audio/blackhole/" target="_blank" rel="noopener">BlackHole</a> audio driver</li>
+                    <li>Open <strong>Audio MIDI Setup</strong> and create a Multi-Output Device</li>
+                    <li>Add your speakers + BlackHole to the Multi-Output</li>
+                    <li>Set Multi-Output as system output in Sound preferences</li>
+                    <li>Select "BlackHole 2ch" as input in DJ Reactor</li>
+                </ol>
+            </section>
+
+            <!-- About -->
+            <section class="about">
+                <h2>About This Project</h2>
+                <p>
+                    DJ Reactor transforms your Reachy Mini into a physical music visualizer.
+                    Play your favorite tunes and watch your robot companion groove along with
+                    sweeping body movements, head bobs, and antenna bounces synced to the beat.
+                </p>
+                <p>
+                    Part of the <strong>Run Reachy Run</strong> project — documenting the journey
+                    of building apps with Reachy Mini. Built with Claude Code.
+                </p>
+            </section>
+        </main>
+
+        <footer>
+            <div class="footer-links">
+                <a href="https://runreachyrun.com" target="_blank" rel="noopener">runreachyrun.com</a>
+                <span class="divider">|</span>
+                <a href="https://huggingface.co/RyeCatcher" target="_blank" rel="noopener">HuggingFace</a>
+                <span class="divider">|</span>
+                <a href="https://x.com/bioinfo" target="_blank" rel="noopener">@bioinfo</a>
+                <span class="divider">|</span>
+                <a href="https://pollen-robotics.com/reachy-mini" target="_blank" rel="noopener">Reachy Mini</a>
+            </div>
+            <p class="copyright">MIT License</p>
+        </footer>
+    </div>
+</body>
+</html>
