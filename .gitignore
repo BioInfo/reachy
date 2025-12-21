@@ -91,6 +91,11 @@ sessions/
 devlog/
 
 # =========================
+# Work-in-Progress Apps
+# =========================
+apps/runreachyrun/
+
+# =========================
 # Build & Test Artifacts
 # =========================
 .coverage

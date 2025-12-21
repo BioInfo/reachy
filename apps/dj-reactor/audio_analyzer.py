@@ -67,7 +67,7 @@ class BeatTracker:
 
         # Energy tracking for onset detection
         self.energy_history = deque(maxlen=10)
-        self.onset_threshold = 1.5  # Relative to recent average
+        self.onset_threshold = 1.3  # Relative to recent average (lower = more sensitive)
 
     def process(self, audio_chunk: np.ndarray, current_time: float) -> tuple[bool, float]:
         """
@@ -90,7 +90,7 @@ class BeatTracker:
         beat_detected = (
             onset_strength > self.onset_threshold
             and time_since_last > min_interval
-            and energy > 0.01  # Not silence
+            and energy > 0.002  # Not silence (lowered for mic input)
         )
 
         if beat_detected:
@@ -168,10 +168,10 @@ class FrequencyAnalyzer:
         mid_energy = np.mean(spectrum[self.mid_bins]) if len(self.mid_bins) > 0 else 0
         treble_energy = np.mean(spectrum[self.treble_bins]) if len(self.treble_bins) > 0 else 0
 
-        # Normalize (these values are empirical)
-        bass = min(bass_energy / 50.0, 1.0)
-        mid = min(mid_energy / 30.0, 1.0)
-        treble = min(treble_energy / 15.0, 1.0)
+        # Normalize (lowered divisors for mic input sensitivity)
+        bass = min(bass_energy / 10.0, 1.0)
+        mid = min(mid_energy / 8.0, 1.0)
+        treble = min(treble_energy / 5.0, 1.0)
 
         # Smooth
         self.bass_smooth = self.bass_smooth * self.smoothing_factor + bass * (1 - self.smoothing_factor)
@@ -221,8 +221,8 @@ class AudioAnalyzer:
         # Spectrum for visualization
         self.latest_spectrum = np.zeros(self.chunk_size // 2 + 1)
 
-        # Silence detection
-        self.silence_threshold = 0.005
+        # Silence detection (lowered for mic input)
+        self.silence_threshold = 0.001
         self.frames_silent = 0
 
     def _audio_callback(self, indata, frames, time_info, status):

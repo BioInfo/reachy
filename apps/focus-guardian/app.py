@@ -13,6 +13,7 @@ import threading
 from typing import Optional
 import gradio as gr
 import numpy as np
+import cv2
 
 # Configure logging
 logging.basicConfig(
@@ -24,6 +25,7 @@ logger = logging.getLogger(__name__)
 # Import app modules
 from config import FocusConfig, get_nudge_action
 from focus_session import FocusSession, SessionState, DailyTracker
+from attention import AttentionMonitor, AttentionState, MockAttentionMonitor
 
 # Import shared utilities
 import sys
@@ -35,7 +37,8 @@ from shared.reachy_utils import (
     disappointed_shake,
     attention_wiggle,
 )
-from shared.reachy_utils.animations import focus_mode_enter, focus_mode_exit
+from shared.reachy_utils.animations import focus_mode_enter, focus_mode_exit, idle_breathing
+from shared.vision import GazeDirection
 
 
 # Global app state
@@ -45,14 +48,33 @@ class AppState:
         self.session: Optional[FocusSession] = None
         self.daily_tracker = DailyTracker()
         self.robot = None
+        self.attention_monitor = None
         self.is_running = False
         self.last_status = "Ready to focus"
+        self.last_attention: Optional[AttentionState] = None
+        self.frame_count = 0
+        self._idle_thread = None
 
     def initialize(self):
-        """Initialize robot connection."""
+        """Initialize robot and attention monitor."""
         logger.info("Initializing Focus Guardian...")
-        self.robot = get_robot(simulation=self.config.simulation_mode)
+
+        # Connect to robot (always tries real connection)
+        self.robot = get_robot(simulation=False)  # simulation flag now only affects distractions
         logger.info(f"Robot connected: {not self.robot.is_mock}")
+
+        # Initialize attention monitor
+        try:
+            self.attention_monitor = AttentionMonitor(
+                vision_backend=self.config.vision_backend,
+                enable_phone_detection=self.config.enable_phone_detection,
+            )
+            self.attention_monitor.initialize()
+            logger.info("Attention monitor initialized")
+        except Exception as e:
+            logger.warning(f"Could not initialize attention monitor: {e}")
+            self.attention_monitor = MockAttentionMonitor()
+            logger.info("Using mock attention monitor")
 
     def start_session(self, duration_mins, distraction_threshold, nudge_intensity):
         """Start a new focus session."""
@@ -88,8 +110,86 @@ class AppState:
         thread = threading.Thread(target=self._timer_loop, daemon=True)
         thread.start()
 
+        # Start idle breathing in background
+        self._idle_thread = threading.Thread(target=self._idle_loop, daemon=True)
+        self._idle_thread.start()
+
         logger.info(f"Focus session started: {duration_mins} minutes")
         return "Focus mode active!"
+
+    def process_camera_frame(self, frame):
+        """
+        Process a camera frame for attention detection.
+        Called by Gradio camera component.
+        """
+        if frame is None:
+            return None
+
+        self.frame_count += 1
+
+        # Skip frames for performance (process every 3rd frame)
+        if self.frame_count % 3 != 0:
+            return frame
+
+        # Only process if session is active
+        if not self.is_running or self.session is None:
+            return frame
+
+        try:
+            # Get attention state from vision
+            attention = self.attention_monitor.process_single_frame(frame)
+            self.last_attention = attention
+
+            # Update session with attention state (unless in simulation mode)
+            if not self.config.simulation_mode:
+                self.session.update_attention(is_focused=attention.is_focused)
+
+            # Annotate frame with detection info
+            frame = self._annotate_frame(frame, attention)
+
+        except Exception as e:
+            logger.debug(f"Frame processing error: {e}")
+
+        return frame
+
+    def _annotate_frame(self, frame, attention: AttentionState):
+        """Add visual overlays to camera frame."""
+        h, w = frame.shape[:2]
+
+        # Status indicator
+        if attention.face_detected:
+            if attention.is_focused:
+                color = (0, 255, 0)  # Green
+                text = "FOCUSED"
+            else:
+                color = (0, 165, 255)  # Orange
+                text = f"DISTRACTED ({attention.gaze_direction.value})"
+        else:
+            color = (128, 128, 128)  # Gray
+            text = "No face detected"
+
+        # Draw status bar at top
+        cv2.rectangle(frame, (0, 0), (w, 40), color, -1)
+        cv2.putText(frame, text, (10, 28), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (255, 255, 255), 2)
+
+        # Phone warning
+        if attention.phone_detected:
+            cv2.rectangle(frame, (0, h - 50), (w, h), (0, 0, 255), -1)
+            cv2.putText(frame, "PHONE DETECTED!", (10, h - 15),
+                        cv2.FONT_HERSHEY_SIMPLEX, 1.0, (255, 255, 255), 2)
+
+        return frame
+
+    def _idle_loop(self):
+        """Background loop for idle breathing animation."""
+        while self.is_running and self.robot and not self.robot.is_mock:
+            try:
+                # Only do breathing if focused (not during distraction nudges)
+                if self.session and self.session.state == SessionState.FOCUSING:
+                    idle_breathing(self.robot.robot, cycles=1)
+            except Exception as e:
+                logger.debug(f"Idle animation error: {e}")
+            time.sleep(3.0)  # Pause between breaths
 
     def stop_session(self):
         """Stop the current session."""
@@ -126,16 +226,17 @@ class AppState:
             tick_count += 1
 
             # Simulate distraction in simulation mode for testing
-            if self.config.simulation_mode and tick_count >= 10 and (tick_count - 10) % 30 == 0:
-                logger.info("SIMULATION: Triggering distraction")
-                for i in range(12):
-                    if not self.is_running:
-                        break
-                    self.session.update_attention(is_focused=False)
-                    time.sleep(1.0)
-                    self.session.tick(1.0)
-                if self.is_running:
-                    self.session.update_attention(is_focused=True)
+            if self.config.simulation_mode:
+                if tick_count >= 10 and (tick_count - 10) % 30 == 0:
+                    logger.info("SIMULATION: Triggering distraction")
+                    for i in range(12):
+                        if not self.is_running:
+                            break
+                        self.session.update_attention(is_focused=False)
+                        time.sleep(1.0)
+                        self.session.tick(1.0)
+                    if self.is_running:
+                        self.session.update_attention(is_focused=True)
 
             # Check if completed
             if self.session.remaining_seconds <= 0:
@@ -286,6 +387,11 @@ def toggle_mode(use_simulation):
     return update_ui()
 
 
+def process_frame(frame):
+    """Process webcam frame for attention detection."""
+    return app_state.process_camera_frame(frame)
+
+
 def create_app():
     """Create the Gradio app."""
 
@@ -323,14 +429,22 @@ def create_app():
                 )
 
             with gr.Column(scale=1):
-                # Camera feed
-                gr.Markdown("### Camera Feed")
-                camera = gr.Image(
+                # Camera feed with attention detection overlay
+                gr.Markdown("### Camera Feed (with attention detection)")
+                camera_input = gr.Image(
                     sources=["webcam"],
                     streaming=True,
                     label="",
                     mirror_webcam=True,
                 )
+                camera_output = gr.Image(label="Processed", visible=False)
+
+        # Wire camera to attention processor
+        camera_input.stream(
+            fn=process_frame,
+            inputs=[camera_input],
+            outputs=[camera_input],
+        )
 
         # Settings in accordion
         with gr.Accordion("Settings", open=False):
