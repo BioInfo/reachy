@@ -107,6 +107,14 @@ export function Footer() {
                   Hugging Face
                 </a>
               </li>
+              <li>
+                <a
+                  href="/feed.xml"
+                  className="text-[var(--text-secondary)] hover:text-[var(--accent-cyan)] transition-colors text-sm"
+                >
+                  RSS Feed
+                </a>
+              </li>
             </ul>
           </div>
         </div>

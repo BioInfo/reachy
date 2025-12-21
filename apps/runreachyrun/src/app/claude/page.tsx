@@ -296,7 +296,7 @@ export default function ClaudePage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
-            className="grid grid-cols-3 gap-4 mb-12"
+            className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-12"
           >
             <Card className="p-4 text-center">
               <p className="text-2xl font-mono font-bold text-[var(--accent-cyan)]">

@@ -2,6 +2,7 @@
 DJ Reactor - Music Visualizer for Reachy Mini
 
 A physical music companion that analyzes audio and moves expressively to the beat.
+Compatible with ReachyMiniApp format for HuggingFace/dashboard distribution.
 """
 
 import math
@@ -26,13 +27,81 @@ from reachy_mini.utils import create_head_pose
 logger = logging.getLogger(__name__)
 
 # =============================================================================
-# Audio Analysis
+# Configuration
 # =============================================================================
 
 BASS_RANGE = (20, 250)
 MID_RANGE = (250, 2000)
 TREBLE_RANGE = (2000, 12000)
 
+
+@dataclass
+class GenrePreset:
+    """Movement characteristics for a music genre."""
+    name: str
+    display_name: str
+    head_bob_amplitude: float = 8.0
+    head_bob_speed: float = 1.0
+    body_sway_amplitude: float = 20.0
+    body_sway_speed: float = 1.0
+    antenna_amplitude: float = 0.5
+    emphasis_style: str = "nod"  # headbang, nod, tilt
+    movement_smoothing: float = 0.3
+
+
+GENRE_PRESETS = {
+    "rock": GenrePreset(
+        name="rock", display_name="Rock",
+        head_bob_amplitude=12.0, head_bob_speed=0.8,
+        body_sway_amplitude=15.0, antenna_amplitude=0.7,
+        emphasis_style="headbang", movement_smoothing=0.2,
+    ),
+    "electronic": GenrePreset(
+        name="electronic", display_name="Electronic/EDM",
+        head_bob_amplitude=10.0, head_bob_speed=1.0,
+        body_sway_amplitude=25.0, body_sway_speed=0.8,
+        antenna_amplitude=0.6, emphasis_style="nod",
+        movement_smoothing=0.4,
+    ),
+    "jazz": GenrePreset(
+        name="jazz", display_name="Jazz",
+        head_bob_amplitude=5.0, head_bob_speed=1.2,
+        body_sway_amplitude=30.0, body_sway_speed=1.5,
+        antenna_amplitude=0.3, emphasis_style="tilt",
+        movement_smoothing=0.6,
+    ),
+    "pop": GenrePreset(
+        name="pop", display_name="Pop",
+        head_bob_amplitude=8.0, head_bob_speed=1.0,
+        body_sway_amplitude=20.0, antenna_amplitude=0.5,
+        emphasis_style="nod", movement_smoothing=0.35,
+    ),
+    "classical": GenrePreset(
+        name="classical", display_name="Classical",
+        head_bob_amplitude=3.0, head_bob_speed=1.5,
+        body_sway_amplitude=35.0, body_sway_speed=2.0,
+        antenna_amplitude=0.2, emphasis_style="tilt",
+        movement_smoothing=0.7,
+    ),
+    "hiphop": GenrePreset(
+        name="hiphop", display_name="Hip-Hop",
+        head_bob_amplitude=10.0, head_bob_speed=0.9,
+        body_sway_amplitude=15.0, antenna_amplitude=0.5,
+        emphasis_style="nod", movement_smoothing=0.3,
+    ),
+    "chill": GenrePreset(
+        name="chill", display_name="Chill/Ambient",
+        head_bob_amplitude=4.0, head_bob_speed=1.5,
+        body_sway_amplitude=25.0, body_sway_speed=2.0,
+        antenna_amplitude=0.2, emphasis_style="tilt",
+        movement_smoothing=0.8,
+    ),
+}
+
+
+# =============================================================================
+# Audio Analysis
+# =============================================================================
 
 @dataclass
 class AudioFeatures:
@@ -49,10 +118,12 @@ class AudioFeatures:
 class AudioAnalyzer:
     """Real-time audio analysis for beat detection and frequency bands."""
 
-    def __init__(self, sample_rate: int = 44100, chunk_size: int = 2048, device_index: Optional[int] = None):
+    def __init__(self, sample_rate: int = 44100, chunk_size: int = 2048,
+                 device_index: Optional[int] = None, sensitivity: float = 0.6):
         self.sample_rate = sample_rate
         self.chunk_size = chunk_size
         self.device_index = device_index
+        self.sensitivity = sensitivity
 
         # FFT setup
         freqs = np.fft.rfftfreq(chunk_size, 1.0 / sample_rate)
@@ -96,13 +167,16 @@ class AudioAnalyzer:
         mid = min(np.mean(spectrum[self.mid_bins]) / 2.0, 1.0) if len(self.mid_bins) > 0 else 0
         treble = min(np.mean(spectrum[self.treble_bins]) / 1.0, 1.0) if len(self.treble_bins) > 0 else 0
 
-        # Beat detection
+        # Beat detection with sensitivity
         self.energy_history.append(rms)
         beat_detected = False
+        onset_threshold = 1.1 + (1.0 - self.sensitivity) * 0.5  # Higher sensitivity = lower threshold
+        min_interval = 0.2 + (1.0 - self.sensitivity) * 0.2
+
         if len(self.energy_history) >= 3:
             avg_energy = np.mean(list(self.energy_history)[:-1])
             onset = rms / (avg_energy + 1e-10)
-            if onset > 1.3 and (current_time - self.last_beat_time) > 0.3 and rms > 0.002:
+            if onset > onset_threshold and (current_time - self.last_beat_time) > min_interval and rms > 0.002:
                 beat_detected = True
                 self.beat_times.append(current_time)
                 self.last_beat_time = current_time
@@ -155,6 +229,10 @@ class AudioAnalyzer:
         """Get most recent audio features."""
         return self.latest_features
 
+    def update_sensitivity(self, sensitivity: float):
+        """Update beat detection sensitivity."""
+        self.sensitivity = max(0.2, min(1.0, sensitivity))
+
 
 def list_audio_devices():
     """List available audio input devices."""
@@ -172,41 +250,71 @@ def list_audio_devices():
 # =============================================================================
 
 class DanceController:
-    """Maps audio to robot movements."""
+    """Maps audio to robot movements with genre-specific styles."""
 
-    def __init__(self, intensity: float = 0.7):
+    def __init__(self, preset: GenrePreset, intensity: float = 0.7):
+        self.preset = preset
         self.intensity = intensity
         self.dance_time = 0.0
 
+        # Smoothing state
+        self.smooth_head_z = 0.0
+        self.smooth_head_roll = 0.0
+        self.smooth_body_yaw = 0.0
+
+    def update_preset(self, preset: GenrePreset):
+        """Change the active genre preset."""
+        self.preset = preset
+
+    def update_intensity(self, intensity: float):
+        """Update movement intensity."""
+        self.intensity = max(0.1, min(1.0, intensity))
+
     def get_movement(self, features: AudioFeatures):
-        """Calculate movement based on audio features."""
+        """Calculate movement based on audio features and genre preset."""
         self.dance_time += 0.1
+        preset = self.preset
 
         # Groove cycle synced to BPM
         bpm_factor = features.bpm / 120.0
-        phase = (self.dance_time * 1.5 * bpm_factor) % (2 * math.pi)
+        phase = (self.dance_time * preset.head_bob_speed * bpm_factor) % (2 * math.pi)
 
         # Energy scaling
         energy = max(features.rms, 0.3) * self.intensity
 
-        # Body sway
-        body_yaw = 40 * energy * math.sin(phase)
+        # Body sway driven by bass
+        body_target = preset.body_sway_amplitude * energy * features.bass * math.sin(phase * preset.body_sway_speed)
 
         # Head movement
-        head_z = 10 * energy * math.sin(phase)
-        head_roll = 20 * energy * math.sin(phase)
-        head_pitch = -15 * self.intensity if features.beat_detected else 0
+        head_z_target = preset.head_bob_amplitude * energy * math.sin(phase)
+        head_roll_target = preset.head_bob_amplitude * 2 * energy * features.mid * math.sin(phase)
 
-        # Antennas
-        ant_amp = 0.6 * energy
+        # Beat-triggered emphasis
+        head_pitch = 0
+        if features.beat_detected:
+            if preset.emphasis_style == "headbang":
+                head_pitch = -20 * self.intensity
+            elif preset.emphasis_style == "nod":
+                head_pitch = -12 * self.intensity
+            elif preset.emphasis_style == "tilt":
+                head_roll_target += 15 * self.intensity * (1 if self.dance_time % 2 > 1 else -1)
+
+        # Smoothing
+        smooth = preset.movement_smoothing
+        self.smooth_head_z = smooth * self.smooth_head_z + (1 - smooth) * head_z_target
+        self.smooth_head_roll = smooth * self.smooth_head_roll + (1 - smooth) * head_roll_target
+        self.smooth_body_yaw = smooth * self.smooth_body_yaw + (1 - smooth) * body_target
+
+        # Antennas - treble-driven with variation
+        ant_amp = preset.antenna_amplitude * energy * (0.5 + 0.5 * features.treble)
         antenna_l = ant_amp * math.sin(phase * 2)
         antenna_r = ant_amp * math.sin(phase * 2 + math.pi)
 
         return {
-            'head_z': max(-15, min(15, head_z)),
-            'head_roll': max(-40, min(40, head_roll)),
+            'head_z': max(-15, min(15, self.smooth_head_z)),
+            'head_roll': max(-40, min(40, self.smooth_head_roll)),
             'head_pitch': max(-40, min(40, head_pitch)),
-            'body_yaw': max(-50, min(50, body_yaw)),
+            'body_yaw': max(-50, min(50, self.smooth_body_yaw)),
             'antenna_left': max(-0.7, min(0.7, antenna_l)),
             'antenna_right': max(-0.7, min(0.7, antenna_r)),
         }
@@ -228,8 +336,9 @@ class DJReactorApp(ReachyMiniApp):
         self.analyzer: Optional[AudioAnalyzer] = None
         self.controller: Optional[DanceController] = None
         self.is_vibing = False
-        self.selected_device = None
+        self.current_genre = "electronic"
         self.intensity = 0.7
+        self.sensitivity = 0.6
         self.latest_features = AudioFeatures()
 
     def run(self, reachy_mini: ReachyMini, stop_event: threading.Event):
@@ -275,13 +384,14 @@ class DJReactorApp(ReachyMiniApp):
             self.analyzer.stop()
 
     def _run_ui(self, reachy_mini: ReachyMini, stop_event: threading.Event):
-        """Run Gradio UI."""
+        """Run Gradio UI with genre selection and visualizers."""
         devices = list_audio_devices()
         device_names = [d['name'] for d in devices]
+        genre_choices = [(p.display_name, name) for name, p in GENRE_PRESETS.items()]
 
-        def start_vibing(device_name, intensity):
+        def start_vibing(device_name, genre, intensity, sensitivity):
             if self.is_vibing:
-                return "Already vibing!"
+                return get_status()
 
             # Find device index
             device_idx = None
@@ -290,64 +400,151 @@ class DJReactorApp(ReachyMiniApp):
                     device_idx = d['index']
                     break
 
+            self.current_genre = genre
             self.intensity = intensity
-            self.controller = DanceController(intensity)
-            self.analyzer = AudioAnalyzer(device_index=device_idx)
+            self.sensitivity = sensitivity
+
+            preset = GENRE_PRESETS.get(genre, GENRE_PRESETS["electronic"])
+            self.controller = DanceController(preset, intensity)
+            self.analyzer = AudioAnalyzer(device_index=device_idx, sensitivity=sensitivity)
             self.analyzer.start()
             self.is_vibing = True
-            return "Vibing!"
+            return get_status()
 
         def stop_vibing():
             self.is_vibing = False
             if self.analyzer:
                 self.analyzer.stop()
                 self.analyzer = None
-            return "Stopped"
+            return get_status()
+
+        def change_genre(genre):
+            self.current_genre = genre
+            if self.controller:
+                preset = GENRE_PRESETS.get(genre, GENRE_PRESETS["electronic"])
+                self.controller.update_preset(preset)
+            return get_status()
+
+        def update_intensity(intensity):
+            self.intensity = intensity
+            if self.controller:
+                self.controller.update_intensity(intensity)
+
+        def update_sensitivity(sensitivity):
+            self.sensitivity = sensitivity
+            if self.analyzer:
+                self.analyzer.update_sensitivity(sensitivity)
+
+        def bar(value, color):
+            """Generate a colored bar HTML."""
+            width = int(value * 100)
+            return f'''<div style="background: #e0e0e0; border-radius: 4px; overflow: hidden;">
+                <div style="width: {width}%; height: 12px; background: {color}; transition: width 0.1s;"></div>
+            </div>'''
 
         def get_status():
             f = self.latest_features
             status = "Vibing!" if self.is_vibing else "Ready"
+            status_color = "#4CAF50" if self.is_vibing else "#666"
+            beat_indicator = " *" if f.beat_detected and self.is_vibing else ""
+            genre_name = GENRE_PRESETS.get(self.current_genre, GENRE_PRESETS["electronic"]).display_name
+
             return f"""
-            <div style="text-align:center; padding:20px;">
-                <h2 style="color: {'#4CAF50' if self.is_vibing else '#666'};">{status}</h2>
-                <div style="font-size:48px; font-family:monospace;">{f.bpm:.0f} BPM</div>
-                <div style="margin-top:20px;">
-                    <div>Bass: {'#' * int(f.bass * 20)}</div>
-                    <div>Mid: {'#' * int(f.mid * 20)}</div>
-                    <div>Treble: {'#' * int(f.treble * 20)}</div>
+            <div style="padding: 15px;">
+                <div style="text-align: center; margin-bottom: 15px;">
+                    <div style="font-size: 18px; font-weight: bold; color: {status_color};">
+                        {status}{beat_indicator}
+                    </div>
+                    <div style="font-size: 12px; color: #888; margin-top: 4px;">{genre_name}</div>
+                </div>
+
+                <div style="text-align: center; margin-bottom: 20px;">
+                    <div style="font-size: 48px; font-family: monospace; font-weight: bold;">
+                        {f.bpm:.0f}
+                    </div>
+                    <div style="font-size: 14px; color: #666;">BPM</div>
+                </div>
+
+                <div style="background: #f5f5f5; padding: 15px; border-radius: 10px;">
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Bass</div>
+                        {bar(f.bass, '#e91e63')}
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Mid</div>
+                        {bar(f.mid, '#9c27b0')}
+                    </div>
+                    <div style="margin-bottom: 12px;">
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Treble</div>
+                        {bar(f.treble, '#3f51b5')}
+                    </div>
+                    <div>
+                        <div style="font-size: 12px; color: #666; margin-bottom: 4px;">Energy</div>
+                        {bar(f.rms, '#4CAF50')}
+                    </div>
                 </div>
             </div>
             """
 
-        with gr.Blocks(title="DJ Reactor") as demo:
+        with gr.Blocks(title="DJ Reactor", theme=gr.themes.Soft()) as demo:
             gr.HTML("""
             <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white; padding: 25px; border-radius: 15px; text-align: center;">
-                <h1 style="margin: 0;">DJ Reactor</h1>
+                        color: white; padding: 25px; border-radius: 15px; text-align: center;
+                        margin-bottom: 15px;">
+                <h1 style="margin: 0; font-size: 32px;">DJ Reactor</h1>
                 <p style="margin: 8px 0 0 0; opacity: 0.9;">Reachy Mini dances to your music</p>
             </div>
             """)
 
             with gr.Row():
-                with gr.Column():
+                with gr.Column(scale=1):
                     device_dropdown = gr.Dropdown(
                         choices=device_names,
                         value=device_names[0] if device_names else None,
-                        label="Audio Input"
+                        label="Audio Input Device",
+                        info="Select microphone or loopback"
                     )
-                    intensity_slider = gr.Slider(0.1, 1.0, value=0.7, label="Intensity")
-                    with gr.Row():
-                        start_btn = gr.Button("Start Vibing", variant="primary")
-                        stop_btn = gr.Button("Stop")
 
-                with gr.Column():
+                    genre_radio = gr.Radio(
+                        choices=genre_choices,
+                        value="electronic",
+                        label="Music Genre",
+                        info="Movement style"
+                    )
+
+                    intensity_slider = gr.Slider(
+                        0.1, 1.0, value=0.7, step=0.1,
+                        label="Movement Intensity",
+                        info="How dramatic the movements"
+                    )
+
+                    sensitivity_slider = gr.Slider(
+                        0.2, 1.0, value=0.6, step=0.1,
+                        label="Beat Sensitivity",
+                        info="How easily beats are detected"
+                    )
+
+                    with gr.Row():
+                        start_btn = gr.Button("Start Vibing", variant="primary", size="lg")
+                        stop_btn = gr.Button("Stop", size="lg")
+
+                with gr.Column(scale=1):
                     status_html = gr.HTML(value=get_status())
 
-            timer = gr.Timer(value=0.5)
+            # Auto-refresh status
+            timer = gr.Timer(value=0.3)
             timer.tick(fn=get_status, outputs=[status_html])
 
-            start_btn.click(fn=start_vibing, inputs=[device_dropdown, intensity_slider], outputs=[status_html])
+            # Event handlers
+            start_btn.click(
+                fn=start_vibing,
+                inputs=[device_dropdown, genre_radio, intensity_slider, sensitivity_slider],
+                outputs=[status_html]
+            )
             stop_btn.click(fn=stop_vibing, outputs=[status_html])
+            genre_radio.change(fn=change_genre, inputs=[genre_radio], outputs=[status_html])
+            intensity_slider.change(fn=update_intensity, inputs=[intensity_slider])
+            sensitivity_slider.change(fn=update_sensitivity, inputs=[sensitivity_slider])
 
         demo.launch(server_port=7861, quiet=True, prevent_thread_lock=True)
 

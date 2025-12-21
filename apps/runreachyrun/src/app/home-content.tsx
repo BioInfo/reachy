@@ -56,7 +56,7 @@ export function HomeContent({ recentTimeline }: HomeContentProps) {
               transmission active
             </SignalBadge>
 
-            <h1 className="text-5xl md:text-7xl font-mono font-bold text-[var(--text-primary)] mb-6 tracking-tight">
+            <h1 className="text-3xl sm:text-5xl md:text-7xl font-mono font-bold text-[var(--text-primary)] mb-6 tracking-tight">
               run
               <span className="text-gradient-cyan">reachy</span>
               run
