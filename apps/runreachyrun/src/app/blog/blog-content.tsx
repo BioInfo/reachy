@@ -6,10 +6,10 @@ import { SignalBadge } from "@/components/ui/signal-badge";
 import { Card } from "@/components/ui/card";
 import { SignalLine } from "@/components/ui/signal-line";
 import { PenTool } from "@/components/ui/icon";
-import type { ParsedBlogPost } from "@/lib/content";
+import type { BlogPostWithSlug } from "@/lib/content";
 
 interface BlogContentProps {
-  posts: ParsedBlogPost[];
+  posts: BlogPostWithSlug[];
 }
 
 export function BlogContent({ posts }: BlogContentProps) {
@@ -50,40 +50,42 @@ export function BlogContent({ posts }: BlogContentProps) {
           {readyPosts.length > 0 && (
             <section className="mb-12">
               <div className="space-y-6">
-                {readyPosts.map((post, index) => (
-                  <motion.article
-                    key={post.title}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.4, delay: index * 0.1 }}
-                  >
-                    <Card variant="interactive" className="p-6">
-                      <div className="flex items-start justify-between mb-3">
-                        <SignalBadge variant="success">
-                          {post.status}
-                        </SignalBadge>
-                        {post.target && (
-                          <span className="font-mono text-xs text-[var(--text-muted)]">
-                            {post.target}
-                          </span>
-                        )}
-                      </div>
-                      <h2 className="text-xl font-medium text-[var(--text-primary)] mb-2">
-                        {post.title}
-                      </h2>
-                      {post.hook && (
-                        <p className="text-[var(--text-secondary)] mb-4 italic">
-                          "{post.hook}"
-                        </p>
-                      )}
-                      {post.angle && (
-                        <p className="text-sm text-[var(--text-muted)]">
-                          Angle: {post.angle}
-                        </p>
-                      )}
-                    </Card>
-                  </motion.article>
-                ))}
+                {readyPosts.map((post, index) => {
+                  return (
+                    <motion.article
+                      key={post.title}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ duration: 0.4, delay: index * 0.1 }}
+                    >
+                      <Link href={`/blog/${post.slug}`}>
+                        <Card variant="interactive" className="p-6 cursor-pointer hover:border-[var(--accent-cyan)] transition-colors">
+                          <div className="flex items-start justify-between mb-3">
+                            <SignalBadge variant="success">
+                              {post.status}
+                            </SignalBadge>
+                            {post.target && (
+                              <span className="font-mono text-xs text-[var(--text-muted)]">
+                                {post.target}
+                              </span>
+                            )}
+                          </div>
+                          <h2 className="text-xl font-medium text-[var(--text-primary)] mb-3">
+                            {post.title}
+                          </h2>
+                          {post.hook && (
+                            <p className="text-[var(--text-secondary)] leading-relaxed">
+                              {post.hook}
+                            </p>
+                          )}
+                          <div className="mt-4 text-sm font-mono text-[var(--accent-cyan)]">
+                            Read more →
+                          </div>
+                        </Card>
+                      </Link>
+                    </motion.article>
+                  );
+                })}
               </div>
             </section>
           )}

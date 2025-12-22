@@ -411,16 +411,21 @@ export async function getBlogFromDevlog(): Promise<ParsedBlogPost[]> {
   return posts;
 }
 
+// Extended type for blog posts with slug
+export type BlogPostWithSlug = ParsedBlogPost & { slug: string };
+
 /**
  * Convert static BlogPost to ParsedBlogPost format
  */
-function staticBlogToParsed(post: typeof staticBlogPosts[0]): ParsedBlogPost {
+function staticBlogToParsed(post: typeof staticBlogPosts[0]): BlogPostWithSlug {
   return {
     title: post.title,
     status: "ready",
+    hook: post.summary,
     content: post.content,
     rawContent: post.content,
     source: { path: `static/${post.slug}`, type: "static" },
+    slug: post.slug,
   };
 }
 
@@ -446,7 +451,7 @@ function isSamePost(title1: string, title2: string): boolean {
  * Get all blog posts, sorted by status (ready > draft > idea)
  * Filters out drafts/ideas that have a matching published post
  */
-export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
+export async function getAllBlogPosts(): Promise<BlogPostWithSlug[]> {
   // Start with static blog posts (these are published/ready)
   const staticPosts = getStaticPostsSorted().map(staticBlogToParsed);
 
@@ -470,11 +475,13 @@ export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
     });
 
     // Combine static and filtered devlog posts
-    const allPosts = [...staticPosts];
+    const allPosts: BlogPostWithSlug[] = [...staticPosts];
     for (const post of filteredDevlogPosts) {
       const exists = allPosts.some(p => isSamePost(p.title, post.title));
       if (!exists) {
-        allPosts.push(post);
+        // Add slug to devlog posts
+        const slug = post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, '');
+        allPosts.push({ ...post, slug });
       }
     }
 
