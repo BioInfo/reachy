@@ -19,12 +19,12 @@ export function GiscusComments({ className = "" }: GiscusCommentsProps) {
 
     const script = document.createElement("script");
     script.src = "https://giscus.app/client.js";
-    script.setAttribute("data-repo", "justjoehere/runreachyrun");
-    script.setAttribute("data-repo-id", ""); // TODO: Get from giscus.app
-    script.setAttribute("data-category", "Comments");
-    script.setAttribute("data-category-id", ""); // TODO: Get from giscus.app
+    script.setAttribute("data-repo", "bioinfo/reachy");
+    script.setAttribute("data-repo-id", "R_kgDOQrRJOA");
+    script.setAttribute("data-category", "Blog Comments");
+    script.setAttribute("data-category-id", "DIC_kwDOQrRJOM4C0H05");
     script.setAttribute("data-mapping", "pathname");
-    script.setAttribute("data-strict", "0");
+    script.setAttribute("data-strict", "1");
     script.setAttribute("data-reactions-enabled", "1");
     script.setAttribute("data-emit-metadata", "0");
     script.setAttribute("data-input-position", "top");
