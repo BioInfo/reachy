@@ -6,7 +6,7 @@ export const blogPosts: BlogPost[] = [
     title: "First Boot: Debugging a Robot with an AI Pair Programmer",
     date: "2025-12-20",
     summary:
-      "45 minutes from 'help me get it running' to a talking robot. This is what AI-assisted hardware debugging actually looks like.",
+      "I built a robot and debugged it with an AI pair programmer reading source code and executing commands in real-time. Not just 'robot works' but the human-AI collaboration story.",
     content: `
 I built my Reachy Mini Lite overnight. Woke up at 6am, plugged it in via USB, and asked Claude Code for help getting it running. Forty-five minutes later, the robot was talking back to me.
 

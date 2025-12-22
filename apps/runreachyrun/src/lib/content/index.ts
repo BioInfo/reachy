@@ -439,10 +439,29 @@ function staticBlogToParsed(post: typeof staticBlogPosts[0]): ParsedBlogPost {
 }
 
 /**
+ * Check if two blog post titles refer to the same content
+ */
+function isSamePost(title1: string, title2: string): boolean {
+  // Normalize titles for comparison
+  const normalize = (t: string) => t.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const n1 = normalize(title1);
+  const n2 = normalize(title2);
+
+  // Check for exact match or significant overlap
+  if (n1 === n2) return true;
+
+  // Check if one contains key parts of the other (for "First Boot" variants)
+  const keywords = ['firstboot', 'claudecode', 'debugging', 'robot'];
+  const matches = keywords.filter(k => n1.includes(k) && n2.includes(k));
+  return matches.length >= 2;
+}
+
+/**
  * Get all blog posts, sorted by status (ready > draft > idea)
+ * Filters out drafts/ideas that have a matching published post
  */
 export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
-  // Start with static blog posts
+  // Start with static blog posts (these are published/ready)
   const staticPosts = getStaticPostsSorted().map(staticBlogToParsed);
 
   if (!devlogExists()) {
@@ -452,10 +471,22 @@ export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
   try {
     const devlogPosts = await getBlogFromDevlog();
 
-    // Combine static and devlog posts, preferring static for duplicates
+    // Filter devlog posts: exclude drafts/ideas that match a published static post
+    const filteredDevlogPosts = devlogPosts.filter(devlogPost => {
+      // If it's a draft or idea, check if we have a published version
+      if (devlogPost.status === 'draft' || devlogPost.status === 'idea') {
+        const hasPublished = staticPosts.some(staticPost =>
+          isSamePost(staticPost.title, devlogPost.title)
+        );
+        return !hasPublished; // Exclude if published version exists
+      }
+      return true; // Keep ready/published posts
+    });
+
+    // Combine static and filtered devlog posts
     const allPosts = [...staticPosts];
-    for (const post of devlogPosts) {
-      const exists = allPosts.some(p => p.title === post.title);
+    for (const post of filteredDevlogPosts) {
+      const exists = allPosts.some(p => isSamePost(p.title, post.title));
       if (!exists) {
         allPosts.push(post);
       }
