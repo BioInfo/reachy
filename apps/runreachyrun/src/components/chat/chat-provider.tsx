@@ -57,11 +57,11 @@ export function ChatProvider({ children }: { children: ReactNode }) {
         body: JSON.stringify({ message, context }),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to get response");
-      }
-
       const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to get response");
+      }
 
       // Add assistant message with sources
       const assistantMessage: ChatMessage = {
@@ -72,9 +72,18 @@ export function ChatProvider({ children }: { children: ReactNode }) {
       setMessages((prev) => [...prev, assistantMessage]);
     } catch (error) {
       console.error("Chat error:", error);
+
+      // Extract meaningful error message
+      let errorText = "Sorry, I encountered an error. Please try again.";
+      if (error instanceof Error) {
+        errorText = `Error: ${error.message}`;
+      } else if (typeof error === "string") {
+        errorText = error;
+      }
+
       const errorMessage: ChatMessage = {
         role: "assistant",
-        content: "Sorry, I encountered an error. Please try again.",
+        content: errorText,
       };
       setMessages((prev) => [...prev, errorMessage]);
     } finally {

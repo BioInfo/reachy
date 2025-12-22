@@ -47,7 +47,8 @@ export async function POST(req: NextRequest) {
       : "";
 
     const response = await openrouter.chat.completions.create({
-      model: "google/gemini-2.0-flash-exp:free",
+      // Using Gemini Flash Lite 2.0 - super cheap, no rate limits
+      model: "google/gemini-2.0-flash-lite-001",
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         {

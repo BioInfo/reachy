@@ -1,7 +1,7 @@
 import { TimelineNode } from "@/types";
 
 // Timeline data — auto-generated from devlog
-// Last synced: 2025-12-22T14:30:15.297Z
+// Last synced: 2025-12-22T15:35:47.455Z
 // To update: npm run sync-devlog
 export const timelineData: TimelineNode[] = [
   {
