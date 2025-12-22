@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ThemeProvider, ThemeScript } from "@/components/theme";
 import "./globals.css";
 
 const inter = Inter({
@@ -69,11 +70,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
-        {children}
+        <ThemeScript />
+        <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
   );

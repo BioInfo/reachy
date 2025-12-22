@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { SignalBadge } from "@/components/ui/signal-badge";
 import { SearchDialog } from "@/components/search/search-dialog";
+import { ThemeToggle } from "@/components/theme";
 import { timelineData } from "@/content/timeline/data";
 import { journalEntries } from "@/content/journal/data";
 
@@ -114,6 +115,9 @@ export function Nav() {
               ⌘K
             </kbd>
           </button>
+
+          {/* Theme Toggle */}
+          <ThemeToggle />
 
           <SignalBadge variant="cyan" pulse className="hidden sm:inline-flex">
             building

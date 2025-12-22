@@ -5,7 +5,9 @@
    Direction: "Transmission" — Signal aesthetic, dark-first, alive with data
    ============================================================================= */
 
-:root {
+/* Dark theme (default) */
+:root,
+html.dark {
   /* Background */
   --bg-primary: #0d0d0f;
   --bg-secondary: #141418;
@@ -44,9 +46,73 @@
   --border-subtle: rgba(255, 255, 255, 0.06);
   --border-default: rgba(255, 255, 255, 0.1);
   --border-strong: rgba(255, 255, 255, 0.2);
+  --border-hover: rgba(255, 255, 255, 0.15);
 
   /* Noise texture overlay */
   --noise-opacity: 0.03;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
+  --shadow-glow-cyan: 0 0 20px rgba(0, 255, 213, 0.3);
+  --shadow-glow-amber: 0 0 20px rgba(255, 170, 0, 0.3);
+}
+
+/* Light theme */
+html.light {
+  /* Background */
+  --bg-primary: #fafafa;
+  --bg-secondary: #f0f0f2;
+  --bg-tertiary: #e8e8eb;
+  --bg-elevated: #ffffff;
+
+  /* Text */
+  --text-primary: #1a1a1f;
+  --text-secondary: #4a4a52;
+  --text-muted: #8a8a92;
+  --text-inverse: #fafafa;
+
+  /* Accent: Signal Cyan — darker for light mode readability */
+  --accent-cyan: #00b396;
+  --accent-cyan-dim: #009980;
+  --accent-cyan-glow: rgba(0, 179, 150, 0.15);
+
+  /* Accent: Warm Amber */
+  --accent-amber: #d49000;
+  --accent-amber-dim: #b87d00;
+  --accent-amber-glow: rgba(212, 144, 0, 0.15);
+
+  /* Semantic: Success */
+  --semantic-success: #16a34a;
+  --semantic-success-dim: #15803d;
+
+  /* Semantic: Failure */
+  --semantic-failure: #dc2626;
+  --semantic-failure-dim: #b91c1c;
+
+  /* Semantic: Info */
+  --semantic-info: #2563eb;
+  --semantic-info-dim: #1d4ed8;
+
+  /* Borders */
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-default: rgba(0, 0, 0, 0.1);
+  --border-strong: rgba(0, 0, 0, 0.2);
+  --border-hover: rgba(0, 0, 0, 0.15);
+
+  /* Noise texture overlay */
+  --noise-opacity: 0.02;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.08);
+  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.06);
+  --shadow-glow-cyan: 0 0 20px rgba(0, 179, 150, 0.2);
+  --shadow-glow-amber: 0 0 20px rgba(212, 144, 0, 0.2);
+}
+
+:root {
 
   /* Typography scale (based on 1rem = 16px) */
   --font-size-xs: 0.75rem;    /* 12px */
@@ -80,13 +146,6 @@
   --duration-slow: 400ms;
   --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
-
-  /* Shadows */
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.5);
-  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.4);
-  --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.3);
-  --shadow-glow-cyan: 0 0 20px rgba(0, 255, 213, 0.3);
-  --shadow-glow-amber: 0 0 20px rgba(255, 170, 0, 0.3);
 }
 
 /* Tailwind theme integration */
