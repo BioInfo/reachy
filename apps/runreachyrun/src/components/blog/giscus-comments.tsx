@@ -22,7 +22,7 @@ export function GiscusComments({ className = "" }: GiscusCommentsProps) {
     script.setAttribute("data-repo", "bioinfo/reachy");
     script.setAttribute("data-repo-id", "R_kgDOQrRJOA");
     script.setAttribute("data-category", "Blog Comments");
-    script.setAttribute("data-category-id", "DIC_kwDOQrRJOM4C0H05");
+    script.setAttribute("data-category-id", "DIC_kwDOQrRJOM4C0H5Z");
     script.setAttribute("data-mapping", "pathname");
     script.setAttribute("data-strict", "1");
     script.setAttribute("data-reactions-enabled", "1");
