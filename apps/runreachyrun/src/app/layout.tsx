@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider, ThemeScript } from "@/components/theme";
+import { ChatProvider, ChatWidget } from "@/components/chat";
 import "./globals.css";
 
 const inter = Inter({
@@ -75,7 +76,12 @@ export default function RootLayout({
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
         <ThemeScript />
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          <ChatProvider>
+            {children}
+            <ChatWidget />
+          </ChatProvider>
+        </ThemeProvider>
       </body>
     </html>
   );

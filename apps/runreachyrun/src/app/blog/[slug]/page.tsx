@@ -5,6 +5,7 @@ import { Footer } from "@/components/layout/footer";
 import { SignalBadge } from "@/components/ui/signal-badge";
 import { GiscusComments } from "@/components/blog/giscus-comments";
 import { BlogRenderer } from "@/components/blog/blog-renderer";
+import { RelatedContent } from "@/components/ui/related-content";
 import { getPostBySlug, getAllSlugs } from "@/content/blog/data";
 
 // Generate static paths for all blog posts
@@ -125,8 +126,15 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
           {/* Content */}
           <BlogRenderer content={post.content} />
 
+          {/* AI-powered Related Content */}
+          <RelatedContent
+            currentId={`blog-${slug}`}
+            limit={3}
+            className="mt-16 pt-12 border-t border-[var(--border-subtle)]"
+          />
+
           {/* Comments */}
-          <GiscusComments className="mt-20 pt-12 border-t border-[var(--border-subtle)]" />
+          <GiscusComments className="mt-16 pt-12 border-t border-[var(--border-subtle)]" />
 
           {/* Footer */}
           <footer className="mt-16 pt-8 border-t border-[var(--border-subtle)]">

@@ -4,6 +4,7 @@ import { Nav } from "@/components/layout/nav";
 import { Footer } from "@/components/layout/footer";
 import { SignalBadge } from "@/components/ui/signal-badge";
 import { Card } from "@/components/ui/card";
+import { RelatedContent } from "@/components/ui/related-content";
 import {
   getAllJournalEntries,
   getJournalEntryBySlug,
@@ -226,6 +227,13 @@ export default async function JournalEntryPage({
               )}
             </div>
           </nav>
+
+          {/* AI-powered Related Content */}
+          <RelatedContent
+            currentId={`journal-${slug}`}
+            limit={3}
+            className="mt-12 pt-8 border-t border-[var(--border-subtle)]"
+          />
         </article>
       </main>
 
