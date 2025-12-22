@@ -63,10 +63,73 @@ export default function AppsPage() {
             </p>
           </motion.div>
 
+          {/* Live on HuggingFace */}
+          <motion.section
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.4, delay: 0.1 }}
+            className="mb-16"
+          >
+            <div className="flex items-center gap-3 mb-6">
+              <h2 className="text-xl font-mono font-medium text-[var(--text-primary)]">
+                Live on HuggingFace
+              </h2>
+              <SignalBadge variant="success" pulse>
+                pip install
+              </SignalBadge>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Card className="p-5">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 rounded-lg bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--accent-cyan)]">
+                    <Icon name="Target" size={24} strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-[var(--text-primary)]">Focus Guardian</h3>
+                    <p className="text-xs text-[var(--text-muted)] font-mono">pip install focus-guardian</p>
+                  </div>
+                </div>
+                <p className="text-sm text-[var(--text-secondary)] mb-4">
+                  Your robot accountability partner for focused work sessions.
+                </p>
+                <a
+                  href="https://huggingface.co/spaces/RyeCatcher/focus-guardian"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-mono text-[var(--accent-cyan)] hover:underline"
+                >
+                  View on HuggingFace →
+                </a>
+              </Card>
+              <Card className="p-5">
+                <div className="flex items-center gap-4 mb-3">
+                  <div className="w-12 h-12 rounded-lg bg-[var(--bg-tertiary)] flex items-center justify-center text-[var(--accent-amber)]">
+                    <Icon name="Music" size={24} strokeWidth={1.5} />
+                  </div>
+                  <div>
+                    <h3 className="font-medium text-[var(--text-primary)]">DJ Reactor</h3>
+                    <p className="text-xs text-[var(--text-muted)] font-mono">pip install dj-reactor</p>
+                  </div>
+                </div>
+                <p className="text-sm text-[var(--text-secondary)] mb-4">
+                  Reachy reacts to your music with beat-synced movements.
+                </p>
+                <a
+                  href="https://huggingface.co/spaces/RyeCatcher/dj-reactor"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-sm font-mono text-[var(--accent-cyan)] hover:underline"
+                >
+                  View on HuggingFace →
+                </a>
+              </Card>
+            </div>
+          </motion.section>
+
           {/* Current Apps */}
           <section className="mb-16">
             <h2 className="text-xl font-mono font-medium text-[var(--text-primary)] mb-6">
-              Current Projects
+              All Projects
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {appsData.map((app, index) => {

@@ -7,9 +7,10 @@ export const appsData: AppPage[] = [
     tagline: "Your robot accountability partner",
     description:
       "A productivity body-double app that uses Reachy Mini as an accountability partner. The robot watches you work, notices when you get distracted, and provides gentle encouragement through expressions and movements. Based on the body-doubling technique used for ADHD focus.",
-    status: "development",
+    status: "live",
     icon: "Target",
 
+    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/focus-guardian",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/focus-guardian",
 
     screenshots: [],
@@ -147,9 +148,10 @@ CELEBRATION_INTENSITY = "medium"  # low, medium, high`,
     tagline: "Reachy reacts to your music",
     description:
       "An audio-reactive experience where Reachy Mini responds to music in real-time. The robot analyzes audio frequencies, detects beats, and translates sound into synchronized movements — head bobs, antenna waggles, and LED color changes.",
-    status: "development",
+    status: "live",
     icon: "Music",
 
+    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/dj-reactor",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/dj-reactor",
 
     screenshots: [],
