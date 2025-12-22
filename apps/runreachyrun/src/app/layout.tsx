@@ -33,11 +33,20 @@ export const metadata: Metadata = {
       "Documenting the journey of building and programming a Reachy Mini Lite robot.",
     type: "website",
     locale: "en_US",
+    images: [
+      {
+        url: "/og-image.png",
+        width: 1376,
+        height: 768,
+        alt: "runreachyrun - Building a Reachy Mini Lite robot",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "runreachyrun",
     description: "Building a Reachy Mini Lite robot",
+    images: ["/og-image.png"],
   },
   alternates: {
     types: {

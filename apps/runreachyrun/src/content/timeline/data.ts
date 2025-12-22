@@ -3,8 +3,26 @@ import { TimelineNode } from "@/types";
 // Timeline data — real commits linked to GitHub repo
 export const timelineData: TimelineNode[] = [
   {
+    id: "huggingface-publish",
+    date: "2025-12-21",
+    title: "First HuggingFace Space published",
+    type: "milestone",
+    summary:
+      "Refactored Focus Guardian to ReachyMiniApp format and published to HuggingFace Spaces. First step toward the official app store.",
+    content: {
+      journal: "huggingface-publish",
+      claudeSnippet: {
+        prompt: "How do I get Focus Guardian into the Pollen Robotics app ecosystem?",
+        response:
+          "The ecosystem expects apps to inherit from ReachyMiniApp, not run standalone. Your app receives a pre-initialized robot and must respect stop_event for clean shutdown...",
+        context: "Learning the dashboard plugin architecture",
+      },
+    },
+    tags: ["apps", "huggingface", "ecosystem", "milestone"],
+  },
+  {
     id: "site-launch",
-    date: "2024-12-21",
+    date: "2025-12-21",
     title: "runreachyrun.com goes live",
     type: "milestone",
     summary:
@@ -16,15 +34,46 @@ export const timelineData: TimelineNode[] = [
         prompt:
           "I want to brainstorm the design direction. Show me 2-3 distinct visual directions we could take.",
         response:
-          "Let me give you three distinct visual directions. These aren't incremental variations — they're philosophically different approaches...",
+          "Let me give you three distinct visual directions. These aren't incremental variations — they're philosophically different approaches: Transmission (signal aesthetic), Exposed Circuitry (PCB traces), Dual Presence (visible AI layer)...",
         context: "Initial design exploration for the site",
       },
     },
     tags: ["meta", "launch", "claude-code"],
   },
   {
+    id: "first-physical-boot",
+    date: "2025-12-20",
+    title: "First physical robot boot",
+    type: "breakthrough",
+    summary:
+      "45 minutes from 'help me get it running' to a talking robot. Claude Code debugged sim-vs-hardware mode, serial port locking, and API key storage in real-time.",
+    content: {
+      journal: "first-boot",
+      claudeSnippet: {
+        prompt: "I built my Reachy light. Can you help me get it running?",
+        response:
+          "Let me check USB detection first... Found /dev/cu.usbmodem5AF71342721. Now checking daemon status... It's running in --sim mode. Need to switch to hardware mode.",
+        context: "Real-time hardware debugging with AI",
+      },
+    },
+    tags: ["hardware", "debugging", "claude-code", "breakthrough"],
+  },
+  {
+    id: "dj-reactor-complete",
+    date: "2025-12-20",
+    title: "DJ Reactor MVP complete",
+    type: "breakthrough",
+    summary:
+      "Built music visualizer with 7 genre presets. Real-time beat detection, FFT analysis, and synchronized robot movements. The robot dances!",
+    content: {
+      journal: "dj-reactor-start",
+      commits: ["459f32a"],
+    },
+    tags: ["apps", "dj-reactor", "audio", "breakthrough"],
+  },
+  {
     id: "reachy-unboxing",
-    date: "2024-12-15",
+    date: "2025-12-15",
     title: "Reachy Mini Lite arrives",
     type: "milestone",
     summary:
@@ -34,7 +83,7 @@ export const timelineData: TimelineNode[] = [
   },
   {
     id: "first-movement",
-    date: "2024-12-16",
+    date: "2025-12-16",
     title: "First successful movement",
     type: "breakthrough",
     summary:
@@ -52,7 +101,7 @@ export const timelineData: TimelineNode[] = [
   },
   {
     id: "camera-issues",
-    date: "2024-12-17",
+    date: "2025-12-17",
     title: "Camera integration blocked",
     type: "failure",
     summary:
@@ -64,7 +113,7 @@ export const timelineData: TimelineNode[] = [
   },
   {
     id: "focus-guardian-concept",
-    date: "2024-12-18",
+    date: "2025-12-18",
     title: "Focus Guardian app concept",
     type: "session",
     summary:
@@ -77,7 +126,7 @@ export const timelineData: TimelineNode[] = [
   },
   {
     id: "daemon-setup",
-    date: "2024-12-19",
+    date: "2025-12-19",
     title: "Daemon auto-start configured",
     type: "session",
     summary:
@@ -89,7 +138,7 @@ export const timelineData: TimelineNode[] = [
   },
   {
     id: "simulation-working",
-    date: "2024-12-14",
+    date: "2025-12-14",
     title: "MuJoCo simulation running",
     type: "breakthrough",
     summary:
@@ -98,19 +147,6 @@ export const timelineData: TimelineNode[] = [
       journal: "simulation-setup",
     },
     tags: ["software", "simulation", "mujoco"],
-  },
-  {
-    id: "dj-reactor-start",
-    date: "2024-12-20",
-    title: "DJ Reactor app started",
-    type: "session",
-    summary:
-      "Began work on DJ Reactor — Reachy responds to music with beat-synced movements and expressions.",
-    content: {
-      journal: "dj-reactor-start",
-      commits: ["459f32a"],
-    },
-    tags: ["apps", "dj-reactor", "audio"],
   },
 ];
 

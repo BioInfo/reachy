@@ -2,9 +2,123 @@ import { JournalEntry } from "@/types";
 
 export const journalEntries: JournalEntry[] = [
   {
+    slug: "huggingface-publish",
+    title: "Publishing to HuggingFace: A Different Paradigm",
+    date: "2025-12-21",
+    summary:
+      "Refactored Focus Guardian for the Pollen Robotics ecosystem. Learned the hard way that dashboard plugins work differently than standalone apps.",
+    content: `
+Getting Focus Guardian into the HuggingFace/Pollen Robotics ecosystem required more than just uploading code. The entire architecture had to change.
+
+## Two Different Paradigms
+
+What we built (standalone):
+\`\`\`python
+def main():
+    robot = get_robot()  # We manage connection
+    demo = create_gradio_app()
+    demo.launch()  # We control lifecycle
+\`\`\`
+
+What Pollen expects (dashboard plugin):
+\`\`\`python
+class FocusGuardian(ReachyMiniApp):
+    def run(self, reachy_mini, stop_event):
+        # Robot already connected by daemon
+        # Dashboard controls start/stop
+        while not stop_event.is_set():
+            # Do stuff with reachy_mini
+\`\`\`
+
+The key insight: apps in the Reachy Mini ecosystem are **plugins**, not standalone applications.
+
+## The Refactor
+
+Created new package structure with pyproject.toml, moved to ReachyMiniApp inheritance, added stop_event handling for clean shutdown.
+
+## The Publishing Moment
+
+\`\`\`python
+from huggingface_hub import HfApi
+api = HfApi()
+api.upload_folder(
+    folder_path="./focus-guardian-hf",
+    repo_id="RyeCatcher/focus-guardian",
+    repo_type="space"
+)
+\`\`\`
+
+Result: https://huggingface.co/spaces/RyeCatcher/focus-guardian
+
+## Plot Twist: It's a Static Site
+
+First deploy failed with \`ModuleNotFoundError: No module named 'reachy_mini'\`. Of course — the SDK runs locally where the robot is, not on HF servers!
+
+Fixed by changing \`sdk: gradio\` to \`sdk: static\`. The Space is a *distribution point* (landing page + pip install source), not a running app.
+
+## Lesson Learned
+
+HuggingFace Spaces for Reachy Mini apps serve two purposes: (1) discovery/landing page, (2) pip-installable package. The actual app runs locally.
+    `.trim(),
+    tags: ["apps", "huggingface", "ecosystem", "architecture"],
+    mood: "win",
+    readingTime: 4,
+    linkedTimeline: ["huggingface-publish"],
+  },
+  {
+    slug: "first-boot",
+    title: "First Physical Robot Boot (with Claude Code)",
+    date: "2025-12-20",
+    summary:
+      "45 minutes from 'help me get it running' to a talking robot. Real-time debugging with an AI pair programmer.",
+    content: `
+Built my Reachy Mini Lite overnight. Woke up, plugged it in via USB, and asked Claude Code for help getting it running. What followed was a real-time debugging session that showcases how AI-assisted development actually works.
+
+## The Problem: Stuck in Simulation Mode
+
+I had been running the simulator the day before. When I connected the physical robot, the daemon was still configured for simulation mode (\`--sim\` flag). The robot was physically connected but the software wasn't talking to it.
+
+**What I said:** "I built my Reachy light. Can you help me get it running?"
+
+**What Claude did:**
+
+1. Immediately checked USB detection: \`ls /dev/tty.usb* /dev/cu.usb*\`
+   Result: \`/dev/cu.usbmodem5AF71342721\` — the robot was detected!
+
+2. Checked daemon status: \`ps aux | grep reachy\`
+   Found the daemon running with \`--sim --headless\` flags.
+
+3. Diagnosed: Need to switch from sim to hardware mode.
+
+## First Movement: Proof of Life
+
+\`\`\`python
+with ReachyMini(media_backend='no_media') as mini:
+    mini.goto_target(antennas=[0.6, -0.6], duration=0.5)
+    time.sleep(0.6)
+    mini.goto_target(antennas=[-0.6, 0.6], duration=0.5)
+\`\`\`
+
+The moment those antennas wiggled for the first time. Months of anticipation, reduced to a half-second of servo movement. It worked.
+
+## The Claude Code Advantage
+
+1. **Parallel investigation:** USB detection, daemon status, and doc search simultaneously
+2. **Code reading:** Actually read the conversation app source to understand API key validation
+3. **Security awareness:** Stored API key in Keychain, not plain text
+4. **Documentation:** Created this entry while working
+
+This wasn't just "robot works" — it was a demonstration of AI-assisted hardware debugging.
+    `.trim(),
+    tags: ["hardware", "debugging", "claude-code", "breakthrough"],
+    mood: "win",
+    readingTime: 5,
+    linkedTimeline: ["first-physical-boot"],
+  },
+  {
     slug: "first-day",
     title: "Day One: Setting Up the Documentation Site",
-    date: "2024-12-21",
+    date: "2025-12-21",
     summary:
       "Launched runreachyrun.com to document the Reachy Mini build. Built with Next.js, Tailwind, and Claude Code. The meta-narrative begins.",
     content: `
@@ -35,7 +149,7 @@ Need to add the journal section (you're reading the first entry), GitHub integra
   {
     slug: "first-movement",
     title: "First Successful Coordinated Movement",
-    date: "2024-12-16",
+    date: "2025-12-16",
     summary:
       "After 3 hours of coordinate system confusion, Reachy finally moved the way I intended. The breakthrough moment.",
     content: `
@@ -83,7 +197,7 @@ Always verify coordinate systems empirically. Documentation can be ambiguous. Se
   {
     slug: "camera-debugging",
     title: "Camera Integration: A Dead End (For Now)",
-    date: "2024-12-17",
+    date: "2025-12-17",
     summary:
       "Attempted to integrate head pose detection via the robot's camera. Hit a wall with headless mode. Parking this for later.",
     content: `
@@ -135,7 +249,7 @@ Frustrated but realistic. Not every session ends with a win. Documenting the dea
   {
     slug: "focus-guardian-prd",
     title: "Focus Guardian: The Concept",
-    date: "2024-12-18",
+    date: "2025-12-18",
     summary:
       "Brainstorming session for a productivity app. Reachy as a body double that provides gentle accountability.",
     content: `
@@ -186,7 +300,7 @@ Writing a proper PRD and starting the Gradio scaffold.
   {
     slug: "simulation-setup",
     title: "MuJoCo Simulation: Now We're Cooking",
-    date: "2024-12-14",
+    date: "2025-12-14",
     summary:
       "Got the physics simulation running in headless mode. I can now develop without the physical robot.",
     content: `
@@ -244,7 +358,7 @@ Productive. Having the simulation layer means I can move faster on software with
   {
     slug: "dj-reactor-start",
     title: "DJ Reactor: Making Reachy Dance",
-    date: "2024-12-20",
+    date: "2025-12-20",
     summary:
       "Started work on a music-reactive app. Reachy will respond to beats with synchronized movements.",
     content: `

@@ -139,7 +139,7 @@ CELEBRATION_INTENSITY = "medium"  # low, medium, high`,
       "Head pose detection is surprisingly sensitive to lighting conditions",
     ],
 
-    lastUpdated: "2024-12-21",
+    lastUpdated: "2025-12-21",
   },
 
   {
@@ -280,7 +280,7 @@ BEAT_SYNC = True`,
       "The antenna waggle is the secret weapon — it's expressive with minimal motor wear",
     ],
 
-    lastUpdated: "2024-12-20",
+    lastUpdated: "2025-12-20",
   },
 
   {
@@ -381,7 +381,7 @@ cat docs/roadmap/companion/00-vision.md`,
       "Expression previews are essential — users want to see before they trigger",
     ],
 
-    lastUpdated: "2024-12-19",
+    lastUpdated: "2025-12-19",
   },
 ];
 

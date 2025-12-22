@@ -11,6 +11,12 @@ import { appsData } from "@/content/apps/data";
 
 const upcomingIdeas = [
   {
+    title: "Reachy RAG",
+    description:
+      "RAG-powered knowledge base for Reachy. Ask questions about the SDK, troubleshooting, or project history. Uses vector search over documentation and session logs.",
+    tags: ["rag", "llm", "knowledge-base", "vector-search"],
+  },
+  {
     title: "Reachy Talks",
     description:
       "Voice-activated conversation with LLM integration. Ask Reachy questions, get animated responses.",

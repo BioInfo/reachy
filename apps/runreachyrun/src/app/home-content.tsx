@@ -288,7 +288,7 @@ export function HomeContent({ recentTimeline }: HomeContentProps) {
                     . This is the robotics spinoff — same voice, more servos.
                   </p>
                   <a
-                    href="https://claude.ai/download"
+                    href="https://www.anthropic.com/claude-code"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm font-mono text-[var(--accent-amber)] hover:text-[var(--accent-amber-dim)] transition-colors"

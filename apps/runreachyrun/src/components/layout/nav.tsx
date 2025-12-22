@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { SignalBadge } from "@/components/ui/signal-badge";
+import { SearchDialog } from "@/components/search/search-dialog";
+import { timelineData } from "@/content/timeline/data";
+import { journalEntries } from "@/content/journal/data";
 
 const navItems = [
   { label: "Timeline", href: "/timeline" },
@@ -17,6 +20,20 @@ const navItems = [
 export function Nav() {
   const pathname = usePathname();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isSearchOpen, setIsSearchOpen] = useState(false);
+
+  // Global keyboard shortcut (Cmd+K / Ctrl+K)
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        setIsSearchOpen(true);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b border-[var(--border-subtle)] bg-[var(--bg-primary)]/80 backdrop-blur-md">
@@ -67,8 +84,32 @@ export function Nav() {
           })}
         </div>
 
-        {/* Right side: Status + Mobile Menu Button */}
+        {/* Right side: Search + Status + Mobile Menu Button */}
         <div className="flex items-center gap-3">
+          {/* Search Button */}
+          <button
+            onClick={() => setIsSearchOpen(true)}
+            className="hidden sm:flex items-center gap-2 px-3 py-1.5 bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg text-[var(--text-muted)] hover:text-[var(--text-primary)] hover:border-[var(--border-hover)] transition-colors"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <circle cx="11" cy="11" r="8" />
+              <path d="m21 21-4.3-4.3" />
+            </svg>
+            <span className="font-mono text-xs">Search</span>
+            <kbd className="ml-1 px-1.5 py-0.5 bg-[var(--bg-secondary)] text-[var(--text-muted)] text-xs font-mono rounded">
+              ⌘K
+            </kbd>
+          </button>
+
           <SignalBadge variant="cyan" pulse className="hidden sm:inline-flex">
             building
           </SignalBadge>
@@ -146,6 +187,14 @@ export function Nav() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Search Dialog */}
+      <SearchDialog
+        isOpen={isSearchOpen}
+        onClose={() => setIsSearchOpen(false)}
+        timelineNodes={timelineData}
+        journalEntries={journalEntries}
+      />
     </header>
   );
 }

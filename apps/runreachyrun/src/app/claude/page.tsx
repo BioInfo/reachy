@@ -26,6 +26,78 @@ interface ClaudeSession {
 
 const sessions: ClaudeSession[] = [
   {
+    id: "hardware-debugging",
+    date: "2025-12-20",
+    goal: "Get physical Reachy Mini running from scratch",
+    outcome: "success",
+    summary:
+      "45 minutes from 'help me get it running' to a talking robot. Debugged sim-vs-hardware daemon modes, serial port locking, and API key storage in real-time.",
+    prompts: [
+      {
+        prompt: "I built my Reachy light. Can you help me get it running?",
+        insight: "Starting with broad requests lets Claude investigate systematically — USB detection, daemon status, then targeted fixes.",
+      },
+      {
+        prompt: "The conversation app won't accept my API key even though curl validates it.",
+        insight: "Claude traced the issue through source code: apps installed in sim mode don't carry over. The key was valid; the app needed reinstalling.",
+      },
+    ],
+    learnings: [
+      "Simulation and hardware modes are separate contexts — apps and configs don't carry over",
+      "Claude can read SDK source code to understand why something is failing",
+      "Having an AI that executes commands while explaining what it's looking for is powerful for hardware debugging",
+    ],
+    linkedFeature: "Physical Robot",
+  },
+  {
+    id: "huggingface-ecosystem",
+    date: "2025-12-21",
+    goal: "Publish Focus Guardian to HuggingFace Spaces",
+    outcome: "success",
+    summary:
+      "Discovered the Pollen Robotics ecosystem expects dashboard plugins, not standalone apps. Refactored to ReachyMiniApp pattern and learned Spaces serve as distribution points, not runtime environments.",
+    prompts: [
+      {
+        prompt: "How do I get Focus Guardian into the Pollen Robotics app store?",
+        insight: "The question revealed an architecture mismatch. Claude explained the ReachyMiniApp pattern: apps receive pre-initialized robots and respect stop_event.",
+      },
+      {
+        prompt: "Deploy failed with 'No module named reachy_mini' — the SDK isn't on HuggingFace servers.",
+        insight: "Spaces for Reachy apps are static landing pages + pip install sources, not running apps. Changed sdk: gradio to sdk: static.",
+      },
+    ],
+    learnings: [
+      "Ecosystem integration often requires architectural changes, not just deployment",
+      "Dashboard plugins vs standalone apps is a fundamental paradigm difference",
+      "HuggingFace Spaces can serve as package distribution even without runtime execution",
+    ],
+    linkedFeature: "HuggingFace Integration",
+  },
+  {
+    id: "dj-reactor-audio",
+    date: "2025-12-20",
+    goal: "Build real-time audio-reactive robot movements",
+    outcome: "success",
+    summary:
+      "Created DJ Reactor with 7 genre presets. Claude designed the audio pipeline architecture with FFT analysis, beat detection, and movement mapping running in parallel threads.",
+    prompts: [
+      {
+        prompt: "How do I process audio in real-time without blocking the robot control loop?",
+        insight: "Claude proposed buffered FFT with separate threads for audio capture, analysis, and robot commands. The pipeline prevents jitter.",
+      },
+      {
+        prompt: "Make the movements feel natural, not jerky.",
+        insight: "Added movement smoothing, anticipation (move slightly before the beat), and randomization. Each genre preset defines its own movement personality.",
+      },
+    ],
+    learnings: [
+      "Real-time audio requires careful buffer sizing — too small misses beats, too large adds latency",
+      "Genre-specific movement presets make the same beat detection feel completely different",
+      "The antenna waggle is the secret weapon — expressive with minimal motor wear",
+    ],
+    linkedFeature: "DJ Reactor",
+  },
+  {
     id: "design-system",
     date: "2025-12-21",
     goal: "Create a unique visual identity for runreachyrun.com",
@@ -417,7 +489,7 @@ export default function ClaudePage() {
               Want to try Claude Code yourself?
             </p>
             <a
-              href="https://claude.ai/download"
+              href="https://www.anthropic.com/claude-code"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 px-5 py-2.5 bg-[var(--accent-amber)] text-[var(--bg-primary)] font-mono text-sm rounded-lg hover:opacity-90 transition-opacity"
