@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Nav } from "@/components/layout/nav";
 import { Footer } from "@/components/layout/footer";
 import { SignalBadge } from "@/components/ui/signal-badge";
+import { GiscusComments } from "@/components/blog/giscus-comments";
 import { getPostBySlug, getAllSlugs } from "@/content/blog/data";
 
 // Generate static paths for all blog posts
@@ -104,8 +105,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
             <BlogContent content={post.content} />
           </div>
 
+          {/* Comments */}
+          <GiscusComments className="mt-16 pt-8 border-t border-[var(--border-subtle)]" />
+
           {/* Footer */}
-          <footer className="mt-16 pt-8 border-t border-[var(--border-subtle)]">
+          <footer className="mt-12 pt-8 border-t border-[var(--border-subtle)]">
             <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
               <Link
                 href="/blog"
