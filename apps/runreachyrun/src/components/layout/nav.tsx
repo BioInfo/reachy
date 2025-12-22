@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import { SignalBadge } from "@/components/ui/signal-badge";
@@ -41,13 +42,17 @@ export function Nav() {
         {/* Logo */}
         <Link href="/" className="flex items-center gap-2 sm:gap-3 group">
           <motion.div
-            className="w-8 h-8 rounded-full bg-gradient-to-br from-[var(--accent-cyan)] to-[var(--accent-cyan-dim)] flex items-center justify-center"
+            className="w-8 h-8 rounded-lg overflow-hidden"
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
           >
-            <span className="text-[var(--bg-primary)] font-mono font-bold text-sm">
-              R
-            </span>
+            <Image
+              src="/logo.png"
+              alt="runreachyrun"
+              width={32}
+              height={32}
+              className="w-full h-full object-cover"
+            />
           </motion.div>
           <span className="font-mono text-base sm:text-lg font-medium text-[var(--text-primary)] group-hover:text-[var(--accent-cyan)] transition-colors">
             runreachyrun
