@@ -72,8 +72,10 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    // Return more specific error for debugging
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to process chat request" },
+      { error: `Chat error: ${errorMessage}` },
       { status: 500 }
     );
   }
