@@ -10,6 +10,12 @@ import { Card } from "@/components/ui/card";
 import { SignalLine } from "@/components/ui/signal-line";
 import { Icon } from "@/components/ui/icon";
 
+interface CodeSnippet {
+  language: string;
+  code: string;
+  description?: string;
+}
+
 interface ClaudeSession {
   id: string;
   date: string;
@@ -19,7 +25,9 @@ interface ClaudeSession {
   prompts?: {
     prompt: string;
     insight: string;
+    code?: CodeSnippet;
   }[];
+  codeSnippets?: CodeSnippet[];
   learnings?: string[];
   linkedFeature?: string;
 }
@@ -36,11 +44,32 @@ const sessions: ClaudeSession[] = [
       {
         prompt: "I built my Reachy light. Can you help me get it running?",
         insight: "Starting with broad requests lets Claude investigate systematically — USB detection, daemon status, then targeted fixes.",
+        code: {
+          language: "bash",
+          code: `# Claude's diagnostic sequence
+ls /dev/tty.usb* /dev/cu.usb*
+# Found: /dev/cu.usbmodem5AF71342721
+
+ps aux | grep "reachy_mini.daemon"
+# Found running with --sim flag - that's the problem!`,
+          description: "Real-time hardware diagnostics"
+        }
       },
       {
         prompt: "The conversation app won't accept my API key even though curl validates it.",
         insight: "Claude traced the issue through source code: apps installed in sim mode don't carry over. The key was valid; the app needed reinstalling.",
       },
+    ],
+    codeSnippets: [
+      {
+        language: "python",
+        code: `# First movement - proof of life
+with ReachyMini(media_backend='no_media') as mini:
+    mini.goto_target(antennas=[0.6, -0.6], duration=0.5)
+    time.sleep(0.6)
+    mini.goto_target(antennas=[-0.6, 0.6], duration=0.5)`,
+        description: "The moment the robot first moved"
+      }
     ],
     learnings: [
       "Simulation and hardware modes are separate contexts — apps and configs don't carry over",
@@ -60,6 +89,22 @@ const sessions: ClaudeSession[] = [
       {
         prompt: "How do I get Focus Guardian into the Pollen Robotics app store?",
         insight: "The question revealed an architecture mismatch. Claude explained the ReachyMiniApp pattern: apps receive pre-initialized robots and respect stop_event.",
+        code: {
+          language: "python",
+          code: `# Before: standalone app
+def main():
+    robot = get_robot()  # We manage connection
+    demo = create_gradio_app()
+    demo.launch()  # We control lifecycle
+
+# After: dashboard plugin
+class FocusGuardian(ReachyMiniApp):
+    def run(self, reachy_mini, stop_event):
+        # Robot already connected by daemon
+        while not stop_event.is_set():
+            # Do stuff with reachy_mini`,
+          description: "Architecture paradigm shift"
+        }
       },
       {
         prompt: "Deploy failed with 'No module named reachy_mini' — the SDK isn't on HuggingFace servers.",
@@ -84,6 +129,28 @@ const sessions: ClaudeSession[] = [
       {
         prompt: "How do I process audio in real-time without blocking the robot control loop?",
         insight: "Claude proposed buffered FFT with separate threads for audio capture, analysis, and robot commands. The pipeline prevents jitter.",
+        code: {
+          language: "python",
+          code: `# Audio pipeline architecture
+class AudioAnalyzer:
+    def __init__(self):
+        self.buffer = np.zeros(BUFFER_SIZE)
+        self.beat_detected = threading.Event()
+
+    def analyze_loop(self):
+        while self.running:
+            chunk = self.stream.read(CHUNK)
+            self.buffer = np.roll(self.buffer, -CHUNK)
+            self.buffer[-CHUNK:] = chunk
+
+            # FFT analysis
+            fft = np.abs(np.fft.rfft(self.buffer))
+            bass = np.mean(fft[BASS_RANGE])
+
+            if bass > self.threshold:
+                self.beat_detected.set()`,
+          description: "Thread-safe audio processing"
+        }
       },
       {
         prompt: "Make the movements feel natural, not jerky.",
@@ -220,6 +287,44 @@ const stats = {
   learnings: sessions.reduce((acc, s) => acc + (s.learnings?.length || 0), 0),
 };
 
+function CodeBlock({ snippet }: { snippet: CodeSnippet }) {
+  const [copied, setCopied] = useState(false);
+
+  const copyToClipboard = () => {
+    navigator.clipboard.writeText(snippet.code);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  return (
+    <div className="mt-3 rounded-lg overflow-hidden border border-[var(--border-subtle)]">
+      <div className="flex items-center justify-between px-3 py-1.5 bg-[var(--bg-tertiary)] border-b border-[var(--border-subtle)]">
+        <div className="flex items-center gap-2">
+          <span className="font-mono text-xs text-[var(--accent-cyan)]">
+            {snippet.language}
+          </span>
+          {snippet.description && (
+            <span className="text-xs text-[var(--text-muted)]">
+              — {snippet.description}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={copyToClipboard}
+          className="text-xs font-mono text-[var(--text-muted)] hover:text-[var(--accent-cyan)] transition-colors"
+        >
+          {copied ? "copied!" : "copy"}
+        </button>
+      </div>
+      <pre className="p-3 bg-[var(--bg-secondary)] overflow-x-auto">
+        <code className="font-mono text-xs text-[var(--text-secondary)] whitespace-pre">
+          {snippet.code}
+        </code>
+      </pre>
+    </div>
+  );
+}
+
 function SessionCard({ session }: { session: ClaudeSession }) {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -279,7 +384,7 @@ function SessionCard({ session }: { session: ClaudeSession }) {
                   <p className="text-xs font-mono text-[var(--text-muted)] mb-3">
                     key prompts & insights
                   </p>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {session.prompts.map((p, i) => (
                       <div
                         key={i}
@@ -291,7 +396,21 @@ function SessionCard({ session }: { session: ClaudeSession }) {
                         <p className="text-xs text-[var(--text-secondary)]">
                           {p.insight}
                         </p>
+                        {p.code && <CodeBlock snippet={p.code} />}
                       </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {session.codeSnippets && session.codeSnippets.length > 0 && (
+                <div>
+                  <p className="text-xs font-mono text-[var(--text-muted)] mb-3">
+                    code from this session
+                  </p>
+                  <div className="space-y-3">
+                    {session.codeSnippets.map((snippet, i) => (
+                      <CodeBlock key={i} snippet={snippet} />
                     ))}
                   </div>
                 </div>
