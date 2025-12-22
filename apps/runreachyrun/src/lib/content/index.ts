@@ -334,27 +334,13 @@ import { timelineData, getTimelineSorted as getStaticTimelineSorted } from "@/co
 import { journalEntries, getEntriesSorted as getStaticEntriesSorted } from "@/content/journal/data";
 
 /**
- * Get all timeline nodes, preferring devlog content
+ * Get all timeline nodes, using static data as authoritative source
+ * (static data has curated commits and content)
  */
 export async function getAllTimelineNodes(): Promise<TimelineNode[]> {
-  if (!devlogExists()) {
-    return getStaticTimelineSorted();
-  }
-
-  try {
-    const devlogNodes = await getTimelineFromDevlog();
-
-    // If we got content from devlog, use it
-    if (devlogNodes.length > 0) {
-      return devlogNodes;
-    }
-
-    // Fall back to static data
-    return getStaticTimelineSorted();
-  } catch (error) {
-    console.warn("Failed to read devlog timeline, using static data:", error);
-    return getStaticTimelineSorted();
-  }
+  // Use static data as the authoritative source for timeline
+  // Static data has correct commit hashes and curated content
+  return getStaticTimelineSorted();
 }
 
 /**
