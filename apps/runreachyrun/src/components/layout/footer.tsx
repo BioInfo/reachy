@@ -122,7 +122,16 @@ export function Footer() {
         <SignalLine className="my-8" />
 
         <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm text-[var(--text-muted)]">
-          <p>&copy; {currentYear} Justin Johnson. All rights reserved.</p>
+          <div className="flex items-center gap-4">
+            <p>&copy; {currentYear} Justin Johnson. All rights reserved.</p>
+            <span className="hidden md:inline text-[var(--border-subtle)]">|</span>
+            <a
+              href="/privacy"
+              className="hover:text-[var(--text-secondary)] transition-colors"
+            >
+              Privacy & Cookies
+            </a>
+          </div>
           <p className="font-mono text-xs">
             Built with Next.js, Tailwind, and{" "}
             <span className="text-[var(--accent-cyan)]">Claude Code</span>

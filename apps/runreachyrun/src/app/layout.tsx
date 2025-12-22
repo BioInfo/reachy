@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ThemeProvider, ThemeScript } from "@/components/theme";
 import { ChatProvider, ChatWidget } from "@/components/chat";
+import { GoogleAnalytics, CookieConsent } from "@/components/analytics";
 import "./globals.css";
 
 const inter = Inter({
@@ -75,6 +76,7 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${jetbrainsMono.variable} antialiased`}
       >
+        <GoogleAnalytics />
         <ThemeScript />
         <ThemeProvider>
           <ChatProvider>
@@ -82,6 +84,7 @@ export default function RootLayout({
             <ChatWidget />
           </ChatProvider>
         </ThemeProvider>
+        <CookieConsent />
       </body>
     </html>
   );
