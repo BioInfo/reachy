@@ -344,35 +344,22 @@ export async function getAllTimelineNodes(): Promise<TimelineNode[]> {
 }
 
 /**
- * Get all journal entries, preferring devlog content
+ * Get all journal entries, using static data as authoritative source
+ * (static data has correct slugs and curated content)
  */
 export async function getAllJournalEntries(): Promise<JournalEntry[]> {
-  if (!devlogExists()) {
-    return getStaticEntriesSorted();
-  }
-
-  try {
-    const devlogEntries = await getJournalFromDevlog();
-
-    // If we got content from devlog, use it
-    if (devlogEntries.length > 0) {
-      return devlogEntries;
-    }
-
-    // Fall back to static data
-    return getStaticEntriesSorted();
-  } catch (error) {
-    console.warn("Failed to read devlog journal, using static data:", error);
-    return getStaticEntriesSorted();
-  }
+  // Use static data as the authoritative source for journal
+  // Static data has correct slugs that match URLs
+  return getStaticEntriesSorted();
 }
 
 /**
  * Get a single journal entry by slug
  */
 export async function getJournalEntryBySlug(slug: string): Promise<JournalEntry | undefined> {
-  const entries = await getAllJournalEntries();
-  return entries.find((e) => e.slug === slug);
+  // Import directly from static data for efficiency
+  const { getEntryBySlug } = await import("@/content/journal/data");
+  return getEntryBySlug(slug);
 }
 
 /**

@@ -63,55 +63,6 @@ export default function AppsPage() {
             </p>
           </motion.div>
 
-          {/* Featured HuggingFace Space */}
-          <motion.section
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.4, delay: 0.1 }}
-            className="mb-16"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-xl font-mono font-medium text-[var(--text-primary)]">
-                Try it Live
-              </h2>
-              <SignalBadge variant="success" pulse>
-                HuggingFace
-              </SignalBadge>
-            </div>
-            <Card className="overflow-hidden">
-              <div className="p-4 border-b border-[var(--border-subtle)] flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="text-[var(--accent-amber)]">
-                    <Icon name="Music" size={20} strokeWidth={1.5} />
-                  </div>
-                  <div>
-                    <h3 className="font-medium text-[var(--text-primary)]">DJ Reactor</h3>
-                    <p className="text-xs text-[var(--text-muted)]">Reachy reacts to your music</p>
-                  </div>
-                </div>
-                <a
-                  href="https://huggingface.co/spaces/RyeCatcher/dj-reactor"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs font-mono text-[var(--text-muted)] hover:text-[var(--accent-cyan)] transition-colors"
-                >
-                  Open in new tab &rarr;
-                </a>
-              </div>
-              <div className="relative bg-[var(--bg-tertiary)]">
-                <iframe
-                  src="https://ryecatcher-dj-reactor.hf.space"
-                  frameBorder="0"
-                  width="100%"
-                  height="600"
-                  className="w-full"
-                  allow="microphone"
-                  title="DJ Reactor - HuggingFace Space"
-                />
-              </div>
-            </Card>
-          </motion.section>
-
           {/* Current Apps */}
           <section className="mb-16">
             <h2 className="text-xl font-mono font-medium text-[var(--text-primary)] mb-6">

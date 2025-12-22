@@ -10,7 +10,6 @@ export const appsData: AppPage[] = [
     status: "development",
     icon: "Target",
 
-    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/focus-guardian",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/focus-guardian",
 
     screenshots: [],
@@ -151,7 +150,6 @@ CELEBRATION_INTENSITY = "medium"  # low, medium, high`,
     status: "development",
     icon: "Music",
 
-    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/dj-reactor",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/dj-reactor",
 
     screenshots: [],
@@ -289,10 +287,9 @@ BEAT_SYNC = True`,
     tagline: "The ultimate Reachy control panel",
     description:
       "A comprehensive control interface for your Reachy Mini. Browse and trigger expressions, run demo sequences, configure behaviors, monitor robot status, and customize your robot's personality — all from a clean Gradio interface.",
-    status: "coming-soon",
+    status: "development",
     icon: "Bot",
 
-    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/reachy-companion",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/docs/roadmap/companion",
 
     screenshots: [],
