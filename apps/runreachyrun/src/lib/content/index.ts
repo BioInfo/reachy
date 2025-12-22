@@ -401,6 +401,8 @@ export async function getTimelineNodeById(id: string): Promise<TimelineNode | un
 // BLOG CONTENT
 // =============================================================================
 
+import { blogPosts as staticBlogPosts, getPostsSorted as getStaticPostsSorted } from "@/content/blog/data";
+
 /**
  * Get blog posts from devlog
  */
@@ -424,32 +426,57 @@ export async function getBlogFromDevlog(): Promise<ParsedBlogPost[]> {
 }
 
 /**
+ * Convert static BlogPost to ParsedBlogPost format
+ */
+function staticBlogToParsed(post: typeof staticBlogPosts[0]): ParsedBlogPost {
+  return {
+    title: post.title,
+    status: "ready",
+    content: post.content,
+    rawContent: post.content,
+    source: { path: `static/${post.slug}`, type: "static" },
+  };
+}
+
+/**
  * Get all blog posts, sorted by status (ready > draft > idea)
  */
 export async function getAllBlogPosts(): Promise<ParsedBlogPost[]> {
+  // Start with static blog posts
+  const staticPosts = getStaticPostsSorted().map(staticBlogToParsed);
+
   if (!devlogExists()) {
-    return [];
+    return staticPosts;
   }
 
   try {
-    const posts = await getBlogFromDevlog();
+    const devlogPosts = await getBlogFromDevlog();
+
+    // Combine static and devlog posts, preferring static for duplicates
+    const allPosts = [...staticPosts];
+    for (const post of devlogPosts) {
+      const exists = allPosts.some(p => p.title === post.title);
+      if (!exists) {
+        allPosts.push(post);
+      }
+    }
 
     // Sort by status priority
     const statusPriority: Record<string, number> = {
       ready: 0,
-      draft: 1,
-      idea: 2,
-      published: 3,
+      published: 1,
+      draft: 2,
+      idea: 3,
     };
 
-    posts.sort((a, b) =>
+    allPosts.sort((a, b) =>
       (statusPriority[a.status] || 99) - (statusPriority[b.status] || 99)
     );
 
-    return posts;
+    return allPosts;
   } catch (error) {
-    console.warn("Failed to read blog posts:", error);
-    return [];
+    console.warn("Failed to read blog posts from devlog, using static:", error);
+    return staticPosts;
   }
 }
 
