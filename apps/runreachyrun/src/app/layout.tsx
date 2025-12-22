@@ -15,7 +15,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://runreachyrun.com"),
+  metadataBase: new URL("https://www.runreachyrun.com"),
   title: "runreachyrun — Building a Reachy Mini Lite",
   description:
     "Documenting the journey of building and programming a Reachy Mini Lite robot. Dev journal, build timeline, apps, and experiments.",
