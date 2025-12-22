@@ -3,6 +3,70 @@ import { TimelineNode } from "@/types";
 // Timeline data — real commits linked to GitHub repo
 export const timelineData: TimelineNode[] = [
   {
+    id: "dj-reactor-beat-sync",
+    date: "2025-12-22",
+    title: "DJ Reactor beat synchronization fixed",
+    type: "session",
+    summary:
+      "Robot was just shaking instead of dancing after refactor. Fixed beat_phase calculation so movements actually sync to the music. Now the head dips on beats, body sways with bass, antennas bounce with treble.",
+    content: {
+      claudeSnippet: {
+        prompt: "The robot is just shaking randomly, not dancing to the beat",
+        response:
+          "The issue is the movements aren't synced to actual beats. I'm adding beat_phase (0-1 position in beat cycle) calculated from real beat detection: beat_phase = (time_since_beat / beat_interval) % 1.0. All movements will use beat_phase * 2π for sine wave phase...",
+        context: "Debugging why DJ Reactor lost its groove",
+      },
+    },
+    tags: ["apps", "dj-reactor", "audio", "debugging"],
+  },
+  {
+    id: "rag-system-live",
+    date: "2025-12-22",
+    title: "Zero-cost RAG system deployed",
+    type: "breakthrough",
+    summary:
+      "Built complete RAG system with AI chat, semantic search, and related content suggestions — all at $0/month runtime cost. Pre-computed embeddings at build time, client-side vector search, free-tier LLM.",
+    content: {
+      commits: ["c92e5eb"],
+      claudeSnippet: {
+        prompt: "How does DJ Reactor detect beats?",
+        response:
+          "DJ Reactor uses FFT analysis with ~50ms latency. Audio is captured in a parallel thread, analyzed for frequency bands and beat detection, then movement commands are sent to the robot synchronized to the beat_phase...",
+        context: "Testing the new AI chat feature with a real question",
+      },
+    },
+    tags: ["meta", "ai", "rag", "breakthrough", "claude-code"],
+  },
+  {
+    id: "codebase-consolidation",
+    date: "2025-12-21",
+    title: "Codebase consolidation complete",
+    type: "milestone",
+    summary:
+      "Converted both custom apps (DJ Reactor, Focus Guardian) from prototype to production ReachyMiniApp format. Removed 2,761 lines of prototype code, added 1,889 lines of consolidated packages.",
+    content: {
+      commits: ["a035525"],
+    },
+    tags: ["apps", "infrastructure", "refactoring"],
+  },
+  {
+    id: "dj-reactor-huggingface",
+    date: "2025-12-21",
+    title: "DJ Reactor published to HuggingFace",
+    type: "milestone",
+    summary:
+      "First music-reactive app published! DJ Reactor makes Reachy Mini dance with real-time audio analysis, dramatic body sway, head bob, and BPM-synced movements.",
+    content: {
+      claudeSnippet: {
+        prompt: "Let's get DJ Reactor published to HuggingFace",
+        response:
+          "Converting to ReachyMiniApp format... The app needs to inherit from the base class and use the daemon-managed robot connection. I'll refactor the audio analysis to run in a separate thread...",
+        context: "Publishing the second app to HuggingFace",
+      },
+    },
+    tags: ["apps", "dj-reactor", "huggingface", "milestone"],
+  },
+  {
     id: "huggingface-publish",
     date: "2025-12-21",
     title: "First HuggingFace Space published",

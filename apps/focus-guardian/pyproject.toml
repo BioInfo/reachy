@@ -25,13 +25,15 @@ dependencies = [
     "reachy-mini>=1.0.0",
     "numpy>=1.24.0",
     "gradio>=4.0.0",
+    "mediapipe>=0.10.0",
+    "opencv-python>=4.8.0",
 ]
 
 [project.urls]
 Homepage = "https://huggingface.co/spaces/RyeCatcher/focus-guardian"
 
 [project.entry-points."reachy_mini_apps"]
-reachy_mini_focus_guardian = "reachy_mini_focus_guardian.main:FocusGuardianApp"
+reachy_mini_focus_guardian = "reachy_mini_focus_guardian.main:ReachyMiniFocusGuardian"
 
 [tool.setuptools.packages.find]
 where = ["."]

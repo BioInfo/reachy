@@ -91,7 +91,7 @@ h1 {
     margin: 0 auto;
 }
 
-/* Animated Robot Demo */
+/* Animated Demo Section */
 .demo-section {
     display: flex;
     justify-content: center;
@@ -109,39 +109,100 @@ h1 {
 .robot-icon {
     font-size: 64px;
     margin-bottom: 1.25rem;
-    animation: bounce 1s ease-in-out infinite;
+    animation: focus-bounce 2s ease-in-out infinite;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0) rotate(0deg); }
-    25% { transform: translateY(-8px) rotate(-3deg); }
-    75% { transform: translateY(-8px) rotate(3deg); }
+@keyframes focus-bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
 }
 
-.music-waves {
+/* Pomodoro Timer Animation */
+.timer-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.timer-ring {
+    width: 80px;
+    height: 80px;
+    position: relative;
+}
+
+.timer-ring svg {
+    transform: rotate(-90deg);
+    width: 100%;
+    height: 100%;
+}
+
+.timer-ring circle {
+    fill: none;
+    stroke-width: 4;
+}
+
+.timer-ring .bg {
+    stroke: var(--bg-tertiary);
+}
+
+.timer-ring .progress {
+    stroke: url(#timer-gradient);
+    stroke-linecap: round;
+    stroke-dasharray: 226;
+    stroke-dashoffset: 0;
+    animation: timer-progress 25s linear infinite;
+}
+
+@keyframes timer-progress {
+    0% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 226; }
+}
+
+.timer-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--accent-cyan);
+}
+
+/* Focus Dots Animation */
+.focus-dots {
     display: flex;
     justify-content: center;
-    gap: 6px;
-    height: 40px;
-    align-items: flex-end;
+    gap: 8px;
+    height: 20px;
+    align-items: center;
 }
 
-.music-waves span {
-    width: 6px;
-    background: linear-gradient(180deg, var(--accent-purple), var(--accent-cyan));
-    border-radius: 3px;
-    animation: wave 1.2s ease-in-out infinite;
+.focus-dots span {
+    width: 8px;
+    height: 8px;
+    background: var(--accent-cyan);
+    border-radius: 50%;
+    animation: pulse-dot 1.5s ease-in-out infinite;
 }
 
-.music-waves span:nth-child(1) { animation-delay: 0s; height: 16px; }
-.music-waves span:nth-child(2) { animation-delay: 0.1s; height: 28px; }
-.music-waves span:nth-child(3) { animation-delay: 0.2s; height: 40px; }
-.music-waves span:nth-child(4) { animation-delay: 0.1s; height: 28px; }
-.music-waves span:nth-child(5) { animation-delay: 0s; height: 16px; }
+.focus-dots span:nth-child(1) { animation-delay: 0s; }
+.focus-dots span:nth-child(2) { animation-delay: 0.2s; }
+.focus-dots span:nth-child(3) { animation-delay: 0.4s; }
+.focus-dots span:nth-child(4) { animation-delay: 0.2s; }
+.focus-dots span:nth-child(5) { animation-delay: 0s; }
 
-@keyframes wave {
-    0%, 100% { transform: scaleY(1); }
-    50% { transform: scaleY(0.5); }
+@keyframes pulse-dot {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.4;
+    }
+    50% {
+        transform: scale(1.3);
+        opacity: 1;
+    }
 }
 
 /* Feature Grid - 6 cards, 3x2 on desktop */
@@ -373,52 +434,6 @@ h1 {
     font-size: 1.5rem;
 }
 
-/* Audio Setup */
-.audio-setup {
-    background: var(--bg-secondary);
-    padding: 2rem;
-    border-radius: 16px;
-    margin: 2rem 0;
-    border: 1px solid var(--border-subtle);
-}
-
-.audio-setup h2 {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 1.1rem;
-    margin-bottom: 1rem;
-    color: var(--accent-amber);
-}
-
-.audio-setup > p {
-    color: var(--text-secondary);
-    margin-bottom: 1rem;
-    font-size: 0.95rem;
-}
-
-.audio-setup ol {
-    padding-left: 1.5rem;
-}
-
-.audio-setup li {
-    color: var(--text-secondary);
-    margin: 0.5rem 0;
-    font-size: 0.9rem;
-}
-
-.audio-setup a {
-    color: var(--accent-cyan);
-    text-decoration: none;
-}
-
-.audio-setup a:hover {
-    text-decoration: underline;
-}
-
-.audio-setup strong {
-    color: var(--text-primary);
-    font-weight: 500;
-}
-
 /* About */
 .about {
     padding: 2rem 0;
@@ -439,6 +454,15 @@ h1 {
     margin-bottom: 1rem;
     font-size: 1rem;
     line-height: 1.7;
+}
+
+.about a {
+    color: var(--accent-cyan);
+    text-decoration: none;
+}
+
+.about a:hover {
+    text-decoration: underline;
 }
 
 .about strong {

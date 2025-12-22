@@ -32,7 +32,7 @@ dependencies = [
 Homepage = "https://huggingface.co/spaces/RyeCatcher/dj-reactor"
 
 [project.entry-points."reachy_mini_apps"]
-reachy_mini_dj_reactor = "reachy_mini_dj_reactor.main:DJReactorApp"
+reachy_mini_dj_reactor = "reachy_mini_dj_reactor.main:ReachyMiniDjReactor"
 
 [tool.setuptools.packages.find]
 where = ["."]

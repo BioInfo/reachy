@@ -5,12 +5,8 @@
 numpy>=1.24.0
 sounddevice>=0.4.6
 
-# Audio analysis (beat detection, FFT)
-librosa>=0.10.0
-scipy>=1.10.0
-
 # Web UI
 gradio>=4.0.0
 
-# The reachy_mini SDK should be installed in the parent venv
-# pip install reachy-mini
+# Reachy Mini SDK (install separately or via pyproject.toml)
+# pip install reachy-mini>=1.0.0

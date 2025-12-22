@@ -52,49 +52,49 @@ class GenrePreset:
 GENRE_PRESETS = {
     "rock": GenrePreset(
         name="rock", display_name="Rock",
-        head_bob_amplitude=12.0, head_bob_speed=0.8,
-        body_sway_amplitude=15.0, antenna_amplitude=0.7,
+        head_bob_amplitude=18.0, head_bob_speed=1.0,
+        body_sway_amplitude=70.0, antenna_amplitude=1.0,
         emphasis_style="headbang", movement_smoothing=0.2,
     ),
     "electronic": GenrePreset(
         name="electronic", display_name="Electronic/EDM",
-        head_bob_amplitude=10.0, head_bob_speed=1.0,
-        body_sway_amplitude=25.0, body_sway_speed=0.8,
-        antenna_amplitude=0.6, emphasis_style="nod",
-        movement_smoothing=0.4,
+        head_bob_amplitude=15.0, head_bob_speed=1.0,
+        body_sway_amplitude=75.0, body_sway_speed=1.0,
+        antenna_amplitude=0.9, emphasis_style="nod",
+        movement_smoothing=0.25,
     ),
     "jazz": GenrePreset(
         name="jazz", display_name="Jazz",
-        head_bob_amplitude=5.0, head_bob_speed=1.2,
-        body_sway_amplitude=30.0, body_sway_speed=1.5,
-        antenna_amplitude=0.3, emphasis_style="tilt",
-        movement_smoothing=0.6,
+        head_bob_amplitude=12.0, head_bob_speed=1.2,
+        body_sway_amplitude=80.0, body_sway_speed=1.2,
+        antenna_amplitude=0.7, emphasis_style="tilt",
+        movement_smoothing=0.35,
     ),
     "pop": GenrePreset(
         name="pop", display_name="Pop",
-        head_bob_amplitude=8.0, head_bob_speed=1.0,
-        body_sway_amplitude=20.0, antenna_amplitude=0.5,
-        emphasis_style="nod", movement_smoothing=0.35,
+        head_bob_amplitude=14.0, head_bob_speed=1.0,
+        body_sway_amplitude=70.0, antenna_amplitude=0.8,
+        emphasis_style="nod", movement_smoothing=0.25,
     ),
     "classical": GenrePreset(
         name="classical", display_name="Classical",
-        head_bob_amplitude=3.0, head_bob_speed=1.5,
-        body_sway_amplitude=35.0, body_sway_speed=2.0,
-        antenna_amplitude=0.2, emphasis_style="tilt",
-        movement_smoothing=0.7,
+        head_bob_amplitude=10.0, head_bob_speed=1.5,
+        body_sway_amplitude=85.0, body_sway_speed=1.5,
+        antenna_amplitude=0.6, emphasis_style="tilt",
+        movement_smoothing=0.4,
     ),
     "hiphop": GenrePreset(
         name="hiphop", display_name="Hip-Hop",
-        head_bob_amplitude=10.0, head_bob_speed=0.9,
-        body_sway_amplitude=15.0, antenna_amplitude=0.5,
-        emphasis_style="nod", movement_smoothing=0.3,
+        head_bob_amplitude=16.0, head_bob_speed=0.9,
+        body_sway_amplitude=65.0, antenna_amplitude=0.8,
+        emphasis_style="nod", movement_smoothing=0.2,
     ),
     "chill": GenrePreset(
         name="chill", display_name="Chill/Ambient",
-        head_bob_amplitude=4.0, head_bob_speed=1.5,
-        body_sway_amplitude=25.0, body_sway_speed=2.0,
-        antenna_amplitude=0.2, emphasis_style="tilt",
-        movement_smoothing=0.8,
+        head_bob_amplitude=10.0, head_bob_speed=1.5,
+        body_sway_amplitude=75.0, body_sway_speed=1.5,
+        antenna_amplitude=0.6, emphasis_style="tilt",
+        movement_smoothing=0.45,
     ),
 }
 
@@ -111,7 +111,9 @@ class AudioFeatures:
     treble: float = 0.0
     rms: float = 0.0
     beat_detected: bool = False
+    onset_strength: float = 0.0  # How strong the beat onset is
     bpm: float = 120.0
+    beat_phase: float = 0.0  # 0-1, position within current beat cycle
     is_silent: bool = True
 
 
@@ -136,6 +138,7 @@ class AudioAnalyzer:
         self.beat_times = deque(maxlen=50)
         self.last_beat_time = 0.0
         self.estimated_bpm = 120.0
+        self.beat_interval = 0.5  # seconds between beats (60/120 BPM)
 
         # State
         self.is_running = False
@@ -170,23 +173,31 @@ class AudioAnalyzer:
         # Beat detection with sensitivity
         self.energy_history.append(rms)
         beat_detected = False
+        onset_strength = 0.0
         onset_threshold = 1.1 + (1.0 - self.sensitivity) * 0.5  # Higher sensitivity = lower threshold
         min_interval = 0.2 + (1.0 - self.sensitivity) * 0.2
 
         if len(self.energy_history) >= 3:
             avg_energy = np.mean(list(self.energy_history)[:-1])
             onset = rms / (avg_energy + 1e-10)
+            onset_strength = min(onset / onset_threshold, 2.0)  # Normalized onset strength
             if onset > onset_threshold and (current_time - self.last_beat_time) > min_interval and rms > 0.002:
                 beat_detected = True
                 self.beat_times.append(current_time)
                 self.last_beat_time = current_time
                 self._update_bpm()
 
+        # Calculate beat phase (0-1 position within beat cycle)
+        time_since_beat = current_time - self.last_beat_time
+        beat_phase = (time_since_beat / self.beat_interval) % 1.0 if self.beat_interval > 0 else 0.0
+
         self.latest_features = AudioFeatures(
             bass=bass, mid=mid, treble=treble,
             rms=min(rms * 10, 1.0),
             beat_detected=beat_detected,
+            onset_strength=onset_strength,
             bpm=self.estimated_bpm,
+            beat_phase=beat_phase,
             is_silent=is_silent
         )
 
@@ -199,7 +210,9 @@ class AudioAnalyzer:
         median = np.median(intervals)
         valid = [i for i in intervals if 0.5 * median < i < 2 * median]
         if valid:
-            self.estimated_bpm = max(60, min(200, 60.0 / np.mean(valid)))
+            avg_interval = np.mean(valid)
+            self.beat_interval = avg_interval
+            self.estimated_bpm = max(60, min(200, 60.0 / avg_interval))
 
     def start(self):
         """Start audio capture."""
@@ -261,6 +274,8 @@ class DanceController:
         self.smooth_head_z = 0.0
         self.smooth_head_roll = 0.0
         self.smooth_body_yaw = 0.0
+        self.smooth_antenna_l = 0.0
+        self.smooth_antenna_r = 0.0
 
     def update_preset(self, preset: GenrePreset):
         """Change the active genre preset."""
@@ -272,51 +287,57 @@ class DanceController:
 
     def get_movement(self, features: AudioFeatures):
         """Calculate movement based on audio features and genre preset."""
-        self.dance_time += 0.1
+        self.dance_time += 0.1  # For tilt alternation, matches loop rate
         preset = self.preset
 
-        # Groove cycle synced to BPM
-        bpm_factor = features.bpm / 120.0
-        phase = (self.dance_time * preset.head_bob_speed * bpm_factor) % (2 * math.pi)
+        # Use beat_phase (0-1) synced to actual detected beats, convert to radians
+        phase = features.beat_phase * 2 * math.pi
 
-        # Energy scaling
-        energy = max(features.rms, 0.3) * self.intensity
+        # Base energy - always move big, audio makes it bigger
+        base_energy = 0.8 + 0.2 * features.rms  # Always at least 80% movement
+        energy = base_energy * self.intensity
 
-        # Body sway driven by bass
-        body_target = preset.body_sway_amplitude * energy * features.bass * math.sin(phase * preset.body_sway_speed)
+        # BODY SWAY - huge sweeping motion
+        bass_boost = 0.8 + 0.5 * features.bass
+        body_target = preset.body_sway_amplitude * energy * bass_boost * math.sin(phase * preset.body_sway_speed)
 
-        # Head movement
-        head_z_target = preset.head_bob_amplitude * energy * math.sin(phase)
-        head_roll_target = preset.head_bob_amplitude * 2 * energy * features.mid * math.sin(phase)
+        # HEAD MOVEMENT - big dramatic bobbing and rolling
+        mid_boost = 0.7 + 0.6 * features.mid
+        head_z_target = preset.head_bob_amplitude * energy * 1.2 * math.sin(phase * preset.head_bob_speed)
+        head_roll_target = preset.head_bob_amplitude * 2.0 * energy * mid_boost * math.sin(phase * 0.5)
 
-        # Beat-triggered emphasis
+        # Beat-triggered emphasis - really punch those beats
         head_pitch = 0
         if features.beat_detected:
+            strength = max(features.onset_strength, 1.2) * self.intensity
             if preset.emphasis_style == "headbang":
-                head_pitch = -20 * self.intensity
+                head_pitch = -35 * strength
             elif preset.emphasis_style == "nod":
-                head_pitch = -12 * self.intensity
+                head_pitch = -25 * strength
             elif preset.emphasis_style == "tilt":
-                head_roll_target += 15 * self.intensity * (1 if self.dance_time % 2 > 1 else -1)
+                head_roll_target += 30 * strength * (1 if self.dance_time % 2 > 1 else -1)
 
-        # Smoothing
+        # ANTENNAS - super bouncy and expressive
+        treble_boost = 0.6 + 0.6 * features.treble
+        ant_amp = preset.antenna_amplitude * energy * treble_boost * 2.0
+        antenna_l_target = ant_amp * math.sin(phase * 2)
+        antenna_r_target = ant_amp * math.sin(phase * 2 + math.pi)
+
+        # Smoothing - apply to all movements for fluid motion
         smooth = preset.movement_smoothing
         self.smooth_head_z = smooth * self.smooth_head_z + (1 - smooth) * head_z_target
         self.smooth_head_roll = smooth * self.smooth_head_roll + (1 - smooth) * head_roll_target
         self.smooth_body_yaw = smooth * self.smooth_body_yaw + (1 - smooth) * body_target
-
-        # Antennas - treble-driven with variation
-        ant_amp = preset.antenna_amplitude * energy * (0.5 + 0.5 * features.treble)
-        antenna_l = ant_amp * math.sin(phase * 2)
-        antenna_r = ant_amp * math.sin(phase * 2 + math.pi)
+        self.smooth_antenna_l = smooth * self.smooth_antenna_l + (1 - smooth) * antenna_l_target
+        self.smooth_antenna_r = smooth * self.smooth_antenna_r + (1 - smooth) * antenna_r_target
 
         return {
-            'head_z': max(-15, min(15, self.smooth_head_z)),
-            'head_roll': max(-40, min(40, self.smooth_head_roll)),
-            'head_pitch': max(-40, min(40, head_pitch)),
-            'body_yaw': max(-50, min(50, self.smooth_body_yaw)),
-            'antenna_left': max(-0.7, min(0.7, antenna_l)),
-            'antenna_right': max(-0.7, min(0.7, antenna_r)),
+            'head_z': max(-20, min(20, self.smooth_head_z)),
+            'head_roll': max(-45, min(45, self.smooth_head_roll)),
+            'head_pitch': max(-45, min(45, head_pitch)),
+            'body_yaw': max(-55, min(55, self.smooth_body_yaw)),
+            'antenna_left': max(-1.0, min(1.0, self.smooth_antenna_l)),
+            'antenna_right': max(-1.0, min(1.0, self.smooth_antenna_r)),
         }
 
 
@@ -324,7 +345,7 @@ class DanceController:
 # ReachyMiniApp
 # =============================================================================
 
-class DJReactorApp(ReachyMiniApp):
+class ReachyMiniDjReactor(ReachyMiniApp):
     """DJ Reactor - Music visualizer for Reachy Mini."""
 
     custom_app_url: str | None = "http://localhost:7861"
@@ -371,13 +392,13 @@ class DJReactorApp(ReachyMiniApp):
                             head=head_pose,
                             antennas=[movement['antenna_left'], movement['antenna_right']],
                             body_yaw=np.deg2rad(movement['body_yaw']),
-                            duration=0.3,
+                            duration=0.12,
                             method="minjerk"
                         )
                     except Exception as e:
                         logger.debug(f"Movement error: {e}")
 
-            time.sleep(0.1)
+            time.sleep(0.1)  # 10fps - let movements complete before next command
 
         # Cleanup
         if self.analyzer:

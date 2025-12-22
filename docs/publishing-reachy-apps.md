@@ -140,11 +140,11 @@ login(token="hf_YOUR_TOKEN", add_to_git_credential=True)
 api = HfApi()
 repo_id = "YourUsername/your-app-name"
 
-# Create the space
+# Create the space (sdk doesn't matter - README.md frontmatter overrides)
 create_repo(
     repo_id=repo_id,
     repo_type="space",
-    space_sdk="gradio",
+    space_sdk="static",  # Use static for distribution-only spaces
     private=False
 )
 
@@ -198,16 +198,51 @@ reachy-mini-app-assistant publish
 To get your app listed in the official Reachy Mini dashboard:
 
 ```bash
-reachy-mini-app-assistant publish --official
+# First, validate your app passes all checks
+reachy-mini-app-assistant check /path/to/your/app
+
+# Then publish with --official flag
+reachy-mini-app-assistant publish /path/to/your/app --official
 ```
 
 This creates a PR to the [pollen-robotics/reachy-mini-official-app-store](https://huggingface.co/datasets/pollen-robotics/reachy-mini-official-app-store) dataset.
 
-**Requirements:**
-- Space must be **public**
-- Include clear description of functionality
-- Follow the ReachyMiniApp pattern
-- Handle `stop_event` for clean shutdown
+### Strict Naming Requirements
+
+The official store enforces specific naming conventions:
+
+| Component | Required Format | Example |
+|-----------|-----------------|---------|
+| Package name | `reachy_mini_{app_name}` | `reachy_mini_focus_guardian` |
+| Class name | `ReachyMini{AppName}` | `ReachyMiniFocusGuardian` |
+| Entry point | `reachy_mini_{app_name}` | `reachy_mini_focus_guardian` |
+
+**pyproject.toml entry point:**
+```toml
+[project.entry-points."reachy_mini_apps"]
+reachy_mini_my_app = "reachy_mini_my_app.main:ReachyMiniMyApp"
+```
+
+**README.md frontmatter must include:**
+```yaml
+tags:
+  - reachy_mini              # Required
+  - reachy_mini_python_app   # Required for Python apps
+  - your_other_tags
+```
+
+### Full Requirements Checklist
+
+- [ ] Space must be **public**
+- [ ] Package name: `reachy_mini_{app_name}`
+- [ ] Class name: `ReachyMini{AppName}` (PascalCase)
+- [ ] Entry point matches package/class naming
+- [ ] README.md includes `reachy_mini` tag
+- [ ] README.md includes `reachy_mini_python_app` tag
+- [ ] `index.html` and `style.css` in root
+- [ ] `__init__.py` in package directory
+- [ ] `main.py` with class inheriting from `ReachyMiniApp`
+- [ ] Handle `stop_event` for clean shutdown
 
 ---
 

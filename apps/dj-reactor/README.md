@@ -7,7 +7,8 @@ sdk: static
 pinned: false
 license: mit
 tags:
-  - reachy-mini
+  - reachy_mini
+  - reachy_mini_python_app
   - robot
   - music
   - visualization

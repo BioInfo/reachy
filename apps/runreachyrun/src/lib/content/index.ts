@@ -334,13 +334,38 @@ import { timelineData, getTimelineSorted as getStaticTimelineSorted } from "@/co
 import { journalEntries, getEntriesSorted as getStaticEntriesSorted } from "@/content/journal/data";
 
 /**
- * Get all timeline nodes, using static data as authoritative source
- * (static data has curated commits and content)
+ * Get all timeline nodes, merging static data with devlog
+ * Static data provides curated commits/content, devlog adds automatic updates
  */
 export async function getAllTimelineNodes(): Promise<TimelineNode[]> {
-  // Use static data as the authoritative source for timeline
-  // Static data has correct commit hashes and curated content
-  return getStaticTimelineSorted();
+  // Start with static data (curated, has commit hashes)
+  const staticNodes = getStaticTimelineSorted();
+  const staticIds = new Set(staticNodes.map((n) => n.id));
+
+  // Add devlog entries that aren't already in static data
+  if (devlogExists()) {
+    try {
+      const devlogNodes = await getTimelineFromDevlog();
+      for (const node of devlogNodes) {
+        // Check if this entry already exists (by ID or similar date+title)
+        const isDuplicate = staticIds.has(node.id) ||
+          staticNodes.some(s =>
+            s.date === node.date &&
+            s.title.toLowerCase().includes(node.title.toLowerCase().split(' ')[0])
+          );
+        if (!isDuplicate) {
+          staticNodes.push(node);
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to read devlog, using static only:", error);
+    }
+  }
+
+  // Re-sort by date descending
+  return staticNodes.sort(
+    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+  );
 }
 
 /**
