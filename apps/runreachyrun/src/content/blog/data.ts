@@ -27,15 +27,19 @@ The daemon (the background service that manages robot communication) was still c
 My prompt was simple: "I built my Reachy light. Can you help me get it running?"
 
 Claude checked USB detection first:
+
 \`\`\`bash
 ls /dev/tty.usb* /dev/cu.usb*
 \`\`\`
+
 Result: \`/dev/cu.usbmodem5AF71342721\`. The robot was detected.
 
 Then daemon status:
+
 \`\`\`bash
 ps aux | grep "reachy_mini.daemon"
 \`\`\`
+
 Found it running with \`--sim --headless --fastapi-port 8000\`. Simulation mode. The diagnosis was immediate: stop the sim daemon, start one for hardware.
 
 ## Serial Port Locking
