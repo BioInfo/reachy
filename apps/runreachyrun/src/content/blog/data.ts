@@ -1,5 +1,48 @@
 import { BlogPost } from "@/types";
 
+// Upcoming/planned blog posts (shown as "On the Writing List")
+export interface UpcomingPost {
+  title: string;
+  status: "idea" | "draft";
+  hook: string;
+  angle?: string;
+  target?: string;
+}
+
+export const upcomingPosts: UpcomingPost[] = [
+  {
+    title: "Zero-Cost RAG: AI Chat Without the Cloud Bill",
+    status: "idea",
+    hook: "Most RAG systems cost hundreds per month. Mine costs exactly $0.",
+    angle: "Technical deep-dive on pre-computed embeddings, client-side vector search, and free-tier LLMs",
+    target: "Run Data Run",
+  },
+  {
+    title: "When Simulation Meets Reality",
+    status: "idea",
+    hook: "Everything worked perfectly in simulation. Then I connected the real robot.",
+    angle: "The gaps between MuJoCo physics and actual servo behavior - what breaks and why",
+  },
+  {
+    title: "Making a Robot Dance: DJ Reactor Deep Dive",
+    status: "idea",
+    hook: "Real-time beat detection with 50ms latency on a $200 robot",
+    angle: "FFT analysis, movement choreography, and why antenna waggles are the secret weapon",
+  },
+  {
+    title: "The Focus Guardian Experiment",
+    status: "idea",
+    hook: "Can a robot help you focus? I built one to find out.",
+    angle: "Body-doubling technique, attention tracking, and the psychology of robot accountability partners",
+  },
+  {
+    title: "Building in Public with Reachy Mini",
+    status: "idea",
+    hook: "Why I'm documenting this journey and what I hope to learn",
+    angle: "The meta-story of using Claude Code to build the documentation system that documents using Claude Code",
+  },
+];
+
 export const blogPosts: BlogPost[] = [
   {
     slug: "first-boot-with-claude",

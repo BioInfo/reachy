@@ -374,7 +374,7 @@ export async function getTimelineNodeById(id: string): Promise<TimelineNode | un
 // BLOG CONTENT
 // =============================================================================
 
-import { blogPosts as staticBlogPosts, getPostsSorted as getStaticPostsSorted } from "@/content/blog/data";
+import { blogPosts as staticBlogPosts, getPostsSorted as getStaticPostsSorted, upcomingPosts } from "@/content/blog/data";
 
 /**
  * Get blog posts from devlog
@@ -442,8 +442,21 @@ export async function getAllBlogPosts(): Promise<BlogPostWithSlug[]> {
   // Start with static blog posts (these are published/ready)
   const staticPosts = getStaticPostsSorted().map(staticBlogToParsed);
 
+  // Add upcoming/idea posts from static data
+  const upcomingBlogPosts: BlogPostWithSlug[] = upcomingPosts.map(post => ({
+    title: post.title,
+    status: post.status,
+    hook: post.hook,
+    angle: post.angle,
+    target: post.target,
+    content: "",
+    rawContent: "",
+    source: { path: "static/upcoming", type: "static" },
+    slug: post.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/-+$/, ''),
+  }));
+
   if (!devlogExists()) {
-    return staticPosts;
+    return [...staticPosts, ...upcomingBlogPosts];
   }
 
   try {
@@ -480,6 +493,14 @@ export async function getAllBlogPosts(): Promise<BlogPostWithSlug[]> {
       idea: 3,
     };
 
+    // Add upcoming posts that aren't already in the list
+    for (const post of upcomingBlogPosts) {
+      const exists = allPosts.some(p => isSamePost(p.title, post.title));
+      if (!exists) {
+        allPosts.push(post);
+      }
+    }
+
     allPosts.sort((a, b) =>
       (statusPriority[a.status] || 99) - (statusPriority[b.status] || 99)
     );
@@ -487,7 +508,7 @@ export async function getAllBlogPosts(): Promise<BlogPostWithSlug[]> {
     return allPosts;
   } catch (error) {
     console.warn("Failed to read blog posts from devlog, using static:", error);
-    return staticPosts;
+    return [...staticPosts, ...upcomingBlogPosts];
   }
 }
 
