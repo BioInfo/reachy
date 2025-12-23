@@ -32,10 +32,16 @@ export function AboutContent() {
         className="prose-custom"
       >
         <div className="flex flex-col md:flex-row gap-8 mb-12">
-          {/* Photo placeholder */}
+          {/* Photo */}
           <div className="flex-shrink-0">
-            <div className="w-32 h-32 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-default)] flex items-center justify-center overflow-hidden">
-              <span className="text-4xl">JJ</span>
+            <div className="w-32 h-32 rounded-xl bg-[var(--bg-tertiary)] border border-[var(--border-default)] overflow-hidden">
+              <Image
+                src="/justin.jpg"
+                alt="Justin Johnson"
+                width={128}
+                height={128}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
 
@@ -144,7 +150,7 @@ export function AboutContent() {
             <span className="text-[var(--text-muted)]">→</span>
           </a>
           <a
-            href="https://twitter.com/JustinJohnson"
+            href="https://twitter.com/bioinfo"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-[var(--text-primary)] bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
@@ -153,7 +159,7 @@ export function AboutContent() {
             <span className="text-[var(--text-muted)]">→</span>
           </a>
           <a
-            href="https://bsky.app/profile/rundatarun.io"
+            href="https://bsky.app/profile/justinhjohnson.com"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-[var(--text-primary)] bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
@@ -162,7 +168,7 @@ export function AboutContent() {
             <span className="text-[var(--text-muted)]">→</span>
           </a>
           <a
-            href="https://www.linkedin.com/in/justinjohnsonbio/"
+            href="https://www.linkedin.com/in/justinhaywardjohnson/"
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2 px-4 py-2 text-sm font-mono text-[var(--text-primary)] bg-[var(--bg-tertiary)] border border-[var(--border-default)] rounded-lg hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-colors"
