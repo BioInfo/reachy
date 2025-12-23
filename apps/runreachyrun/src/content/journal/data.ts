@@ -1,92 +1,34 @@
 import { JournalEntry } from "@/types";
 
+// Auto-generated from devlog/journal — Last synced: 2025-12-23T14:05:48.593Z
+// Run: npm run sync-devlog
 export const journalEntries: JournalEntry[] = [
   {
-    slug: "official-app-store",
-    title: "Official App Store & First Community PR",
-    date: "2025-12-22",
-    summary:
-      "Both apps accepted into the Pollen Robotics app store. Hours later, a community member submitted our first external PR. The open source loop is working.",
-    content: `
-Two milestones in one day that prove the build-in-public approach works.
-
-## Accepted into the Official App Store
-
-After fixing the class naming convention (\`DJReactorApp\` → \`ReachyMiniDjReactor\`), both Focus Guardian and DJ Reactor passed the \`reachy-mini-app-assistant check\` validation.
-
-Submitted to Pollen Robotics. Within hours: accepted.
-
-Now live at: https://huggingface.co/spaces/pollen-robotics/Reachy_Mini#/apps
-
-Anyone with a Reachy Mini can install Focus Guardian or DJ Reactor with one click from their dashboard. The apps I built with Claude Code are now in the official ecosystem.
-
-## First Community Contribution
-
-Same day, a user (@apirrone) reported via HuggingFace Discussion that both apps were failing on install. Class name mismatch — I'd renamed the classes but forgot to update the \`if __name__ == "__main__"\` block.
-
-Within hours, they submitted a PR fixing DJ Reactor.
-
-\`\`\`python
-# Before (broken)
-if __name__ == "__main__":
-    DJReactorApp().wrapped_run()  # Old name
-
-# After (fixed)
-if __name__ == "__main__":
-    ReachyMiniDjReactor().wrapped_run()  # New name
-\`\`\`
-
-Merged it. Applied the same fix to Focus Guardian. Both apps working.
-
-## Why This Matters
-
-Less than 48 hours from app store acceptance to external contribution. The cycle:
-
-1. Build apps with Claude Code
-2. Document everything on runreachyrun.com
-3. Publish to HuggingFace
-4. Get accepted to official store
-5. Community finds bugs
-6. Community fixes bugs
-7. Everyone benefits
-
-This is what building in public enables. The project is real enough that people care to improve it.
-
-## Technical Note
-
-The validation requirements I didn't know about:
-- Class must be \`ReachyMini{AppName}\` not \`{AppName}App\`
-- README needs both \`reachy_mini\` AND \`reachy_mini_python_app\` tags
-- Entry points must match the new class names
-
-Now documented in \`docs/publishing-reachy-apps.md\` so future apps get it right the first time.
-    `.trim(),
-    tags: ["apps", "huggingface", "community", "open-source"],
-    mood: "win",
-    readingTime: 3,
-    linkedTimeline: ["both-apps-accepted-into-official-pollen-robotics-a-20251222", "first-community-contribution-20251222"],
-  },
-  {
-    slug: "huggingface-publish",
-    title: "Publishing to HuggingFace: A Different Paradigm",
+    slug: "publishing-to-huggingface-ecosystem",
+    title: "Publishing to HuggingFace Ecosystem",
     date: "2025-12-21",
-    summary:
-      "Refactored Focus Guardian for the Pollen Robotics ecosystem. Learned the hard way that dashboard plugins work differently than standalone apps.",
-    content: `
-Getting Focus Guardian into the HuggingFace/Pollen Robotics ecosystem required more than just uploading code. The entire architecture had to change.
+    summary: "**Duration:** ~1 hour **Goal:** Get Focus Guardian into the Pollen Robotics app ecosystem",
+    content: `**Duration:** ~1 hour
+**Goal:** Get Focus Guardian into the Pollen Robotics app ecosystem
 
-## Two Different Paradigms
+### The Discovery
 
-What we built (standalone):
+Asked Claude about getting Focus Guardian compatible with the Pollen Robotics app store (https://huggingface.co/spaces/pollen-robotics/Reachy_Mini). Turns out our standalone Gradio app architecture is fundamentally different from what the ecosystem expects.
+
+### Two Different Paradigms
+
+**What we built (Standalone):**
 \`\`\`python
+# Our Focus Guardian
 def main():
     robot = get_robot()  # We manage connection
     demo = create_gradio_app()
     demo.launch()  # We control lifecycle
 \`\`\`
 
-What Pollen expects (dashboard plugin):
+**What Pollen expects (Dashboard Plugin):**
 \`\`\`python
+# ReachyMiniApp pattern
 class FocusGuardian(ReachyMiniApp):
     def run(self, reachy_mini, stop_event):
         # Robot already connected by daemon
@@ -95,425 +37,649 @@ class FocusGuardian(ReachyMiniApp):
             # Do stuff with reachy_mini
 \`\`\`
 
-The key insight: apps in the Reachy Mini ecosystem are **plugins**, not standalone applications.
+The key insight: apps in the Reachy Mini ecosystem are **plugins**, not standalone applications. The daemon manages robot connections. The dashboard manages app lifecycle. Your app just receives a connected robot and a stop signal.
 
-## The Refactor
+### The Refactor
 
-Created new package structure with pyproject.toml, moved to ReachyMiniApp inheritance, added stop_event handling for clean shutdown.
+Created new package structure in \`apps/focus-guardian-hf/\`:
 
-## The Publishing Moment
+\`\`\`
+focus-guardian-hf/
+├── pyproject.toml           # Package config
+├── README.md                # HuggingFace Space metadata
+├── index.html               # Landing page
+├── style.css                # Landing page styles
+└── reachy_mini_focus_guardian/
+    ├── __init__.py
+    └── main.py              # FocusGuardian(ReachyMiniApp)
+\`\`\`
+
+Key changes in \`main.py\`:
+1. Inherit from \`ReachyMiniApp\`
+2. Implement \`run(reachy_mini, stop_event)\` instead of \`main()\`
+3. Use the pre-initialized robot - don't call \`get_robot()\`
+4. Check \`stop_event.is_set()\` in main loop for clean shutdown
+5. Set \`custom_app_url\` to point to Gradio UI running in separate thread
+
+### Publishing Process
 
 \`\`\`python
-from huggingface_hub import HfApi
+from huggingface_hub import login, HfApi, create_repo, upload_folder
+
+login(token="hf_xxx")
 api = HfApi()
-api.upload_folder(
-    folder_path="./focus-guardian-hf",
-    repo_id="RyeCatcher/focus-guardian",
-    repo_type="space"
-)
+
+create_repo("RyeCatcher/focus-guardian", repo_type="space", space_sdk="gradio")
+api.upload_folder(folder_path="./focus-guardian-hf", repo_id="RyeCatcher/focus-guardian", repo_type="space")
 \`\`\`
 
 Result: https://huggingface.co/spaces/RyeCatcher/focus-guardian
 
-## Plot Twist: It's a Static Site
+### Not Submitted to Official Store Yet
 
-First deploy failed with \`ModuleNotFoundError: No module named 'reachy_mini'\`. Of course — the SDK runs locally where the robot is, not on HF servers!
+To get listed in the official app store, need to run:
+\`\`\`bash
+reachy-mini-app-assistant publish --official
+\`\`\`
 
-Fixed by changing \`sdk: gradio\` to \`sdk: static\`. The Space is a *distribution point* (landing page + pip install source), not a running app.
+This creates a PR to \`pollen-robotics/reachy-mini-official-app-store\` dataset. Holding off until the app is more polished.
 
-## Lesson Learned
+### Documentation Created
 
-HuggingFace Spaces for Reachy Mini apps serve two purposes: (1) discovery/landing page, (2) pip-installable package. The actual app runs locally.
-    `.trim(),
-    tags: ["apps", "huggingface", "ecosystem", "architecture"],
-    mood: "win",
-    readingTime: 4,
-    linkedTimeline: ["huggingface-publish"],
+Wrote \`docs/publishing-reachy-apps.md\` covering:
+- ReachyMiniApp pattern
+- Package structure
+- Publishing methods (Python API, Git, official assistant)
+- Common issues and solutions
+
+### Lessons Learned
+
+1. **Ecosystem integration requires architectural changes.** Can't just push a standalone app and expect it to work.
+
+2. **The dashboard is the control plane.** Apps are plugins that respond to start/stop signals. Robot connection is shared infrastructure.
+
+3. **custom_app_url bridges the gap.** If your app has a web UI (Gradio, etc.), run it in a thread and point \`custom_app_url\` to it.
+
+4. **huggingface_hub Python API > CLI.** The CLI's interactive login doesn't work in non-TTY contexts. Python API with explicit token is more reliable.
+
+5. **The refactor is valuable regardless of ecosystem.** Clean separation of concerns: robot control loop vs UI vs business logic.
+
+### Post-Publish Fixes
+
+**Problem 1: Runtime Error**
+\`\`\`
+ModuleNotFoundError: No module named 'reachy_mini'
+\`\`\`
+
+The Space tried to run the Python code on HuggingFace's servers. But \`reachy-mini\` SDK only works locally where the robot is connected.
+
+**Fix:** Changed \`sdk: gradio\` to \`sdk: static\` in README frontmatter. The Space now serves static HTML instead of trying to execute Python.
+
+**Problem 2: Broken Links & Emojis**
+
+Footer had links to pages that don't exist yet. Also used emojis which we're avoiding.
+
+**Fix:** Redesigned entire landing page:
+- 6 feature cards with inline SVG icons (Lucide icons converted to SVG)
+- Numbered install steps
+- "How It Works" workflow diagram
+- Valid footer links: runreachyrun.com | HuggingFace | @bioinfo | Reachy Mini
+- Design matches runreachyrun.com (dark theme, cyan/amber accents, JetBrains Mono)
+
+**Key Insight:** HuggingFace Spaces for Reachy Mini apps are *distribution points*, not running apps:
+1. Landing page for discovery
+2. \`pip install git+https://huggingface.co/spaces/...\` for installation
+3. Actual execution happens locally
+
+Documented standard layout in \`docs/publishing-reachy-apps.md\`. Reference implementation at \`apps/focus-guardian-hf/\`.
+
+---`,
+    tags: ["hardware", "software", "claude-code", "focus-guardian", "huggingface", "infrastructure"],
+    mood: "neutral",
+    readingTime: 3,
+    linkedTimeline: [],
   },
   {
-    slug: "first-boot",
-    title: "First Physical Robot Boot (with Claude Code)",
+    slug: "runreachyrun-com-initial-setup",
+    title: "runreachyrun.com Initial Setup",
+    date: "2025-12-21",
+    summary: "**Duration:** ~45 minutes **Goal:** Set up the public documentation site for the Reachy build journey",
+    content: `**Duration:** ~45 minutes
+**Goal:** Set up the public documentation site for the Reachy build journey
+
+### Context
+
+We need a place to share the Reachy Mini journey publicly. Not just a blog — a living documentation of every session, milestone, failure, and app. Something that captures the build-in-public spirit while being genuinely useful for others building with Reachy or working with Claude Code.
+
+### Design Exploration
+
+Brainstormed three distinct visual directions:
+
+**1. Transmission**
+Signal/waveform aesthetic. Dark with electric cyan. Data being decoded. Timeline as waveform with amplitude = significance. The robot is sending transmissions as it comes to life.
+
+**2. Exposed Circuitry**
+PCB traces, current flowing. Follow connections between ideas. Each node shows its wiring diagram. Technical, connected, systematic.
+
+**3. Dual Presence**
+Two visible authors (human/AI). Warm colors for human decisions, cool for Claude suggestions. Revelation slider to see process behind any section.
+
+**Decision:** Transmission, content-first variant.
+
+Why: The robot journey should be primary. The AI collaboration angle is interesting but risks overwhelming the actual content. People come to see the robot build, not to study human-AI workflows. Claude's involvement gets documented — there's a /claude section, occasional annotations — but it's not the architecture.
+
+### Implementation
+
+Built in one session:
+
+**Design System:**
+- Background: \`#0d0d0f\` (deep charcoal with noise texture)
+- Primary accent: \`#00ffd5\` (electric cyan — active, current)
+- Secondary: \`#ffaa00\` (warm amber — highlights, CTAs)
+- Success: \`#4ade80\` (milestones achieved)
+- Failure: \`#ff6b6b\` (honest documentation of what didn't work)
+
+**Typography:**
+- JetBrains Mono for code, headings, data
+- Inter for body text
+- CSS custom properties for all tokens
+
+**Components:**
+- \`SignalBadge\` — Status badges with optional pulse animation
+- \`SignalLine\` — Animated horizontal dividers
+- \`Card\` — Interactive cards with cyan glow on hover
+- \`Nav\` — Sticky header with animated underline
+- \`Footer\` — Links and attribution
+
+**Landing Page:**
+- Hero with animated signal lines background
+- Recent Transmissions grid (4 cards from timeline)
+- "What is this?" feature overview
+- Meta section about Claude Code (appropriately subtle)
+
+**Content Structure:**
+\`\`\`typescript
+interface TimelineNode {
+  id: string;
+  date: string;
+  title: string;
+  type: 'milestone' | 'session' | 'breakthrough' | 'failure' | 'blog';
+  summary: string;
+  content?: { journal, commits, blogPost, media, claudeSnippet };
+  tags: string[];
+}
+\`\`\`
+
+8 placeholder nodes matching real milestones from the past week.
+
+### Files Created
+
+\`\`\`
+apps/runreachyrun/
+├── src/
+│   ├── app/
+│   │   ├── globals.css      # Full design system (~280 lines)
+│   │   ├── layout.tsx       # Fonts, metadata
+│   │   └── page.tsx         # Landing page
+│   ├── components/
+│   │   ├── layout/          # Nav, Footer
+│   │   └── ui/              # SignalBadge, SignalLine, Card
+│   ├── content/timeline/data.ts
+│   └── types/index.ts
+└── docs/project-spec.md
+\`\`\`
+
+### The Recursion
+
+This commit (\`8fdd83a\`) is itself content for the site's timeline. The site documents the robot build. The robot apps are documented. The site that documents them is also documented. Claude Code is building all of it.
+
+This is what "build in public" actually looks like when AI is involved.
+
+### Next Session
+
+1. Build \`/timeline\` page — the centerpiece feature
+2. Visual review of landing page
+3. Replace placeholder content with real data
+4. Consider waveform visualization for timeline
+
+---
+
+*The infrastructure is in place. Now we fill it with the journey.*`,
+    tags: ["hardware", "software", "claude-code", "camera", "infrastructure", "meta"],
+    mood: "win",
+    readingTime: 3,
+    linkedTimeline: [],
+  },
+  {
+    slug: "first-boot-with-claude-code",
+    title: "First Boot with Claude Code",
     date: "2025-12-20",
-    summary:
-      "45 minutes from 'help me get it running' to a talking robot. Real-time debugging with an AI pair programmer.",
-    content: `
+    summary: "**Duration:** ~45 minutes from \"help me get it running\" to talking robot",
+    content: `**Duration:** ~45 minutes from "help me get it running" to talking robot
+
+### The Setup
+
 Built my Reachy Mini Lite overnight. Woke up, plugged it in via USB, and asked Claude Code for help getting it running. What followed was a real-time debugging session that showcases how AI-assisted development actually works.
+
+---
 
 ## The Problem: Stuck in Simulation Mode
 
-I had been running the simulator the day before. When I connected the physical robot, the daemon was still configured for simulation mode (\`--sim\` flag). The robot was physically connected but the software wasn't talking to it.
+I had been running the Reachy Mini simulator the day before, building code and testing movements. When I connected the physical robot, the daemon was still configured for simulation mode (\`--sim\` flag). The robot was physically connected but the software wasn't talking to it.
 
 **What I said:** "I built my Reachy light. Can you help me get it running?"
 
 **What Claude did:**
 
-1. Immediately checked USB detection: \`ls /dev/tty.usb* /dev/cu.usb*\`
-   Result: \`/dev/cu.usbmodem5AF71342721\` — the robot was detected!
+1. **Immediately checked USB detection:**
+\`\`\`bash
+ls /dev/tty.usb* /dev/cu.usb*
+\`\`\`
+Result: \`/dev/cu.usbmodem5AF71342721\` - the robot was detected!
 
-2. Checked daemon status: \`ps aux | grep reachy\`
-   Found the daemon running with \`--sim --headless\` flags.
+2. **Checked daemon status:**
+\`\`\`bash
+ps aux | grep "reachy_mini.daemon"
+\`\`\`
+Found the daemon running with \`--sim --headless\` flags - simulation mode.
 
-3. Diagnosed: Need to switch from sim to hardware mode.
+3. **Diagnosed the issue:** The daemon was running in sim mode, not hardware mode.
+
+---
+
+## The Fix: Switching from Sim to Hardware
+
+Claude stopped the simulation daemon and started one for the physical robot:
+
+\`\`\`bash
+# Stop the sim daemon
+pkill -f "reachy_mini.daemon"
+
+# Start daemon for physical hardware (no --sim flag)
+/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+  --headless --fastapi-port 8000 > /tmp/reachy-daemon.log 2>&1 &
+\`\`\`
+
+**First hiccup:** "Device or resource busy" error. The serial port was still locked from the previous daemon.
+
+**The fix:** Kill all processes, wait for port to release, try again.
+
+\`\`\`bash
+pkill -9 -f "reachy"
+sleep 2
+# Port is free, start daemon again
+\`\`\`
+
+**Result:** Daemon started successfully, found the robot on \`/dev/cu.usbmodem5AF71342721\`, initialized all 9 motors.
+
+---
 
 ## First Movement: Proof of Life
 
+Claude ran a test script to wiggle the antennas:
+
 \`\`\`python
+from reachy_mini import ReachyMini
+
 with ReachyMini(media_backend='no_media') as mini:
+    # Wiggle the antennas
     mini.goto_target(antennas=[0.6, -0.6], duration=0.5)
     time.sleep(0.6)
     mini.goto_target(antennas=[-0.6, 0.6], duration=0.5)
+    time.sleep(0.6)
+    mini.goto_target(antennas=[0.0, 0.0], duration=0.5)
 \`\`\`
 
-The moment those antennas wiggled for the first time. Months of anticipation, reduced to a half-second of servo movement. It worked.
+**The moment:** Watching those antennas wiggle for the first time. Months of anticipation, reduced to a half-second of servo movement. It worked.
+
+---
+
+## CLI Control: Beyond the Desktop App
+
+This is where it gets interesting for developers. You don't need the Reachy Mini Control desktop app to control the robot. Claude demonstrated full CLI control:
+
+### Daemon Management
+\`\`\`bash
+# Health check
+curl -s -X POST http://127.0.0.1:8000/health-check
+# Returns: {"status":"ok"}
+
+# View logs
+tail -f /tmp/reachy-daemon.log
+
+# Stop daemon
+pkill -f "reachy_mini.daemon"
+
+# Start for hardware
+/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+  --headless --fastapi-port 8000
+
+# Start for simulation
+/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+  --sim --headless --fastapi-port 8000
+\`\`\`
+
+### Python SDK Control
+\`\`\`python
+from reachy_mini import ReachyMini
+from reachy_mini.utils import create_head_pose
+
+with ReachyMini(media_backend='no_media') as mini:
+    # Move head
+    mini.goto_target(
+        head=create_head_pose(z=20, roll=10, mm=True, degrees=True),
+        duration=1.0
+    )
+    # Move antennas
+    mini.goto_target(antennas=[0.6, -0.6], duration=0.3)
+\`\`\`
+
+### Key CLI Options
+| Option | Description |
+|--------|-------------|
+| \`--sim\` | Simulation mode (MuJoCo) |
+| \`--headless\` | No 3D visualization window |
+| \`--fastapi-port N\` | Change API port (default 8000) |
+| \`--deactivate-audio\` | Skip audio initialization |
+
+---
+
+## Getting the Conversation App Working
+
+Next challenge: the conversation app (Talk with Reachy Mini) wouldn't accept my OpenAI API key.
+
+**The error:** "Failed to validate/save key. Please try again."
+
+**What Claude investigated:**
+
+1. **Found the validation code** in the installed package:
+\`\`\`bash
+grep -r "Failed to validate" ~/apps/reachy/venv/lib/python3.12/site-packages/reachy_mini_conversation_app/
+\`\`\`
+
+2. **Tested the API key directly:**
+\`\`\`bash
+curl -s https://api.openai.com/v1/models \\
+  -H "Authorization: Bearer sk-proj-..." | tail -5
+# HTTP 200 - key is valid!
+\`\`\`
+
+3. **Identified the real issue:** Apps installed for simulation mode don't carry over to hardware mode. The conversation app needed to be reinstalled.
+
+**The fix:** Reinstall apps from the dashboard app store at http://localhost:8000
+
+---
+
+## Secure API Key Storage
+
+Claude set up the OpenAI API key properly:
+
+### macOS Keychain (secure storage)
+\`\`\`bash
+security add-generic-password -a "\$USER" -s "openai-api-key" -w "sk-proj-..." -U
+\`\`\`
+
+### Environment for GUI apps
+\`\`\`bash
+# Add to ~/.zshrc for terminal
+export OPENAI_API_KEY="sk-proj-..."
+
+# Set for GUI apps via launchctl
+launchctl setenv OPENAI_API_KEY "sk-proj-..."
+\`\`\`
+
+### Retrieve from Keychain when needed
+\`\`\`bash
+security find-generic-password -s "openai-api-key" -w
+\`\`\`
+
+---
 
 ## The Claude Code Advantage
 
-1. **Parallel investigation:** USB detection, daemon status, and doc search simultaneously
-2. **Code reading:** Actually read the conversation app source to understand API key validation
-3. **Security awareness:** Stored API key in Keychain, not plain text
-4. **Documentation:** Created this entry while working
+What made this session different from normal debugging:
 
-This wasn't just "robot works" — it was a demonstration of AI-assisted hardware debugging.
-    `.trim(),
-    tags: ["hardware", "debugging", "claude-code", "breakthrough"],
-    mood: "win",
-    readingTime: 5,
-    linkedTimeline: ["first-physical-boot"],
-  },
-  {
-    slug: "first-day",
-    title: "Day One: Setting Up the Documentation Site",
-    date: "2025-12-21",
-    summary:
-      "Launched runreachyrun.com to document the Reachy Mini build. Built with Next.js, Tailwind, and Claude Code. The meta-narrative begins.",
-    content: `
-Today marks the official start of documenting this build publicly. I've been working with the Reachy Mini Lite for about a week now, but everything before today was scattered notes and half-finished experiments.
+1. **Parallel investigation:** Claude checked USB detection, daemon status, and searched for docs simultaneously.
 
-The site itself is part of the story. I'm using Claude Code to help build it, which means the tool I'm using to document the robot project is also being documented. It's recursive in a way that feels appropriate for an AI project.
+2. **Web search integration:** When local docs weren't enough, Claude searched for current Reachy Mini setup guides.
 
-## Technical Decisions
+3. **Code reading:** Claude read the actual conversation app source code to understand the API key validation flow.
 
-- **Next.js 14 with App Router**: Server components where possible, client components for interactivity
-- **Tailwind CSS**: No component libraries — building everything custom
-- **Framer Motion**: For animations that feel intentional, not decorative
-- **Dark mode only**: This is a dev journal, not a marketing site
+4. **Security awareness:** Automatically stored the API key in Keychain rather than leaving it in plain text.
 
-## What's Working
+5. **Documentation:** Created this devlog entry while working, capturing the process in real-time.
 
-The timeline component came together faster than expected. Claude Code helped iterate on the design — I described what I wanted, it generated options, I pushed back on the generic parts, and we landed somewhere interesting.
+### Commands Claude Used
+
+| Tool | Purpose |
+|------|---------|
+| \`ls /dev/cu.usb*\` | Check USB device detection |
+| \`ps aux \\| grep reachy\` | Find running processes |
+| \`curl\` | Test API endpoints |
+| \`grep -r\` | Search source code |
+| \`security\` | macOS Keychain management |
+| \`launchctl\` | Set environment for GUI apps |
+
+---
+
+## Hardware Details Discovered
+
+From the daemon logs during startup:
+
+\`\`\`
+Found Reachy Mini serial port: /dev/cu.usbmodem5AF71342721
+Voltage is stable at ~5V: [75, 75, 76, 75, 75, 75, 75, 75, 75]
+Setting PID gains for motor 'body_rotation' (ID: 10): P=200, I=0, D=0
+Setting PID gains for motor 'stewart_1' (ID: 11): P=300, I=0, D=0
+... (6 stewart platform motors for head)
+Setting PID gains for motor 'right_antenna' (ID: 17): P=200, I=0, D=0
+Setting PID gains for motor 'left_antenna' (ID: 18): P=200, I=0, D=0
+\`\`\`
+
+**9 motors total:**
+- 1 body rotation
+- 6 stewart platform (head movement)
+- 2 antennas
+
+---
+
+## Lessons Learned
+
+1. **Sim and hardware are separate contexts.** Apps installed in sim mode don't carry over. The daemon needs different flags.
+
+2. **Serial port locking is real.** When switching between sim and hardware, make sure to fully kill previous processes.
+
+3. **CLI gives you more control.** The desktop app is nice, but real debugging happens at the command line.
+
+4. **API key validation can fail for reasons unrelated to the key.** The key was valid; the app just wasn't installed.
+
+5. **Claude Code as pair programmer.** Having an AI that can read source code, search the web, and execute commands in real-time dramatically accelerates debugging.
+
+---
 
 ## What's Next
 
-Need to add the journal section (you're reading the first entry), GitHub integration for live commit data, and eventually embed some HuggingFace Spaces.
-    `.trim(),
-    tags: ["meta", "launch", "claude-code", "next.js"],
-    mood: "excited",
-    readingTime: 3,
-    linkedTimeline: ["site-launch"],
-  },
-  {
-    slug: "first-movement",
-    title: "First Successful Coordinated Movement",
-    date: "2025-12-16",
-    summary:
-      "After 3 hours of coordinate system confusion, Reachy finally moved the way I intended. The breakthrough moment.",
-    content: `
-Three hours. That's how long it took to understand why my head movements were going the wrong direction.
+The robot talks. The antennas wiggle. Now it's time to build something interesting with it.
 
-## The Problem
+---
 
-I kept sending commands like \`goto_target(head=create_head_pose(z=20))\` expecting the head to tilt forward. Instead, it was tilting... somewhere else. The documentation mentioned "Z is forward/backward" but forward relative to what?
+*This debugging session took ~45 minutes from "help me" to working robot. Most of that time was Claude investigating, testing, and fixing while I watched the terminal output scroll by.*
 
-## The Debugging Session
-
-Claude Code was actually helpful here. I described the behavior I was seeing:
-
-> "When I set z=20, the head tilts to the right instead of forward. When I set roll=20, it tilts forward."
-
-Claude's response pointed me to the coordinate frame origin. The SDK uses a body-centric coordinate system where:
-- **Z** is actually the vertical axis (up/down from the robot's perspective)
-- **Roll** controls the forward/backward tilt
-- **Yaw** controls left/right rotation
-
-## The Fix
-
-\`\`\`python
-# What I was doing (wrong mental model)
-head = create_head_pose(z=20, mm=True, degrees=True)
-
-# What I needed (correct mental model)
-head = create_head_pose(roll=10, mm=True, degrees=True)  # Forward tilt
-\`\`\`
-
-## The Moment
-
-When it finally worked — when Reachy turned its head to look at me and wiggled its antennas — I literally laughed out loud. There's something about a robot responding to your commands correctly for the first time that never gets old.
-
-## Lesson Learned
-
-Always verify coordinate systems empirically. Documentation can be ambiguous. Send small test commands and observe before building complex sequences.
-    `.trim(),
-    tags: ["software", "sdk", "debugging", "coordinates"],
+---`,
+    tags: ["hardware", "software", "claude-code", "camera", "audio", "simulation"],
     mood: "win",
-    readingTime: 4,
-    linkedTimeline: ["first-movement"],
-    linkedCommits: ["def5678", "ghi9012"],
+    readingTime: 6,
+    linkedTimeline: [],
   },
   {
-    slug: "camera-debugging",
-    title: "Camera Integration: A Dead End (For Now)",
-    date: "2025-12-17",
-    summary:
-      "Attempted to integrate head pose detection via the robot's camera. Hit a wall with headless mode. Parking this for later.",
-    content: `
-Today was supposed to be the day I got head pose detection working. It wasn't.
+    slug: "building-dj-reactor-afternoon",
+    title: "Building DJ Reactor (Afternoon)",
+    date: "2025-12-20",
+    summary: "**Duration:** ~2 hours **Goal:** Build the second app from the roadmap - DJ Reactor / Music Visualizer",
+    content: `**Duration:** ~2 hours
+**Goal:** Build the second app from the roadmap - DJ Reactor / Music Visualizer
 
-## The Goal
+### The Concept
 
-I wanted Reachy to track faces and maintain eye contact during interactions. The SDK has camera support, so this seemed straightforward.
+From APP_IDEAS.md:
+> **DJ Reactor:** Analyzes music and moves expressively to the beat. Different personalities for genres.
 
-## What Happened
+Why it's compelling: Transforms music listening into a shared experience. The robot isn't just a speaker - it's a physical visualization of sound with its own style.
 
-The camera works fine when running the daemon with a GUI window. But I'm running in headless mode (no physical display attached), and that's where things break.
+---
+
+### Architecture Overview
 
 \`\`\`
-Camera timeout: no frames received in 5000ms
+Microphone → AudioAnalyzer → BeatDetector → MovementMapper → Robot
+                 ↓               ↓
+            FFT/Spectrum    BPM/Energy
+                 ↓               ↓
+              Gradio UI ←────────┘
 \`\`\`
 
-## Debugging Attempts
+**Key Components:**
 
-1. **Different camera initialization flags** — No effect
-2. **Forcing OpenCV backend** — Same timeout
-3. **Checking if MuJoCo sim provides camera** — It does, but only with the 3D window open
-4. **SDK source code dive** — The camera thread expects a running render loop
+1. **AudioAnalyzer** (\`audio_analyzer.py\`)
+   - Uses \`sounddevice\` for real-time audio capture
+   - FFT for frequency band analysis (bass/mid/treble)
+   - Onset detection for beat tracking
+   - BPM estimation from beat intervals
 
-## The Reality
+2. **MovementMapper** (\`music_animations.py\`)
+   - Maps audio features to robot movements
+   - Genre-specific presets define movement style
+   - Smoothing and randomization for natural motion
 
-Headless mode and camera input are architecturally at odds in the current SDK. The camera depends on the render pipeline, which doesn't run without a window.
+3. **GenrePresets** (\`config.py\`)
+   - 7 distinct movement personalities
+   - Configurable: amplitude, speed, style, emphasis
 
-## Options
+---
 
-1. Run with a virtual framebuffer (Xvfb) — hacky but might work
-2. Use external camera + separate face detection pipeline — more work, but cleaner
-3. Wait for SDK update — there's a GitHub issue open about this
-4. Work around it — build features that don't need camera for now
+### Genre Movement Styles
 
-## Decision
+| Genre | Head Bob | Body Sway | Antenna Style | Emphasis |
+|-------|----------|-----------|---------------|----------|
+| Rock | High (12mm) | Minimal | Dramatic flicks | Headbang |
+| EDM | Medium (10mm) | High rotation | Pulsing | Nod |
+| Jazz | Low (5mm) | Slow graceful | Gentle sway | Tilt |
+| Pop | Medium (8mm) | Moderate | Bouncy | Nod |
+| Classical | Very low (3mm) | Graceful arcs | Conductor | Tilt |
+| Hip-Hop | Medium (10mm) | Rhythmic | Attitude flicks | Freeze |
+| Chill | Low (4mm) | Slow peaceful | Gentle sway | Tilt |
 
-Parking this. I'll focus on apps that use the robot's movements and expressions without real-time vision. The Focus Guardian app can work with keyboard/manual input initially.
+Each preset also defines:
+- Movement smoothing factor
+- Randomness/variation amount
+- Idle animation style
 
-## Mood
+---
 
-Frustrated but realistic. Not every session ends with a win. Documenting the dead ends is part of the process.
-    `.trim(),
-    tags: ["software", "camera", "blocker", "debugging"],
-    mood: "struggle",
-    readingTime: 4,
-    linkedTimeline: ["camera-issues"],
-  },
-  {
-    slug: "focus-guardian-prd",
-    title: "Focus Guardian: The Concept",
-    date: "2025-12-18",
-    summary:
-      "Brainstorming session for a productivity app. Reachy as a body double that provides gentle accountability.",
-    content: `
-Had an idea while procrastinating (ironic): what if Reachy could be a body double?
+### Technical Decisions
 
-## The Concept
+**Why sounddevice over PyAudio?**
+- More Pythonic API
+- Easier to install on macOS
+- Clean callback-based streaming
 
-"Body doubling" is a productivity technique where having another person present — even silently — helps you focus. It's especially useful for ADHD brains. The other person doesn't have to do anything; their presence creates gentle accountability.
+**Why not use librosa for everything?**
+- librosa is designed for offline analysis
+- For real-time, we use simpler onset detection
+- BPM estimation still uses buffered approach (needs ~5s of audio)
 
-What if a robot could do this?
+**Beat Detection Algorithm:**
+\`\`\`python
+# Simplified logic
+energy = sqrt(mean(audio_chunk^2))
+avg_energy = mean(recent_energies)
+onset_strength = energy / avg_energy
 
-## Focus Guardian Features (v1)
+if onset_strength > threshold and time_since_last_beat > min_interval:
+    beat_detected = True
+    update_bpm_estimate()
+\`\`\`
 
-- **Presence mode**: Reachy sits attentively, occasionally shifting position to feel "alive"
-- **Focus timer**: Pomodoro-style work sessions with animated transitions
-- **Gentle check-ins**: Subtle movements or sounds if you've been idle too long
-- **Celebration**: Antenna wiggles and happy expressions when you complete a session
+---
 
-## Why This Could Work
+### Bugs Fixed
 
-1. It's low-stakes — no judgment, no human awkwardness
-2. The robot is inherently engaging — you want to "perform" for it
-3. It gamifies focus without being annoying about it
-4. It works without camera (see yesterday's frustration)
+**Camera Timeout Issue:**
+The SDK's \`ReachyMini()\` constructor tries to initialize camera by default, causing a 30-second timeout when camera isn't available.
 
-## Technical Approach
+**Wrong approach:** \`camera=False\` (not supported)
+**Right approach:** \`media_backend='default_no_video'\`
 
-- Gradio UI for the timer and controls
-- Keyboard input for "I'm working" / "I'm distracted" signals (for now)
-- Pre-built animation sequences for different states
-- Optional screen time tracking via system APIs
+Updated \`shared/reachy_utils/robot.py\` to use the correct parameter.
 
-## Open Questions
+**UI Flickering:**
+Initial timer at 0.1s (10 updates/sec) caused aggressive flickering in Gradio. Solution: Removed auto-refresh entirely. UI updates on user actions only. Robot moves independently via background thread.
 
-- How often should it move to feel present without being distracting?
-- What's the right balance of encouragement vs. leaving you alone?
-- Should it track breaks, or just work sessions?
+---
 
-## Next Steps
+### Files Created
 
-Writing a proper PRD and starting the Gradio scaffold.
-    `.trim(),
-    tags: ["apps", "focus-guardian", "concept", "productivity"],
-    mood: "excited",
-    readingTime: 3,
-    linkedTimeline: ["focus-guardian-concept"],
-  },
-  {
-    slug: "simulation-setup",
-    title: "MuJoCo Simulation: Now We're Cooking",
-    date: "2025-12-14",
-    summary:
-      "Got the physics simulation running in headless mode. I can now develop without the physical robot.",
-    content: `
-Major infrastructure win today. The MuJoCo simulation is working, which means I can:
+\`\`\`
+apps/dj-reactor/
+├── PRD.md              # Full product requirements
+├── CLAUDE.md           # AI context for this app
+├── config.py           # Genre presets, settings
+├── audio_analyzer.py   # Real-time audio analysis
+├── music_animations.py # Movement system
+├── app.py              # Gradio web interface
+├── requirements.txt    # Dependencies
+└── assets/sounds/      # (empty, for future)
+\`\`\`
 
-1. Develop when the robot isn't connected
-2. Test potentially dangerous movements safely
-3. Iterate faster (no physical constraints)
-4. Record demos without the physical hardware
+---
 
-## Setup
-
-The SDK ships with MuJoCo 3.3.0 support. Running in simulation mode:
+### Running DJ Reactor
 
 \`\`\`bash
-python -m reachy_mini.daemon.app.main --sim --headless --fastapi-port 8000
+# Start daemon (hardware mode)
+python -m reachy_mini.daemon.app.main --headless --fastapi-port 8000
+
+# Run app
+cd ~/apps/reachy/apps/dj-reactor
+python app.py --port 7861
+
+# Open http://localhost:7861
 \`\`\`
 
-The \`--headless\` flag is key for running from scripts/CI. Without it, MuJoCo tries to open a 3D window.
+1. Select audio input device (mic or loopback)
+2. Choose genre
+3. Adjust intensity/sensitivity
+4. Click "Start Vibing"
+5. Play music!
 
-## What Works
+---
 
-- All movement commands
-- Antenna control
-- Head poses
-- Position feedback
-- The REST API at localhost:8000
+### What's Next
 
-## What Doesn't
+1. **Test with real music** - Tune beat detection per genre
+2. **Add audio loopback** - For system audio (BlackHole on macOS)
+3. **Real-time visualization** - Show audio meters while vibing
+4. **Drop detection** - Trigger special animations on bass drops
+5. **Automatic genre detection** - ML model for classification
 
-- Camera (see future debugging session)
-- Audio (no physical speakers to simulate)
-- Some edge cases in collision detection
+---
 
-## LaunchAgent Setup
+*Two apps built now: Focus Guardian (paused on camera issue) and DJ Reactor (MVP complete). The robot has personality.*
 
-I set up a LaunchAgent so the daemon starts automatically on login:
-
-\`\`\`xml
-~/Library/LaunchAgents/com.bioinfo.reachy-daemon.plist
-\`\`\`
-
-Now I can just write code and trust the daemon is running. If it crashes, launchd restarts it.
-
-## Feeling
-
-Productive. Having the simulation layer means I can move faster on software without being blocked by hardware logistics.
-    `.trim(),
-    tags: ["software", "simulation", "mujoco", "infrastructure"],
+---`,
+    tags: ["hardware", "software", "claude-code", "camera", "audio", "simulation"],
     mood: "win",
-    readingTime: 3,
-    linkedTimeline: ["simulation-working"],
-    linkedCommits: ["mno7890"],
-  },
-  {
-    slug: "dj-reactor-start",
-    title: "DJ Reactor: Making Reachy Dance",
-    date: "2025-12-20",
-    summary:
-      "Started work on a music-reactive app. Reachy will respond to beats with synchronized movements.",
-    content: `
-New app idea: DJ Reactor. Reachy reacts to music in real-time.
-
-## The Vision
-
-Play any song, and Reachy:
-- Bobs its head to the beat
-- Wiggles antennas on drops
-- Changes expressions based on energy level
-- Maybe tracks specific instruments
-
-## Technical Approach
-
-Using \`librosa\` for audio analysis:
-
-\`\`\`python
-import librosa
-
-# Load audio
-y, sr = librosa.load('track.mp3')
-
-# Beat tracking
-tempo, beats = librosa.beat.beat_track(y=y, sr=sr)
-
-# Energy over time
-rms = librosa.feature.rms(y=y)
-\`\`\`
-
-Then mapping these features to robot movements:
-- Beat → head bob (quick up/down on Z)
-- Energy → antenna spread (more energy = wider)
-- Onset detection → eye reactions
-
-## Challenges
-
-1. **Latency**: Audio analysis needs to be fast enough for real-time response
-2. **Smoothing**: Raw beat detection is jittery; need to smooth movements
-3. **Not looking stupid**: Easy to make the robot look like it's having a seizure
-
-## First Prototype
-
-Got basic beat detection working. Reachy bobs on every detected beat. It's... okay. Needs work on timing and amplitude.
-
-## What's Next
-
-- Add energy-based modulation
-- Implement anticipation (move slightly before the beat, not after)
-- Build a simple Gradio UI for track selection
-
-This one's going to be fun.
-    `.trim(),
-    tags: ["apps", "dj-reactor", "audio", "librosa"],
-    mood: "excited",
-    readingTime: 3,
-    linkedTimeline: ["dj-reactor-start"],
+    readingTime: 4,
+    linkedTimeline: [],
   },
 ];
 
-// Helper to get entries sorted by date (newest first)
-export function getEntriesSorted(): JournalEntry[] {
-  return [...journalEntries].sort(
-    (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
-  );
-}
-
-// Helper to get entry by slug
-export function getEntryBySlug(slug: string): JournalEntry | undefined {
-  return journalEntries.find((entry) => entry.slug === slug);
-}
-
-// Helper to get entries by tag
-export function getEntriesByTag(tag: string): JournalEntry[] {
-  return journalEntries.filter((entry) => entry.tags.includes(tag));
-}
-
-// Helper to get entries by mood
-export function getEntriesByMood(mood: JournalEntry["mood"]): JournalEntry[] {
-  return journalEntries.filter((entry) => entry.mood === mood);
-}
-
-// Get all unique tags
-export function getAllTags(): string[] {
-  const tagSet = new Set<string>();
-  journalEntries.forEach((entry) => entry.tags.forEach((tag) => tagSet.add(tag)));
-  return Array.from(tagSet).sort();
-}
-
-// Get all slugs (for static generation)
 export function getAllSlugs(): string[] {
-  return journalEntries.map((entry) => entry.slug);
+  return journalEntries.map((e) => e.slug);
+}
+export function getEntryBySlug(slug: string): JournalEntry | undefined {
+  return journalEntries.find((e) => e.slug === slug);
+}
+export function getEntriesSorted(): JournalEntry[] {
+  return [...journalEntries].sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 }
