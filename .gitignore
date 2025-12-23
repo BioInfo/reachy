@@ -84,6 +84,7 @@ temp/
 # Private Notes (keep local)
 # =========================
 CLAUDE.md
+SECURITY_AUDIT.md
 private/
 notes/
 *.private.md
