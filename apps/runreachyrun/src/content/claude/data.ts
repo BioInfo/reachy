@@ -1,4 +1,4 @@
-// Auto-generated from sessions — Last synced: 2025-12-23T14:05:48.594Z
+// Auto-generated from sessions — Last synced: 2025-12-23T16:04:01.401Z
 // Run: npm run sync-devlog
 
 export interface ClaudeSession {
@@ -14,6 +14,13 @@ export interface ClaudeSession {
 }
 
 export const claudeSessions: ClaudeSession[] = [
+  {
+    id: "unified-content-sync",
+    date: "2025-12-23",
+    goal: "Unified Content Sync for runreachyrun.com",
+    outcome: "success",
+    summary: "Built unified content sync system for runreachyrun.com that automatically generates all TypeScript data files from devlog markdown sources.",
+  },
   {
     id: "runreachyrun-analytics",
     date: "2025-12-22",
@@ -130,11 +137,11 @@ devlog/blog/*.md → parseBlogFile() → /blog` }
     summary: "First boot of the physical Reachy Mini Lite after overnight assembly. Transitioned from simulation to hardware mode with Claude Code assistance. Set up devlog system for \"building in public\" documentation. Got conversation app working with OpenAI integration.",
     codeSnippets: [
       { language: "bash", code: `# Hardware mode (physical robot)
-python -m reachy_mini.daemon.app.main \\
+/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
   --headless --fastapi-port 8000
 
 # Simulation mode
-python -m reachy_mini.daemon.app.main \\
+/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
   --sim --headless --fastapi-port 8000
 
 # Health check

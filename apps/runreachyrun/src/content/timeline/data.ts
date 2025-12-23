@@ -1,8 +1,32 @@
 import { TimelineNode } from "@/types";
 
-// Auto-generated from devlog — Last synced: 2025-12-23T14:05:48.591Z
+// Auto-generated from devlog — Last synced: 2025-12-23T16:04:01.398Z
 // Run: npm run sync-devlog
 export const timelineData: TimelineNode[] = [
+  {
+    id: "repository-security-audit-public-release-prep-20251223",
+    date: "2025-12-23",
+    title: "Repository Security Audit & Public Release Prep",
+    type: "session",
+    summary: "Comprehensive security scan of entire GitHub repo and all 3 HuggingFace Spaces before public promotion. Found and fixed memory.db with user data, hardcoded internal IP, local filesystem paths, and CLAUDE.md files that shouldn't be public.",
+    content: {
+      claudeSnippet: {
+        prompt: "What makes this significant?",
+        response: "Building in public means being careful about what's actually public. This audit caught real issues before they became problems - conversation history in git, internal infrastructure details, employer associations.",
+      },
+    },
+    tags: ["software", "claude-code", "echo", "huggingface"],
+  },
+  {
+    id: "unified-content-sync-for-runreachyrun-com-20251223",
+    date: "2025-12-23",
+    title: "Unified Content Sync for runreachyrun.com",
+    type: "session",
+    summary: "Built unified content sync system for runreachyrun.com that automatically generates all TypeScript data files from devlog markdown sources.",
+    content: {
+    },
+    tags: ["meta"],
+  },
   {
     id: "zero-cost-rag-system-live-20251222",
     date: "2025-12-22",
@@ -122,6 +146,14 @@ export const timelineData: TimelineNode[] = [
         response: "This is the build-in-public infrastructure. Every session, breakthrough, and failure gets captured here. The site itself is meta-content — Claude Code is building the site that documents Claude Code building the robot.",
         context: "Seeing the landing page render with animated signal lines, the cyan glow on hover, the \"Recent Transmissions\" grid pulling from placeholder data that will soon be real milestones.",
       },
+      media: [
+              {
+                      "type": "image",
+                      "src": "/media/reachy-full-setup.jpg",
+                      "alt": "Development setup with Reachy Mini and multiple monitors",
+                      "caption": "The dev setup - MacBook Pro, monitors, and Reachy Mini companion"
+              }
+      ],
     },
     tags: ["software", "claude-code", "infrastructure", "meta"],
   },
@@ -264,6 +296,14 @@ export const timelineData: TimelineNode[] = [
         response: "This wasn't just \"robot works\" - it was a demonstration of AI-assisted hardware debugging. Claude diagnosed the sim-vs-hardware daemon issue, fixed serial port locking, tested the antenna movement, traced API key validation through source code, and set up secure credential storage. All while I watch",
         context: "Two moments actually. First: antennas wiggling on CLI command. Second: the robot talking back through the conversation app.",
       },
+      media: [
+              {
+                      "type": "image",
+                      "src": "/media/reachy-desk-window.jpg",
+                      "alt": "Reachy Mini Lite on desk after first boot",
+                      "caption": "First boot - Reachy Mini Lite connected and running"
+              }
+      ],
     },
     tags: ["hardware", "software", "claude-code"],
   },
@@ -279,6 +319,14 @@ export const timelineData: TimelineNode[] = [
         response: "This proves the robot can do more than chat. It can react to its environment in real-time. The same audio analysis could power meeting reactions, emotion mirroring, or ambient awareness.",
         context: "Watching the robot's head bob to the beat, antennas flicking on high frequencies. It actually looks like it's enjoying the music.",
       },
+      media: [
+              {
+                      "type": "video",
+                      "src": "/media/reachy-demo.mp4",
+                      "alt": "Reachy Mini dancing to music",
+                      "caption": "DJ Reactor in action - head bob and antenna bounce synced to the beat"
+              }
+      ],
     },
     tags: ["hardware", "software", "audio", "dj-reactor"],
   },
@@ -300,6 +348,14 @@ export const timelineData: TimelineNode[] = [
     type: "breakthrough",
     summary: "First boot of the physical Reachy Mini Lite after overnight assembly. Transitioned from simulation to hardware mode with Claude Code assistance. Set up devlog system for \"building in public\" documentation. Got conversation app working with OpenAI integration.",
     content: {
+      media: [
+              {
+                      "type": "image",
+                      "src": "/media/reachy-desk-side.jpg",
+                      "alt": "Reachy Mini Lite from side angle",
+                      "caption": "Side view showing the Dell monitor and development station"
+              }
+      ],
     },
     tags: ["hardware", "software", "claude-code", "simulation", "infrastructure", "meta"],
   },

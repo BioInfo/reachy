@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { SignalBadge } from "@/components/ui/signal-badge";
 import { TimelineNode } from "@/components/timeline/timeline-node";
 import { TimelineFilter } from "@/components/timeline/timeline-filter";
+import { TimelineWaveform } from "@/components/ui/timeline-waveform";
 import type { TimelineNode as TimelineNodeType } from "@/types";
 
 type FilterType = TimelineNodeType["type"] | "all";
@@ -113,6 +114,9 @@ export function TimelineContent({ nodes, availableTags }: TimelineContentProps) 
       >
         {filteredNodes.length > 0 ? (
           <div className="relative">
+            {/* Animated waveform background */}
+            <TimelineWaveform />
+
             {filteredNodes.map((node, index) => (
               <TimelineNode
                 key={node.id}

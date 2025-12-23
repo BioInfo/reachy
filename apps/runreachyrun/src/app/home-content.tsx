@@ -136,10 +136,10 @@ export function HomeContent({ recentTimeline }: HomeContentProps) {
               transition={{ duration: 0.6, delay: 1.1 }}
             >
               <Link
-                href="/timeline"
+                href="/getting-started"
                 className="group inline-flex items-center gap-2 px-6 py-3 bg-[var(--accent-cyan)] text-[var(--bg-primary)] font-mono font-medium rounded-lg hover:bg-[var(--accent-cyan-dim)] transition-all hover:scale-105"
               >
-                Explore Timeline
+                Get Started
                 <span
                   aria-hidden="true"
                   className="group-hover:translate-x-1 transition-transform"
@@ -148,10 +148,10 @@ export function HomeContent({ recentTimeline }: HomeContentProps) {
                 </span>
               </Link>
               <Link
-                href="/journal"
+                href="/timeline"
                 className="inline-flex items-center gap-2 px-6 py-3 border border-[var(--border-default)] text-[var(--text-primary)] font-mono font-medium rounded-lg hover:border-[var(--accent-cyan)] hover:text-[var(--accent-cyan)] transition-all hover:scale-105"
               >
-                Read Journal
+                Explore Timeline
               </Link>
             </motion.div>
           </motion.div>
