@@ -127,24 +127,24 @@ class GazeDetector:
             avg_motion = sum(self._motion_history) / len(self._motion_history)
 
 
-            # Higher threshold - ignore small screen changes
-            # User movement is typically 0.02-0.10, empty room <0.005
-            MOTION_THRESHOLD = 0.01
+            # Lower threshold - detect subtle typing/mouse movements
+            # User movement is typically 0.005-0.10, empty room <0.002
+            MOTION_THRESHOLD = 0.003
 
             if avg_motion > MOTION_THRESHOLD:
                 self._consecutive_still = 0
                 return GazeResult(
                     direction=GazeDirection.MONITOR,
                     face_detected=True,
-                    confidence=min(avg_motion * 10, 1.0),
+                    confidence=min(avg_motion * 20, 1.0),
                     yaw=0,
                     pitch=0
                 )
             else:
                 self._consecutive_still += 1
 
-                # Grace period - ~3 seconds of stillness allowed
-                if self._consecutive_still < 6:
+                # Longer grace period - ~10 seconds of stillness allowed
+                if self._consecutive_still < 20:
                     return GazeResult(GazeDirection.MONITOR, False, 0.3)
 
                 # User gone or very still for too long

@@ -33,9 +33,9 @@ Three apps accepted into the [official Pollen Robotics app store](https://huggin
 
 | App | Description | Install |
 |:----|:------------|:--------|
-| [**Focus Guardian**](apps/focus-guardian/) | Productivity body-double with Pomodoro timer | `pip install git+https://huggingface.co/spaces/RyeCatcher/focus-guardian` |
-| [**DJ Reactor**](apps/dj-reactor/) | Audio-reactive robot that dances to music | `pip install git+https://huggingface.co/spaces/RyeCatcher/dj-reactor` |
-| [**Echo**](apps/echo/) | Companion robot with memory and proactive behaviors | `pip install git+https://huggingface.co/spaces/RyeCatcher/reachy-echo` |
+| [**Focus Guardian**](apps/focus-guardian/) | Productivity body-double with Pomodoro timer | `pip install git+https://huggingface.co/spaces/RyeCatcher/focus_guardian` |
+| [**DJ Reactor**](apps/dj-reactor/) | Audio-reactive robot that dances to music | `pip install git+https://huggingface.co/spaces/RyeCatcher/dj_reactor` |
+| [**Echo**](apps/echo/) | Companion robot with memory and proactive behaviors | `pip install git+https://huggingface.co/spaces/RyeCatcher/echo` |
 
 ---
 
@@ -44,7 +44,7 @@ Three apps accepted into the [official Pollen Robotics app store](https://huggin
 ### Focus Guardian
 
 <p>
-  <a href="https://huggingface.co/spaces/RyeCatcher/focus-guardian"><img src="https://img.shields.io/badge/HuggingFace-Focus_Guardian-yellow?logo=huggingface" alt="HuggingFace"></a>
+  <a href="https://huggingface.co/spaces/RyeCatcher/focus_guardian"><img src="https://img.shields.io/badge/HuggingFace-Focus_Guardian-yellow?logo=huggingface" alt="HuggingFace"></a>
 </p>
 
 A productivity body-double that watches you work. Reachy provides gentle accountability through presence, celebrates completed sessions, and reminds you to take breaks.
@@ -57,7 +57,7 @@ A productivity body-double that watches you work. Reachy provides gentle account
 ### DJ Reactor
 
 <p>
-  <a href="https://huggingface.co/spaces/RyeCatcher/dj-reactor"><img src="https://img.shields.io/badge/HuggingFace-DJ_Reactor-yellow?logo=huggingface" alt="HuggingFace"></a>
+  <a href="https://huggingface.co/spaces/RyeCatcher/dj_reactor"><img src="https://img.shields.io/badge/HuggingFace-DJ_Reactor-yellow?logo=huggingface" alt="HuggingFace"></a>
 </p>
 
 Make Reachy dance to music in real-time. Audio analysis drives synchronized head movements, antenna wiggles, and body sway.
@@ -70,7 +70,7 @@ Make Reachy dance to music in real-time. Audio analysis drives synchronized head
 ### Echo
 
 <p>
-  <a href="https://huggingface.co/spaces/RyeCatcher/reachy-echo"><img src="https://img.shields.io/badge/HuggingFace-Echo-yellow?logo=huggingface" alt="HuggingFace"></a>
+  <a href="https://huggingface.co/spaces/RyeCatcher/echo"><img src="https://img.shields.io/badge/HuggingFace-Echo-yellow?logo=huggingface" alt="HuggingFace"></a>
 </p>
 
 A companion robot that remembers you and grows with you. Echo builds a relationship through persistent memory and proactive behaviors.
@@ -109,7 +109,7 @@ pip install "reachy-mini[mujoco]"
 
 ```bash
 # Install an app
-pip install git+https://huggingface.co/spaces/RyeCatcher/dj-reactor
+pip install git+https://huggingface.co/spaces/RyeCatcher/dj_reactor
 
 # Start the daemon
 python -m reachy_mini.daemon.app.main --sim --headless

@@ -186,10 +186,10 @@ with ReachyMini() as mini:
           </p>
           <CodeBlock title="terminal">
 {`# Option 1: Install from HuggingFace
-pip install "focus-guardian @ git+https://huggingface.co/spaces/RyeCatcher/focus-guardian"
+pip install "focus_guardian @ git+https://huggingface.co/spaces/RyeCatcher/focus_guardian"
 
 # Option 2: Install DJ Reactor
-pip install "dj-reactor @ git+https://huggingface.co/spaces/RyeCatcher/dj-reactor"`}
+pip install "dj_reactor @ git+https://huggingface.co/spaces/RyeCatcher/dj_reactor"`}
           </CodeBlock>
           <p className="mt-3">
             Restart the daemon, then visit the dashboard. Your app appears in the

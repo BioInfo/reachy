@@ -6,6 +6,7 @@ colorTo: blue
 sdk: static
 pinned: false
 license: mit
+short_description: "Music visualizer - Reachy Mini dances to your beat!"
 tags:
   - reachy_mini
   - reachy_mini_python_app

@@ -1,11 +1,12 @@
 ---
-title: Reachy Echo
+title: Echo
 emoji: "🤖"
 colorFrom: indigo
 colorTo: purple
 sdk: static
 pinned: false
 license: mit
+short_description: "A companion robot that remembers you and grows with you"
 tags:
   - reachy_mini
   - reachy_mini_python_app

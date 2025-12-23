@@ -41,6 +41,9 @@ class ReachyMiniEcho(ReachyMiniApp):
     - Meaningful movement that communicates emotion
     """
 
+    # URL for the Gradio settings UI (detected by desktop app)
+    custom_app_url: str | None = "http://localhost:7861"
+
     def __init__(self):
         super().__init__()
         self.name = "Echo"
@@ -655,11 +658,6 @@ You have a physical robot body with a head and antennas. You can express emotion
             )
         except Exception as e:
             logger.warning(f"Idle animation failed: {e}")
-
-    @property
-    def custom_app_url(self) -> Optional[str]:
-        """Return URL for Gradio UI."""
-        return "http://localhost:7861"
 
 
 # === Standalone Testing ===
