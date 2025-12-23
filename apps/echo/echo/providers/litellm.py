@@ -17,8 +17,10 @@ from .base import LLMProvider, ProviderCapability, ProviderCapabilities, Respons
 
 logger = logging.getLogger(__name__)
 
-# Default endpoint (set LITELLM_URL env var for custom server)
-DEFAULT_LITELLM_URL = "http://localhost:4000"
+# Default endpoint - OpenRouter direct (set OPENROUTER_API_KEY env var)
+DEFAULT_LITELLM_URL = "https://openrouter.ai/api"
+DEFAULT_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("LITELLM_API_KEY", "")
+DEFAULT_MODEL = "google/gemini-2.5-flash-lite"
 
 
 @dataclass
@@ -26,8 +28,8 @@ class LiteLLMConfig:
     """Configuration for LiteLLM provider."""
 
     base_url: str = field(default_factory=lambda: os.getenv("LITELLM_URL", DEFAULT_LITELLM_URL))
-    api_key: str = field(default_factory=lambda: os.getenv("LITELLM_API_KEY", ""))
-    model: str = field(default_factory=lambda: os.getenv("LITELLM_MODEL", "gpt-4o-mini"))
+    api_key: str = field(default_factory=lambda: os.getenv("LITELLM_API_KEY", DEFAULT_API_KEY))
+    model: str = field(default_factory=lambda: os.getenv("LITELLM_MODEL", DEFAULT_MODEL))
     temperature: float = 0.7
     max_tokens: int = 1024
 
@@ -51,12 +53,21 @@ class LiteLLMProvider(LLMProvider):
         return "litellm"
 
     async def connect(self) -> None:
-        """Initialize OpenAI client pointing to LiteLLM."""
-        logger.info(f"Connecting to LiteLLM at {self.config.base_url}")
+        """Initialize OpenAI client pointing to LiteLLM or OpenRouter."""
+        logger.info(f"Connecting to {self.config.base_url}")
+
+        # OpenRouter needs extra headers
+        extra_headers = {}
+        if "openrouter" in self.config.base_url:
+            extra_headers = {
+                "HTTP-Referer": "https://runreachyrun.com",
+                "X-Title": "Reachy Echo",
+            }
 
         self._client = AsyncOpenAI(
             base_url=f"{self.config.base_url}/v1",
-            api_key=self.config.api_key or "not-needed",  # Some LiteLLM setups don't need key
+            api_key=self.config.api_key or "not-needed",
+            default_headers=extra_headers,
         )
 
         # Test connection by listing models
