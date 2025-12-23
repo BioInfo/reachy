@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Nav } from "@/components/layout/nav";
 import { Footer } from "@/components/layout/footer";
 import { SignalBadge } from "@/components/ui/signal-badge";
+import { SocialShare } from "@/components/ui/social-share";
 import { GiscusComments } from "@/components/blog/giscus-comments";
 import { BlogRenderer } from "@/components/blog/blog-renderer";
 import { RelatedContent } from "@/components/ui/related-content";
@@ -115,6 +116,14 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                 </span>
               </div>
             )}
+
+            {/* Social Share */}
+            <SocialShare
+              title={post.title}
+              url={`https://www.runreachyrun.com/blog/${slug}`}
+              summary={post.summary}
+              className="mt-6"
+            />
           </header>
 
           {/* Decorative divider */}
