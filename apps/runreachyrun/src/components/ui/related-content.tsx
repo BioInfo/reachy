@@ -7,6 +7,7 @@ import { Icon } from "@/components/ui/icon";
 import { SignalBadge } from "@/components/ui/signal-badge";
 import { getRelatedDocuments } from "@/lib/rag/vector-search";
 import type { EmbeddingDocument } from "@/lib/rag/types";
+import { formatDate } from "@/lib/date";
 
 interface RelatedContentProps {
   currentId: string;
@@ -118,11 +119,7 @@ export function RelatedContent({
 
               {doc.metadata.date && (
                 <p className="text-[10px] text-[var(--text-muted)] mt-2 font-mono">
-                  {new Date(doc.metadata.date).toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
+                  {formatDate(doc.metadata.date)}
                 </p>
               )}
             </Link>

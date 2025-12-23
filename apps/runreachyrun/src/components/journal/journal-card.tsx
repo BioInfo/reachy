@@ -4,6 +4,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { SignalBadge } from "@/components/ui/signal-badge";
 import { Card } from "@/components/ui/card";
+import { formatDate } from "@/lib/date";
 import type { JournalEntry } from "@/types";
 
 type BadgeVariant = "cyan" | "amber" | "success" | "failure" | "default";
@@ -24,7 +25,7 @@ interface JournalCardProps {
 }
 
 export function JournalCard({ entry, index = 0 }: JournalCardProps) {
-  const formattedDate = new Date(entry.date).toLocaleDateString("en-US", {
+  const formattedDate = formatDate(entry.date, {
     weekday: "short",
     month: "short",
     day: "numeric",

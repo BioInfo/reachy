@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reachy_mini_echo"
+version = "0.1.0"
+description = "A companion robot that remembers you and grows with you"
+readme = "README.md"
+license = { text = "MIT" }
+authors = [
+    { name = "Justin Johnson" }
+]
+requires-python = ">=3.12"
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "reachy-mini>=1.2.0",
+    "gradio>=4.0.0",
+    "lancedb>=0.4.0",
+    "openai>=1.0.0",
+    "ollama>=0.1.0",
+    "numpy>=1.24.0",
+    "pydantic>=2.0.0",
+    "pyyaml>=6.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-asyncio>=0.21.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+voice = [
+    "elevenlabs>=0.2.0",
+]
+
+[project.entry-points."reachy_mini_apps"]
+reachy_mini_echo = "reachy_mini_echo.main:ReachyMiniEcho"
+
+[project.urls]
+Homepage = "https://github.com/RyeCatcher/reachy-echo"
+Documentation = "https://runreachyrun.com/apps/echo"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["reachy_mini_echo*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]

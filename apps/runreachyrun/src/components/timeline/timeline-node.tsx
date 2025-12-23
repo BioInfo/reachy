@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { SignalBadge } from "@/components/ui/signal-badge";
+import { formatDate } from "@/lib/date";
 import type { TimelineNode as TimelineNodeType } from "@/types";
 
 type BadgeVariant = "cyan" | "amber" | "success" | "failure" | "default";
@@ -36,11 +37,7 @@ export function TimelineNode({ node, isFirst, isLast }: TimelineNodeProps) {
     node.content?.media?.length ||
     node.content?.commits?.length;
 
-  const formattedDate = new Date(node.date).toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
+  const formattedDate = formatDate(node.date);
 
   return (
     <div className="relative flex gap-6">

@@ -7,6 +7,7 @@ import { GiscusComments } from "@/components/blog/giscus-comments";
 import { BlogRenderer } from "@/components/blog/blog-renderer";
 import { RelatedContent } from "@/components/ui/related-content";
 import { getPostBySlug, getAllSlugs } from "@/content/blog/data";
+import { formatDate } from "@/lib/date";
 
 // Generate static paths for all blog posts
 export async function generateStaticParams() {
@@ -29,7 +30,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
-  const formattedDate = new Date(post.date).toLocaleDateString("en-US", {
+  const formattedDate = formatDate(post.date, {
     weekday: "long",
     year: "numeric",
     month: "long",
