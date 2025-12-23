@@ -42,7 +42,9 @@ class ReachyMiniEcho(ReachyMiniApp):
     """
 
     # URL for the Gradio settings UI (detected by desktop app)
-    custom_app_url: str | None = "http://localhost:7861"
+    custom_app_url: str | None = "http://localhost:7863"
+    # Don't start ReachyMiniApp's built-in webserver - we use Gradio
+    dont_start_webserver: bool = True
 
     def __init__(self):
         super().__init__()
@@ -187,7 +189,7 @@ You have a physical robot body with a head and antennas. You can express emotion
         def run_gradio():
             self._gradio_app.launch(
                 server_name="0.0.0.0",
-                server_port=7861,
+                server_port=7863,
                 share=False,
                 prevent_thread_lock=True,
                 show_error=True,
@@ -195,7 +197,7 @@ You have a physical robot body with a head and antennas. You can express emotion
 
         self._ui_thread = Thread(target=run_gradio, daemon=True)
         self._ui_thread.start()
-        logger.info("Gradio UI started on http://localhost:7861")
+        logger.info("Gradio UI started on http://localhost:7863")
 
     def _build_ui(self) -> gr.Blocks:
         """Build a polished Gradio interface."""
@@ -214,7 +216,7 @@ You have a physical robot body with a head and antennas. You can express emotion
 
         Thread(target=start_loop, daemon=True).start()
 
-        # Connect provider and get available models
+        # Connect provider and get available models (with fast timeout)
         try:
             run_async(self.provider.connect())
             run_async(self.provider.set_system_prompt(self._system_prompt))
@@ -222,7 +224,7 @@ You have a physical robot body with a head and antennas. You can express emotion
             self._available_models = run_async(self.provider.get_available_models())
             logger.info(f"Provider connected. {len(self._available_models)} models available.")
         except Exception as e:
-            logger.error(f"Failed to connect provider: {e}")
+            logger.warning(f"Provider not available (will retry on use): {e}")
             self._is_connected = False
             self._available_models = [DEFAULT_MODEL]
 
