@@ -35,6 +35,116 @@ interface ClaudeSession {
 
 const sessions: ClaudeSession[] = [
   {
+    id: "echo-mvp",
+    date: "2025-12-22",
+    goal: "Build a companion app that remembers users across sessions",
+    outcome: "success",
+    summary:
+      "Created Reachy Echo from scratch — a robot companion with persistent memory, multi-model LLM backend, and proactive behaviors. The key insight: memory transforms an assistant into a relationship.",
+    prompts: [
+      {
+        prompt: "Most robot assistants forget you exist between sessions. Build something that remembers.",
+        insight: "Claude designed a three-table SQLite schema: user_facts (persistent knowledge), conversation_sessions (summaries), daily_log (greeting tracking). Automatic fact extraction from natural conversation.",
+        code: {
+          language: "python",
+          code: `# Memory architecture
+class MemoryManager:
+    def extract_facts(self, message: str) -> list[str]:
+        """LLM extracts facts like 'user's name is Justin'"""
+
+    def get_context(self) -> str:
+        """Build context from facts + recent history"""
+        facts = self.storage.get_facts()
+        recent = self.storage.get_recent_messages(10)
+        return f"Known facts:\\n{facts}\\n\\nRecent:\\n{recent}"`,
+          description: "Memory-first architecture"
+        }
+      },
+      {
+        prompt: "Make it proactive — greet me in the morning, remind me to take breaks.",
+        insight: "Built a trigger-based engine with time/duration/pattern triggers and cooldown management. The robot initiates, not just responds.",
+      },
+    ],
+    learnings: [
+      "Memory transforms assistants into companions — knowing someone's name changes everything",
+      "Proactive engagement needs careful rate limiting; too eager becomes annoying",
+      "LiteLLM proxy lets you hot-swap between 18+ models mid-conversation",
+    ],
+    linkedFeature: "Reachy Echo",
+  },
+  {
+    id: "rag-system",
+    date: "2025-12-22",
+    goal: "Add AI chat to the site with zero runtime cost",
+    outcome: "success",
+    summary:
+      "Built a complete RAG system: pre-computed embeddings at build time, client-side vector search, free-tier LLM. Users can ask questions about the project and get grounded answers.",
+    prompts: [
+      {
+        prompt: "I want users to chat with AI about the project, but I don't want ongoing costs.",
+        insight: "Claude proposed pre-computing everything. Generate embeddings locally with Nomic, store as JSON, run cosine similarity in the browser. Only the final LLM call goes to the server.",
+        code: {
+          language: "typescript",
+          code: `// Client-side vector search
+export function cosineSimilarity(a: number[], b: number[]) {
+  const dot = a.reduce((sum, ai, i) => sum + ai * b[i], 0);
+  const magA = Math.sqrt(a.reduce((sum, ai) => sum + ai * ai, 0));
+  const magB = Math.sqrt(b.reduce((sum, bi) => sum + bi * bi, 0));
+  return dot / (magA * magB);
+}
+
+// Find relevant docs without any API calls
+const results = documents
+  .map(doc => ({ doc, score: cosineSimilarity(queryEmb, doc.embedding) }))
+  .sort((a, b) => b.score - a.score)
+  .slice(0, 5);`,
+          description: "Zero-cost vector search in the browser"
+        }
+      },
+    ],
+    learnings: [
+      "Pre-computed embeddings eliminate per-query costs entirely",
+      "768-dim Nomic embeddings give better results than smaller models",
+      "Free LLM tiers work fine for low-traffic sites — Gemini Flash Lite handles it",
+    ],
+    linkedFeature: "RAG System",
+  },
+  {
+    id: "app-store-community",
+    date: "2025-12-22",
+    goal: "Get apps into official Pollen store and handle first community feedback",
+    outcome: "success",
+    summary:
+      "Both apps accepted into the official app store. Hours later, first external PR arrived — a community member fixed a bug I'd missed. The open source loop closed.",
+    prompts: [
+      {
+        prompt: "The validation check is failing. What's the naming convention?",
+        insight: "Claude found the requirement: class must be ReachyMini{AppName}, not {AppName}App. Also caught the __main__ block using the old class name.",
+        code: {
+          language: "python",
+          code: `# Before (failed validation)
+class DJReactorApp(ReachyMiniApp):
+    ...
+if __name__ == "__main__":
+    DJReactorApp().wrapped_run()
+
+# After (passed)
+class ReachyMiniDjReactor(ReachyMiniApp):
+    ...
+if __name__ == "__main__":
+    ReachyMiniDjReactor().wrapped_run()`,
+          description: "Naming convention fix for app store"
+        }
+      },
+    ],
+    learnings: [
+      "Official ecosystems have naming conventions — check the validator early",
+      "Building in public attracts contributors who care about quality",
+      "External bug reports often find issues you'd never hit locally",
+    ],
+    linkedFeature: "App Store",
+  },
+  {
     id: "hardware-debugging",
     date: "2025-12-20",
     goal: "Get physical Reachy Mini running from scratch",
