@@ -343,9 +343,9 @@ export function BlogRenderer({ content }: BlogRendererProps) {
       <div ref={contentRef} className="blog-content">
         {blocks.map((block, index) => {
           switch (block.type) {
-            case "heading":
-              const HeadingTag = `h${block.level}` as keyof React.JSX.IntrinsicElements;
-              const headingClasses = {
+            case "heading": {
+              const level = block.level ?? 2;
+              const headingClasses: Record<number, string> = {
                 1: "text-4xl font-bold mt-12 mb-6",
                 2: "text-2xl font-bold mt-14 mb-5 text-[var(--text-primary)] scroll-mt-24 border-b border-[var(--border-subtle)] pb-3",
                 3: "text-xl font-semibold mt-8 mb-4 text-[var(--text-primary)]",
@@ -353,15 +353,13 @@ export function BlogRenderer({ content }: BlogRendererProps) {
                 5: "text-base font-semibold mt-4 mb-2",
                 6: "text-sm font-semibold mt-4 mb-2",
               };
+              const Tag = `h${level}` as "h1" | "h2" | "h3" | "h4" | "h5" | "h6";
               return (
-                <HeadingTag
-                  key={index}
-                  id={block.id}
-                  className={headingClasses[block.level as keyof typeof headingClasses] || ""}
-                >
+                <Tag key={index} id={block.id} className={headingClasses[level] || ""}>
                   {block.content}
-                </HeadingTag>
+                </Tag>
               );
+            }
 
             case "code":
               return <CodeBlock key={index} code={block.content} language={block.language} />;

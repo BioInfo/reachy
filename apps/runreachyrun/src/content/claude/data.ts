@@ -1,4 +1,4 @@
-// Auto-generated from sessions — Last synced: 2025-12-23T16:04:01.401Z
+// Auto-generated from sessions — Last synced: 2025-12-23T17:47:25.925Z
 // Run: npm run sync-devlog
 
 export interface ClaudeSession {
