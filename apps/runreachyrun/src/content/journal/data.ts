@@ -73,7 +73,7 @@ create_repo("RyeCatcher/focus-guardian", repo_type="space", space_sdk="gradio")
 api.upload_folder(folder_path="./focus-guardian-hf", repo_id="RyeCatcher/focus-guardian", repo_type="space")
 \`\`\`
 
-Result: https://huggingface.co/spaces/RyeCatcher/focus-guardian
+Result: https://huggingface.co/spaces/RyeCatcher/focus_guardian
 
 ### Not Submitted to Official Store Yet
 

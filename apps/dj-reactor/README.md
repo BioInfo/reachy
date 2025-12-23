@@ -30,7 +30,7 @@ A music visualizer for Reachy Mini that makes your robot dance to the beat!
 ## Installation
 
 ```bash
-pip install git+https://huggingface.co/spaces/RyeCatcher/dj-reactor
+pip install git+https://huggingface.co/spaces/RyeCatcher/dj_reactor
 ```
 
 ## Usage
