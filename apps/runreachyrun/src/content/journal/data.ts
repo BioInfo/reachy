@@ -1,6 +1,6 @@
 import { JournalEntry } from "@/types";
 
-// Auto-generated from devlog/journal — Last synced: 2025-12-23T17:47:25.924Z
+// Auto-generated from devlog/journal — Last synced: 2025-12-23T18:02:42.331Z
 // Run: npm run sync-devlog
 export const journalEntries: JournalEntry[] = [
   {
@@ -73,7 +73,7 @@ create_repo("RyeCatcher/focus-guardian", repo_type="space", space_sdk="gradio")
 api.upload_folder(folder_path="./focus-guardian-hf", repo_id="RyeCatcher/focus-guardian", repo_type="space")
 \`\`\`
 
-Result: https://huggingface.co/spaces/RyeCatcher/focus_guardian
+Result: https://huggingface.co/spaces/RyeCatcher/focus-guardian
 
 ### Not Submitted to Official Store Yet
 

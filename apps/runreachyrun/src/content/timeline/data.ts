@@ -1,6 +1,6 @@
 import { TimelineNode } from "@/types";
 
-// Auto-generated from devlog — Last synced: 2025-12-23T17:47:25.922Z
+// Auto-generated from devlog — Last synced: 2025-12-23T18:02:42.328Z
 // Run: npm run sync-devlog
 export const timelineData: TimelineNode[] = [
   {
@@ -16,6 +16,32 @@ export const timelineData: TimelineNode[] = [
       },
     },
     tags: ["software", "claude-code", "echo", "huggingface"],
+  },
+  {
+    id: "package-naming-fix-desktop-app-integration-20251223",
+    date: "2025-12-23",
+    title: "Package Naming Fix - Desktop App Integration",
+    type: "session",
+    summary: "Apps weren't showing settings gear icon in Reachy Mini Control desktop app. Discovered fundamental mismatch: desktop app file scanner looks for `{space_name}/main.py` but packages were named `reachy_mini_*`.",
+    content: {
+      commits: ["866feeb"],
+      claudeSnippet: {
+        prompt: "What makes this significant?",
+        response: "This completes the desktop app integration. All three community apps now appear with working settings buttons, making them first-class citizens in the Reachy ecosystem.",
+      },
+    },
+    tags: ["software", "claude-code", "huggingface"],
+  },
+  {
+    id: "huggingface-app-naming-fix-20251223",
+    date: "2025-12-23",
+    title: "HuggingFace App Naming Fix",
+    type: "session",
+    summary: "Fixed fundamental naming mismatch preventing desktop app integration. All three community apps (Focus Guardian, DJ Reactor, Echo) now fully integrated with Reachy Mini Control desktop app.",
+    content: {
+      journal: "Diagnosed root cause; Renamed all packages:; Created new HuggingFace spaces; Deleted old spaces; Fixed Focus Guardian motion detection; Updated website; Committed and pushed",
+    },
+    tags: ["software", "audio", "focus-guardian", "dj-reactor", "echo", "huggingface"],
   },
   {
     id: "unified-content-sync-for-runreachyrun-com-20251223",

@@ -1,4 +1,4 @@
-// Auto-generated from sessions — Last synced: 2025-12-23T17:47:25.925Z
+// Auto-generated from sessions — Last synced: 2025-12-23T18:02:42.332Z
 // Run: npm run sync-devlog
 
 export interface ClaudeSession {
@@ -14,6 +14,14 @@ export interface ClaudeSession {
 }
 
 export const claudeSessions: ClaudeSession[] = [
+  {
+    id: "app-naming-fix",
+    date: "2025-12-23",
+    goal: "HuggingFace App Naming Fix",
+    outcome: "success",
+    summary: "Fixed fundamental naming mismatch preventing desktop app integration. All three community apps (Focus Guardian, DJ Reactor, Echo) now fully integrated with Reachy Mini Control desktop app.",
+    learnings: ["Diagnosed root cause - Desktop app file scanner looks for `{app_name}/main.py` but packages were named `reachy_mini_*`", "Renamed all packages", "Created new HuggingFace spaces with underscore naming", "Deleted old spaces with hyphenated names"],
+  },
   {
     id: "unified-content-sync",
     date: "2025-12-23",
