@@ -1,7 +1,7 @@
 import { TimelineNode } from "@/types";
 
 // Timeline data — auto-generated from devlog
-// Last synced: 2025-12-22T15:35:47.455Z
+// Last synced: 2025-12-23T12:38:07.105Z
 // To update: npm run sync-devlog
 export const timelineData: TimelineNode[] = [
   {
@@ -43,7 +43,7 @@ export const timelineData: TimelineNode[] = [
     id: "both-apps-accepted-into-official-pollen-robotics-a-20251222",
     date: "2025-12-22",
     title: "Both Apps Accepted into Official Pollen Robotics App Store",
-    type: "session",
+    type: "milestone",
     summary:
       "Focus Guardian and DJ Reactor were accepted into the official Pollen Robotics Reachy Mini app store. They're now listed alongside the official apps at https://huggingface.co/spaces/pollen-robotics/Reachy_Mini#/apps",
     content: {
@@ -57,6 +57,51 @@ export const timelineData: TimelineNode[] = [
     tags: ["hardware", "software", "audio", "focus-guardian", "dj-reactor", "huggingface"],
   },
   {
+    id: "reachy-echo-mvp-complete-20251222",
+    date: "2025-12-22",
+    title: "Reachy Echo MVP Complete",
+    type: "milestone",
+    summary:
+      "Built the third Reachy app from scratch in one session. Echo is the \"companion\" app from the roadmap - a robot that remembers you and grows with you. Memory-first architecture with proactive behaviors.",
+    content: {
+      claudeSnippet: {
+        prompt: "What makes this significant?",
+        response:
+          "This is the differentiator. Most robot apps treat the robot as a voice interface that forgets everything. Echo builds a relationship - it remembers your name, your preferences, your work patterns. Day 100 feels different than Day 1.",
+        context: "Sending \"My name is Justin\" and watching it get stored in SQLite. Then in a new session, Echo still knew who I was.",
+      },
+    },
+    tags: ["hardware", "software", "echo"],
+  },
+  {
+    id: "first-community-contribution-20251222",
+    date: "2025-12-22",
+    title: "First Community Contribution",
+    type: "breakthrough",
+    summary:
+      "A user reported both apps failing on install via HuggingFace Discussion. @apirrone submitted a PR to fix DJ Reactor within hours. Merged it and applied the same fix to Focus Guardian.",
+    content: {
+      claudeSnippet: {
+        prompt: "What makes this significant?",
+        response:
+          "The open source loop is working. Less than 48 hours after getting apps into the official store, external users are finding bugs, diagnosing root causes, and submitting fixes. This is exactly what building in public enables.",
+        context: "Seeing the notification that someone opened a Discussion on my HuggingFace Space. Then seeing another notification with a PR. Then realizing the PR was a one-liner that perfectly fixed the issue.",
+      },
+    },
+    tags: ["software", "claude-code", "audio", "focus-guardian", "dj-reactor", "huggingface"],
+  },
+  {
+    id: "runreachyrun-com-analytics-chat-fix-20251222",
+    date: "2025-12-22",
+    title: "runreachyrun.com Analytics & Chat Fix",
+    type: "session",
+    summary:
+      "Added Google Analytics with GDPR-compliant cookie consent and fixed chat widget rate limiting issues.",
+    content: {
+    },
+    tags: ["rag", "meta"],
+  },
+  {
     id: "runreachyrun-com-bug-fixes-and-deployment-20251222",
     date: "2025-12-22",
     title: "runreachyrun.com Bug Fixes and Deployment",
@@ -67,6 +112,204 @@ export const timelineData: TimelineNode[] = [
       journal: "Fixed journal slug mismatch by switching `getAllJournalEntries()` to use static data only; Corrected apps data: Focus Guardian and DJ Reactor are \"live\" on HuggingFace; Added \"Live on HuggingFace\" section to apps page featuring both apps; Updated Reachy Companion status from \"coming-soon\" to \"development\"; Fixed OG image deployment:",
     },
     tags: ["software", "huggingface", "infrastructure", "meta"],
+  },
+  {
+    id: "fixed-focus-guardian-to-work-properly-via-dashboar-20251222",
+    date: "2025-12-22",
+    title: "Fixed Focus Guardian to work properly via dashboard",
+    type: "session",
+    summary:
+      "Fixed Focus Guardian to work properly via dashboard. Three issues from the ReachyMiniApp conversion: missing `super().__init__()` (caused AttributeError for settings_app), incorrect `__main__` block (just printed instead of calling `wrapped_run()`), and needed `dont_start_webserver = True` since we use Gradio. App now starts, runs Gradio on 7862, r",
+    content: {
+    },
+    tags: ["software", "claude-code", "focus-guardian"],
+  },
+  {
+    id: "verified-all-mvp-features-intact-session-managemen-20251222",
+    date: "2025-12-22",
+    title: "Verified all MVP features intact: session management, timer,",
+    type: "failure",
+    summary:
+      "Verified all MVP features intact: session management, timer, manual attention control, breathing animation, nudge/shake animations, victory dance. Camera-based tracking still blocked by SDK camera issues but manual buttons work as workaround.",
+    content: {
+    },
+    tags: ["software", "camera", "dj-reactor"],
+  },
+  {
+    id: "separate-venvs-per-app-20251222",
+    date: "2025-12-22",
+    title: "separate venvs per app",
+    type: "session",
+    summary:
+      "Fixed custom apps not appearing in Reachy Mini Control desktop app. Root cause: desktop app uses separate venvs per app (scanning for `{app_name}_venv` directories), not the shared `.venv`. Installing with `pip install -e .` into `.venv` only works for daemon-launched apps, not desktop app discovery.",
+    content: {
+    },
+    tags: ["software", "infrastructure"],
+  },
+  {
+    id: "solution-created-dedicated-venvs-for-each-app-in-t-20251222",
+    date: "2025-12-22",
+    title: "Solution: created dedicated venvs for each app in the deskto",
+    type: "session",
+    summary:
+      "Solution: created dedicated venvs for each app in the desktop app's Resources folder: - `/Applications/Reachy Mini Control.app/Contents/Resources/reachy_mini_focus_guardian_venv/` - `/Applications/Reachy Mini Control.app/Contents/Resources/reachy_mini_dj_reactor_venv/`  Both apps now visible in desktop app. Key learning: the desktop app and CLI dae",
+    content: {
+    },
+    tags: ["software", "audio", "focus-guardian", "dj-reactor"],
+  },
+  {
+    id: "fix-20251222",
+    date: "2025-12-22",
+    title: "Fix:",
+    type: "session",
+    summary:
+      "Second issue: Gradio UI not appearing (no settings icon). Root cause: used `pip install -e` (editable) which doesn't copy files to site-packages. Desktop app looks for `main.py` at `site-packages/{app_name}/main.py` to detect `custom_app_url`. With editable installs, that path doesn't exist.  Fix: Always use `pip install /path/to/app` (not `-e`) fo",
+    content: {
+    },
+    tags: ["software", "claude-code", "meta"],
+  },
+  {
+    id: "major-runreachyrun-20251222",
+    date: "2025-12-22",
+    title: "Major runreachyrun",
+    type: "session",
+    summary:
+      "Major runreachyrun.com session. Redesigned blog post template for professional reading experience: terminal-style code blocks with copy button, reading progress bar, table of contents sidebar, timeline visualization for timestamped lists. Configured Giscus comments with GitHub Discussions (bioinfo/reachy repo). Added dark/light mode toggle with loc",
+    content: {
+    },
+    tags: ["software", "infrastructure", "meta"],
+  },
+  {
+    id: "fixed-camera-based-gaze-detection-in-focus-guardia-20251222",
+    date: "2025-12-22",
+    title: "Fixed camera-based gaze detection in Focus Guardian",
+    type: "session",
+    summary:
+      "Fixed camera-based gaze detection in Focus Guardian. MediaPipe 0.10.31 removed the `solutions` API - code was using `mp.solutions.face_mesh.FaceMesh` which no longer exists. Installed MediaPipe 0.10.13 which still has the solutions API. Also fixed sounddevice version conflict. Camera tracking should now work with the robot.",
+    content: {
+    },
+    tags: ["hardware", "software", "camera", "audio", "focus-guardian"],
+  },
+  {
+    id: "zero-runtime-cost-20251222",
+    date: "2025-12-22",
+    title: "zero runtime cost",
+    type: "session",
+    summary:
+      "Shipped complete RAG system for runreachyrun.com with zero runtime cost. Architecture: pre-computed Nomic embeddings (768-dim vectors for 29 documents) generated locally, client-side cosine similarity search, OpenRouter chat with Gemini 2.0 Flash free tier. Features implemented: - AI Chat Widget: Markdown rendering, expandable modal view, macOS-sty",
+    content: {
+    },
+    tags: ["claude-code", "simulation", "rag", "meta"],
+  },
+  {
+    id: "face-mesh-20251222",
+    date: "2025-12-22",
+    title: "Face Mesh",
+    type: "session",
+    summary:
+      "Finally got Focus Guardian camera-based presence detection working after extensive debugging. The journey:  1. Face Mesh - Failed. Robot sits to user's side, MediaPipe can't detect faces in profile view 2. Face Detection - Failed. Same profile view issue, even with low confidence threshold (0.1) 3. Pose Detection - Failed. Background objects (monit",
+    content: {
+    },
+    tags: ["hardware", "software", "claude-code", "camera", "focus-guardian"],
+  },
+  {
+    id: "dj-reactor-still-shaking-after-reachyminiapp-refac-20251222",
+    date: "2025-12-22",
+    title: "DJ Reactor still shaking after ReachyMiniApp refactor",
+    type: "session",
+    summary:
+      "DJ Reactor still shaking after ReachyMiniApp refactor. Previous \"fix\" in W51 wasn't complete. Diagnosed root cause: timing mismatch. Using `duration=0.3` for goto_target but calling it every `0.033s` - each new command interrupts the previous mid-motion, causing jerky shaking instead of smooth dancing.",
+    content: {
+    },
+    tags: ["software", "audio", "dj-reactor"],
+  },
+  {
+    id: "fixed-by-adding-proper-beat-tracking-added-beat-ph-20251222",
+    date: "2025-12-22",
+    title: "Fixed by adding proper beat tracking: - Added `beat_phase` a",
+    type: "session",
+    summary:
+      "Fixed by adding proper beat tracking: - Added `beat_phase` and `onset_strength` to AudioFeatures - AudioAnalyzer now calculates `beat_phase = (time_since_beat / beat_interval) % 1.0` - DanceController uses `features.beat_phase * 2π` for phase instead of arbitrary time - Matched duration (0.12s) to loop rate (0.1s) so movements complete before next ",
+    content: {
+    },
+    tags: ["audio", "dj-reactor"],
+  },
+  {
+    id: "cranked-up-expressiveness-after-user-said-needs-mo-20251222",
+    date: "2025-12-22",
+    title: "Cranked up expressiveness after user said \"needs more sway\":",
+    type: "session",
+    summary:
+      "Cranked up expressiveness after user said \"needs more sway\": - Base energy 80% minimum (was 60%) - always moving big - Body sway 75° for electronic (was 55°) - Head bob × 1.2, head roll × 2.0 multipliers - Beat emphasis: -25° to -35° head dips - Antenna × 2.0 multiplier - Lower smoothing (0.2-0.25) for snappier response",
+    content: {
+    },
+    tags: ["software", "claude-code", "audio"],
+  },
+  {
+    id: "polished-both-huggingface-landing-pages-with-runre-20251222",
+    date: "2025-12-22",
+    title: "Polished both HuggingFace landing pages with runreachyrun",
+    type: "session",
+    summary:
+      "Polished both HuggingFace landing pages with runreachyrun.com branding. Added logo, social links (X, GitHub, Bluesky), copy buttons for commands, \"View Source\" links, and links to runreachyrun.com app pages. Focus Guardian got a pomodoro timer animation (circular progress ring, pulsing dots, bouncing robot SVG).",
+    content: {
+    },
+    tags: ["hardware", "software", "focus-guardian", "huggingface", "meta"],
+  },
+  {
+    id: "added-google-analytics-with-gdpr-compliant-cookie--20251222",
+    date: "2025-12-22",
+    title: "Added Google Analytics with GDPR-compliant cookie consent to",
+    type: "session",
+    summary:
+      "Added Google Analytics with GDPR-compliant cookie consent to runreachyrun.com: - Cookie consent banner with Accept/Decline (animated with Framer Motion) - GA4 only loads after explicit consent - IP anonymization enabled - Privacy & Cookies policy page at `/privacy` - Footer link to policy - Reset preference button on privacy page - Consent stored i",
+    content: {
+    },
+    tags: ["meta"],
+  },
+  {
+    id: "fixed-chat-widget-429-rate-limit-errors-20251222",
+    date: "2025-12-22",
+    title: "Fixed chat widget 429 rate limit errors",
+    type: "session",
+    summary:
+      "Fixed chat widget 429 rate limit errors. Free tier of `google/gemini-2.0-flash-exp:free` on OpenRouter was hitting rate limits constantly. Switched to `google/gemini-2.0-flash-lite-001` (paid but super cheap ~$0.01/1M tokens). Chat now works reliably in production. Also improved error handling to show actual error messages instead of generic \"somet",
+    content: {
+    },
+    tags: ["claude-code", "rag"],
+  },
+  {
+    id: "reachy-echo-20251222",
+    date: "2025-12-22",
+    title: "Reachy Echo",
+    type: "session",
+    summary:
+      "Started Reachy Echo development - the companion app from the roadmap. Named it \"Echo\" for the memory/response double meaning. Created project structure from existing vision docs in `docs/roadmap/companion/`.",
+    content: {
+    },
+    tags: ["software", "camera", "echo"],
+  },
+  {
+    id: "built-proactive-behavior-engine-trigger-system-tim-20251222",
+    date: "2025-12-22",
+    title: "Built proactive behavior engine: - Trigger system: time, dur",
+    type: "session",
+    summary:
+      "Built proactive behavior engine: - Trigger system: time, duration, pattern, presence - 5 behaviors: morning greeting, work break reminder, build celebration, build failure support, return greeting - Cooldown management (12h for greetings, 1-2h for reminders) - Background thread checking triggers every second",
+    content: {
+    },
+    tags: ["claude-code", "echo"],
+  },
+  {
+    id: "echo-mvp-complete-20251222",
+    date: "2025-12-22",
+    title: "Echo MVP complete",
+    type: "milestone",
+    summary:
+      "Echo MVP complete. Server running on http://localhost:7861. Memory persists across sessions. Proactive engine runs in background. All integrated with Reachy robot animations (antenna movements on response, celebration dances).",
+    content: {
+    },
+    tags: ["hardware", "dj-reactor", "echo"],
   },
   {
     id: "runreachyrun-com-launched-20251221",

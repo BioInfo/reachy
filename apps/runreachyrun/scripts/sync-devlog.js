@@ -4,6 +4,7 @@
  *
  * Reads from:
  * - devlog/milestones/*.md - Key moments and breakthroughs
+ * - devlog/stream/*.md - Running commentary (significant entries only)
  * - sessions/*.md - Development session logs
  *
  * Outputs:
@@ -49,6 +50,7 @@ function extractTags(text) {
     simulation: /simulation|mujoco|sim/,
     "focus-guardian": /focus.?guardian|productivity|body.?double/,
     "dj-reactor": /dj.?reactor|music|dance/,
+    "echo": /\becho\b|companion|memory|proactive/,
     huggingface: /hugging.?face|hf|space/,
     infrastructure: /daemon|launch|config|setup|vercel|deploy/,
     rag: /rag|embedding|vector|search|chat/,
@@ -87,7 +89,9 @@ function determineType(title, content, status) {
     lowerTitle.includes("deploy") ||
     lowerTitle.includes("publish") ||
     lowerTitle.includes("complete") ||
-    lowerTitle.includes("live")
+    lowerTitle.includes("live") ||
+    lowerTitle.includes("accepted") ||
+    lowerTitle.includes("shipped")
   ) {
     return "milestone";
   }
@@ -249,6 +253,105 @@ function parseSessionFile(content) {
 }
 
 /**
+ * Parse a stream markdown file for significant entries
+ * Stream format: ## Day, Month DD headers with **HH:MM** - description entries
+ */
+function parseStreamFile(content, filename) {
+  const entries = [];
+
+  // Extract year and week from filename (e.g., "2025-W52.md")
+  const fileMatch = filename.match(/(\d{4})-W(\d{2})\.md$/);
+  if (!fileMatch) return entries;
+
+  const year = fileMatch[1];
+
+  // Split by day headers (## Sunday, December 22)
+  const daySections = content.split(/\n##\s+/).slice(1);
+
+  for (const section of daySections) {
+    const lines = section.trim().split("\n");
+    if (lines.length === 0) continue;
+
+    // Parse day header: "Sunday, December 22" or "Monday, December 22"
+    const dayHeader = lines[0];
+    const dateMatch = dayHeader.match(/(?:Sunday|Monday|Tuesday|Wednesday|Thursday|Friday|Saturday),\s+(\w+)\s+(\d+)/i);
+    if (!dateMatch) continue;
+
+    const monthName = dateMatch[1];
+    const day = dateMatch[2].padStart(2, "0");
+
+    // Convert month name to number
+    const months = {
+      january: "01", february: "02", march: "03", april: "04",
+      may: "05", june: "06", july: "07", august: "08",
+      september: "09", october: "10", november: "11", december: "12"
+    };
+    const month = months[monthName.toLowerCase()];
+    if (!month) continue;
+
+    const date = `${year}-${month}-${day}`;
+
+    // Find significant entries (those with key phrases or substantial content)
+    const significantPatterns = [
+      /\bcomplete\b/i,
+      /\bfirst\b/i,
+      /\blaunched?\b/i,
+      /\bshipped\b/i,
+      /\bdeployed\b/i,
+      /\baccepted\b/i,
+      /\bMVP\b/i,
+      /\bbreakthrough\b/i,
+      /\bfinally\b.*\b(?:fixed|working|solved)\b/i,
+      /\bworking\b.*\bnow\b/i,
+      /\bstarted\b.*\*\*[^*]+\*\*/i, // Started **Project Name**
+    ];
+
+    // Parse timestamped entries
+    const entryRegex = /\*\*(\d{2}:\d{2})\*\*\s*-\s*(.+?)(?=\n\*\*\d{2}:\d{2}\*\*|\n##|\n---|\n\n\n|$)/gs;
+    const fullText = lines.slice(1).join("\n");
+
+    let match;
+    while ((match = entryRegex.exec(fullText)) !== null) {
+      const time = match[1];
+      const entryText = match[2].trim();
+
+      // Check if this is a significant entry
+      const isSignificant = significantPatterns.some(p => p.test(entryText)) ||
+                           entryText.length > 300; // Long entries are usually significant
+
+      if (!isSignificant) continue;
+
+      // Extract a title from the entry (first sentence or bold text)
+      let title = "";
+      const boldMatch = entryText.match(/\*\*([^*]+)\*\*/);
+      if (boldMatch) {
+        title = boldMatch[1];
+      } else {
+        // Use first sentence as title
+        const firstSentence = entryText.split(/[.!?]/)[0];
+        title = firstSentence.slice(0, 60).trim();
+      }
+
+      // Clean up the summary
+      const summary = entryText
+        .replace(/\*\*/g, "") // Remove bold markers
+        .replace(/\n/g, " ")  // Flatten newlines
+        .trim()
+        .slice(0, 350);
+
+      entries.push({
+        date,
+        time,
+        title,
+        summary,
+      });
+    }
+  }
+
+  return entries;
+}
+
+/**
  * Convert parsed milestone to timeline node
  */
 function milestoneToTimelineNode(m) {
@@ -297,6 +400,24 @@ function sessionToTimelineNode(s) {
 }
 
 /**
+ * Convert parsed stream entry to timeline node
+ */
+function streamEntryToTimelineNode(entry) {
+  const type = determineType(entry.title, entry.summary);
+  const tags = extractTags(entry.title + " " + entry.summary);
+
+  return {
+    id: generateSlug(entry.title, entry.date),
+    date: entry.date,
+    title: entry.title,
+    type,
+    summary: entry.summary,
+    content: {},
+    tags,
+  };
+}
+
+/**
  * Read all timeline nodes from devlog
  */
 function readDevlogNodes() {
@@ -323,6 +444,19 @@ function readDevlogNodes() {
       const session = parseSessionFile(content);
       if (session) {
         nodes.push(sessionToTimelineNode(session));
+      }
+    }
+  }
+
+  // Read stream files for significant entries
+  const streamDir = path.join(DEVLOG_PATH, "stream");
+  if (fs.existsSync(streamDir)) {
+    const files = fs.readdirSync(streamDir).filter((f) => f.endsWith(".md"));
+    for (const file of files) {
+      const content = fs.readFileSync(path.join(streamDir, file), "utf-8");
+      const streamEntries = parseStreamFile(content, file);
+      for (const entry of streamEntries) {
+        nodes.push(streamEntryToTimelineNode(entry));
       }
     }
   }

@@ -382,6 +382,121 @@ cat docs/roadmap/companion/00-vision.md`,
 
     lastUpdated: "2025-12-19",
   },
+
+  {
+    slug: "reachy-echo",
+    title: "Reachy Echo",
+    tagline: "A companion that remembers you",
+    description:
+      "Echo transforms Reachy Mini from a voice assistant into a companion that builds a relationship with you. It remembers your name, preferences, and what you worked on yesterday. Unlike reactive assistants, Echo initiates — greeting you in the morning, suggesting breaks, celebrating your wins.",
+    status: "development",
+    icon: "MessageCircle",
+
+    githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/echo",
+
+    screenshots: [],
+
+    features: [
+      {
+        icon: "Brain",
+        title: "Persistent Memory",
+        description:
+          "SQLite-backed memory stores facts about you, conversation history, and session summaries. Echo knows your name, work, and preferences across sessions.",
+      },
+      {
+        icon: "Sparkles",
+        title: "Proactive Behaviors",
+        description:
+          "Doesn't just respond — initiates. Morning greetings, work break reminders, build celebration dances. Trigger-based engine with cooldowns to avoid being annoying.",
+      },
+      {
+        icon: "Server",
+        title: "Multi-Model Backend",
+        description:
+          "LiteLLM integration supports 18+ models via DGX Spark: Llama 3.3 70B (Cerebras), Claude Opus 4.5, GPT-5.2, Gemini 3 Pro. Hot-swap models mid-conversation.",
+      },
+      {
+        icon: "Heart",
+        title: "Emotional Expression",
+        description:
+          "Movement that communicates, not decorates. Antenna wiggles on responses, celebration dances on achievements, attentive poses during conversation.",
+      },
+    ],
+
+    howItWorks: [
+      {
+        step: 1,
+        title: "First Meeting",
+        description:
+          "Echo asks your name and learns about you through natural conversation. Facts are extracted and stored automatically.",
+      },
+      {
+        step: 2,
+        title: "Building Relationship",
+        description:
+          "Each conversation adds to Echo's understanding. It remembers topics you care about, projects you mention, preferences you express.",
+      },
+      {
+        step: 3,
+        title: "Proactive Engagement",
+        description:
+          "Based on time, context, and learned patterns, Echo initiates interactions. Good morning greetings, break reminders after long focus sessions.",
+      },
+      {
+        step: 4,
+        title: "Growing Together",
+        description:
+          "Over time, Echo becomes more personalized. It knows when you need encouragement vs space, celebrates your wins, supports during setbacks.",
+      },
+    ],
+
+    prerequisites: [
+      "Reachy Mini Lite (physical robot)",
+      "Python 3.10+",
+      "LiteLLM backend (local or cloud)",
+      "Reachy daemon running on port 8000",
+    ],
+
+    quickStart: `# Currently in development
+# MVP complete, polishing before release
+
+# Architecture:
+# - LiteLLM provider (18 models via DGX Spark)
+# - SQLite memory (facts, sessions, messages)
+# - Proactive behavior engine (triggers + cooldowns)
+# - Gradio 6 UI with model selector`,
+
+    techStack: ["Python", "Gradio 6", "LiteLLM", "SQLite", "Reachy SDK"],
+
+    journalEntries: [],
+    timelineNodes: ["reachy-echo-mvp-20251222"],
+
+    claudeContributions: [
+      {
+        title: "Memory Architecture",
+        description:
+          "Designed the three-table SQLite schema: user_facts (persistent knowledge), conversation_sessions (summaries), daily_log (greeting tracking). Automatic fact extraction from conversation.",
+      },
+      {
+        title: "Proactive Engine",
+        description:
+          "Built the trigger-based behavior system with time/duration/pattern/presence triggers. Cooldown management prevents the robot from being annoying.",
+      },
+      {
+        title: "LiteLLM Integration",
+        description:
+          "Connected to DGX Spark's LiteLLM proxy with 18 models. Hot-swap capability lets users switch between fast local inference and powerful cloud models.",
+      },
+    ],
+
+    learnings: [
+      "Memory transforms assistants into companions — knowing someone's name changes everything",
+      "Proactive engagement needs careful rate limiting; too eager becomes annoying",
+      "Local LLM inference (Cerebras Llama 3.3 70B) is fast enough for real-time conversation",
+    ],
+
+    lastUpdated: "2025-12-22",
+  },
 ];
 
 // Helper functions
