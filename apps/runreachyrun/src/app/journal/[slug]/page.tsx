@@ -10,6 +10,7 @@ import {
   getJournalEntryBySlug,
   getAllTimelineNodes,
 } from "@/lib/content";
+import { formatDate } from "@/lib/date";
 
 // Revalidate every 5 minutes
 export const revalidate = 300;
@@ -75,7 +76,7 @@ export default async function JournalEntryPage({
     currentIndex < allEntries.length - 1 ? allEntries[currentIndex + 1] : null;
   const nextEntry = currentIndex > 0 ? allEntries[currentIndex - 1] : null;
 
-  const formattedDate = new Date(entry.date).toLocaleDateString("en-US", {
+  const formattedDate = formatDate(entry.date, {
     weekday: "long",
     month: "long",
     day: "numeric",

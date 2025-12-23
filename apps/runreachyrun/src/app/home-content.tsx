@@ -10,6 +10,7 @@ import { AnimatedBackground, GlowOrb } from "@/components/ui/animated-background
 import { Clock, BookOpen, Bot } from "lucide-react";
 import { GitHubActivity } from "@/components/dashboard/github-activity";
 import { AppsShowcase, ClaudeShowcase } from "@/components/showcase";
+import { formatDate } from "@/lib/date";
 import type { TimelineNode } from "@/types";
 
 const typeColors: Record<
@@ -211,10 +212,7 @@ export function HomeContent({ recentTimeline }: HomeContentProps) {
                       {node.type}
                     </SignalBadge>
                     <span className="font-mono text-xs text-[var(--text-muted)]">
-                      {new Date(node.date).toLocaleDateString("en-US", {
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {formatDate(node.date, { month: "short", day: "numeric" })}
                     </span>
                   </div>
                   <h3 className="text-lg font-medium text-[var(--text-primary)] mb-2">

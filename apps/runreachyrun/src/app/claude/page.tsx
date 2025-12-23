@@ -9,6 +9,7 @@ import { SignalBadge } from "@/components/ui/signal-badge";
 import { Card } from "@/components/ui/card";
 import { SignalLine } from "@/components/ui/signal-line";
 import { Icon } from "@/components/ui/icon";
+import { formatDate } from "@/lib/date";
 
 interface CodeSnippet {
   language: string;
@@ -348,10 +349,7 @@ function SessionCard({ session }: { session: ClaudeSession }) {
                 {session.outcome}
               </SignalBadge>
               <span className="font-mono text-xs text-[var(--text-muted)]">
-                {new Date(session.date).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                })}
+                {formatDate(session.date, { month: "short", day: "numeric" })}
               </span>
             </div>
             <h3 className="font-medium text-[var(--text-primary)] mb-1">

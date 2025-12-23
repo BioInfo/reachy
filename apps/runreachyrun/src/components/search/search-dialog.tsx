@@ -9,6 +9,7 @@ import { Icon } from "@/components/ui/icon";
 import { loadEmbeddings, hybridSearch } from "@/lib/rag/vector-search";
 import type { EmbeddingDocument, EmbeddingsData } from "@/lib/rag/types";
 import type { TimelineNode, JournalEntry } from "@/types";
+import { formatDate } from "@/lib/date";
 
 interface SearchResult {
   type: "timeline" | "journal" | "blog" | "claude" | "app" | "claude-session";
@@ -347,10 +348,7 @@ export function SearchDialog({
                           </SignalBadge>
                           {result.date && (
                             <span className="text-xs text-[var(--text-muted)] font-mono">
-                              {new Date(result.date).toLocaleDateString("en-US", {
-                                month: "short",
-                                day: "numeric",
-                              })}
+                              {formatDate(result.date, { month: "short", day: "numeric" })}
                             </span>
                           )}
                           {result.matchType && (

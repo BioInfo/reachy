@@ -1,6 +1,6 @@
 """Focus Guardian - Productivity body-double for Reachy Mini."""
 
-from .main import FocusGuardianApp
+from .main import ReachyMiniFocusGuardian
 
 __version__ = "0.1.0"
-__all__ = ["FocusGuardianApp"]
+__all__ = ["ReachyMiniFocusGuardian"]

@@ -576,7 +576,7 @@ class ReachyMiniDjReactor(ReachyMiniApp):
 
 # For standalone testing
 if __name__ == "__main__":
-    app = DJReactorApp()
+    app = ReachyMiniDjReactor()
     try:
         app.wrapped_run()
     except KeyboardInterrupt:

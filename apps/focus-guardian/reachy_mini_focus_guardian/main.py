@@ -857,7 +857,7 @@ class ReachyMiniFocusGuardian(ReachyMiniApp):
 
 
 if __name__ == "__main__":
-    app = FocusGuardianApp()
+    app = ReachyMiniFocusGuardian()
     try:
         app.wrapped_run()
     except KeyboardInterrupt:
