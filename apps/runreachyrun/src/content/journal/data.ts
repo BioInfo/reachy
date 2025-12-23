@@ -2,6 +2,71 @@ import { JournalEntry } from "@/types";
 
 export const journalEntries: JournalEntry[] = [
   {
+    slug: "official-app-store",
+    title: "Official App Store & First Community PR",
+    date: "2025-12-22",
+    summary:
+      "Both apps accepted into the Pollen Robotics app store. Hours later, a community member submitted our first external PR. The open source loop is working.",
+    content: `
+Two milestones in one day that prove the build-in-public approach works.
+
+## Accepted into the Official App Store
+
+After fixing the class naming convention (\`DJReactorApp\` → \`ReachyMiniDjReactor\`), both Focus Guardian and DJ Reactor passed the \`reachy-mini-app-assistant check\` validation.
+
+Submitted to Pollen Robotics. Within hours: accepted.
+
+Now live at: https://huggingface.co/spaces/pollen-robotics/Reachy_Mini#/apps
+
+Anyone with a Reachy Mini can install Focus Guardian or DJ Reactor with one click from their dashboard. The apps I built with Claude Code are now in the official ecosystem.
+
+## First Community Contribution
+
+Same day, a user (@apirrone) reported via HuggingFace Discussion that both apps were failing on install. Class name mismatch — I'd renamed the classes but forgot to update the \`if __name__ == "__main__"\` block.
+
+Within hours, they submitted a PR fixing DJ Reactor.
+
+\`\`\`python
+# Before (broken)
+if __name__ == "__main__":
+    DJReactorApp().wrapped_run()  # Old name
+
+# After (fixed)
+if __name__ == "__main__":
+    ReachyMiniDjReactor().wrapped_run()  # New name
+\`\`\`
+
+Merged it. Applied the same fix to Focus Guardian. Both apps working.
+
+## Why This Matters
+
+Less than 48 hours from app store acceptance to external contribution. The cycle:
+
+1. Build apps with Claude Code
+2. Document everything on runreachyrun.com
+3. Publish to HuggingFace
+4. Get accepted to official store
+5. Community finds bugs
+6. Community fixes bugs
+7. Everyone benefits
+
+This is what building in public enables. The project is real enough that people care to improve it.
+
+## Technical Note
+
+The validation requirements I didn't know about:
+- Class must be \`ReachyMini{AppName}\` not \`{AppName}App\`
+- README needs both \`reachy_mini\` AND \`reachy_mini_python_app\` tags
+- Entry points must match the new class names
+
+Now documented in \`docs/publishing-reachy-apps.md\` so future apps get it right the first time.
+    `.trim(),
+    tags: ["apps", "huggingface", "community", "open-source"],
+    mood: "win",
+    readingTime: 3,
+    linkedTimeline: ["both-apps-accepted-into-official-pollen-robotics-a-20251222", "first-community-contribution-20251222"],
+  },
+  {
     slug: "huggingface-publish",
     title: "Publishing to HuggingFace: A Different Paradigm",
     date: "2025-12-21",
