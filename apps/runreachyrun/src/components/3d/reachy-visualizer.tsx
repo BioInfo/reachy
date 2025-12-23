@@ -64,16 +64,19 @@ function ReachyModel({
     }
   });
 
-  // Colors matching the site theme
+  // Colors matching the actual Reachy Mini (white/off-white)
   const colors = {
-    body: "#1a1a1f",
-    bodyAccent: "#222228",
-    head: "#1a1a1f",
-    eyes: "#00ffd5",
-    eyeGlow: "#00ffd5",
-    antenna: "#333338",
-    antennaLED: "#00ffd5",
-    base: "#141418",
+    body: "#e8e8e8",
+    bodyLight: "#f5f5f5",
+    bodyDark: "#d0d0d0",
+    head: "#f0f0f0",
+    eyeSocket: "#2a2a2a",
+    eyeLens: "#1a1a1a",
+    eyeRing: "#404040",
+    antenna: "#1a1a1a",
+    antennaSpring: "#333333",
+    base: "#1a1a1a",
+    accent: "#00ffd5",
   };
 
   // Eye shape based on expression
@@ -94,131 +97,111 @@ function ReachyModel({
 
   return (
     <group>
-      {/* Base / Foot */}
+      {/* Base / Foot - small black disc */}
       <mesh position={[0, 0, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[0.3, 0.35, 0.08, 32]} />
+        <cylinderGeometry args={[0.12, 0.14, 0.03, 32]} />
         <meshStandardMaterial color={colors.base} metalness={0.3} roughness={0.7} />
       </mesh>
 
       {/* Body */}
-      <group ref={bodyRef} position={[0, 0.25, 0]}>
-        {/* Main body cylinder */}
-        <mesh castShadow>
-          <cylinderGeometry args={[0.18, 0.22, 0.4, 32]} />
-          <meshStandardMaterial color={colors.body} metalness={0.4} roughness={0.6} />
+      <group ref={bodyRef} position={[0, 0.22, 0]}>
+        {/* Main body - egg/oval shape (scaled sphere) */}
+        <mesh castShadow scale={[1, 1.15, 0.9]}>
+          <sphereGeometry args={[0.18, 32, 32]} />
+          <meshStandardMaterial color={colors.body} metalness={0.1} roughness={0.4} />
         </mesh>
 
-        {/* Body accent ring */}
-        <mesh position={[0, 0.1, 0]}>
-          <torusGeometry args={[0.19, 0.015, 16, 32]} />
-          <meshStandardMaterial color={colors.eyeGlow} emissive={colors.eyeGlow} emissiveIntensity={0.3} />
-        </mesh>
-
-        {/* Neck */}
-        <mesh position={[0, 0.25, 0]} castShadow>
-          <cylinderGeometry args={[0.08, 0.1, 0.1, 16]} />
-          <meshStandardMaterial color={colors.bodyAccent} metalness={0.5} roughness={0.5} />
+        {/* Subtle seam line around body */}
+        <mesh position={[0, 0.02, 0]} rotation={[Math.PI / 2, 0, 0]}>
+          <torusGeometry args={[0.165, 0.003, 8, 64]} />
+          <meshStandardMaterial color={colors.bodyDark} />
         </mesh>
 
         {/* Head */}
-        <group ref={headRef} position={[0, 0.45, 0]}>
-          {/* Main head sphere */}
-          <mesh castShadow>
-            <sphereGeometry args={[0.2, 32, 32]} />
-            <meshStandardMaterial color={colors.head} metalness={0.3} roughness={0.7} />
+        <group ref={headRef} position={[0, 0.32, 0]}>
+          {/* Main head - rounded rectangle/capsule shape */}
+          <mesh castShadow scale={[1.3, 0.85, 0.9]}>
+            <sphereGeometry args={[0.14, 32, 32]} />
+            <meshStandardMaterial color={colors.head} metalness={0.1} roughness={0.4} />
           </mesh>
 
-          {/* Face plate */}
-          <mesh position={[0, 0, 0.15]} rotation={[0, 0, 0]}>
-            <circleGeometry args={[0.15, 32]} />
-            <meshStandardMaterial color={colors.bodyAccent} metalness={0.5} roughness={0.4} />
-          </mesh>
-
-          {/* Left eye */}
-          <mesh
-            ref={eyeLeftRef}
-            position={[-0.06, 0.02, 0.17]}
-            scale={[eyeScale.x, eyeScale.y, 1]}
-          >
-            <circleGeometry args={[0.035, 32]} />
-            <meshStandardMaterial
-              color={colors.eyes}
-              emissive={colors.eyeGlow}
-              emissiveIntensity={0.8}
-            />
-          </mesh>
-
-          {/* Right eye */}
-          <mesh
-            ref={eyeRightRef}
-            position={[0.06, 0.02, 0.17]}
-            scale={[eyeScale.x, eyeScale.y, 1]}
-          >
-            <circleGeometry args={[0.035, 32]} />
-            <meshStandardMaterial
-              color={colors.eyes}
-              emissive={colors.eyeGlow}
-              emissiveIntensity={0.8}
-            />
-          </mesh>
-
-          {/* Mouth (subtle arc for happy) */}
-          {expression === "happy" && (
-            <mesh position={[0, -0.05, 0.17]} rotation={[0, 0, Math.PI]}>
-              <torusGeometry args={[0.04, 0.008, 8, 16, Math.PI]} />
-              <meshStandardMaterial color={colors.eyeGlow} emissive={colors.eyeGlow} emissiveIntensity={0.5} />
+          {/* Left eye socket - goggle style */}
+          <group position={[-0.07, 0, 0.1]}>
+            {/* Outer ring */}
+            <mesh rotation={[0, 0, 0]}>
+              <torusGeometry args={[0.045, 0.008, 16, 32]} />
+              <meshStandardMaterial color={colors.eyeRing} metalness={0.3} roughness={0.6} />
             </mesh>
-          )}
-
-          {/* Camera lens (top of head) */}
-          <mesh position={[0, 0.15, 0.1]} rotation={[0.3, 0, 0]}>
-            <cylinderGeometry args={[0.03, 0.03, 0.02, 16]} />
-            <meshStandardMaterial color="#111" metalness={0.8} roughness={0.2} />
-          </mesh>
-
-          {/* Left Antenna */}
-          <group ref={antennaLeftRef} position={[-0.12, 0.18, 0]}>
-            {/* Antenna base */}
-            <mesh>
-              <cylinderGeometry args={[0.015, 0.02, 0.05, 8]} />
-              <meshStandardMaterial color={colors.antenna} metalness={0.5} roughness={0.5} />
+            {/* Socket depression */}
+            <mesh position={[0, 0, 0.01]}>
+              <cylinderGeometry args={[0.042, 0.042, 0.02, 32]} />
+              <meshStandardMaterial color={colors.eyeSocket} metalness={0.2} roughness={0.8} />
             </mesh>
-            {/* Antenna stalk */}
-            <mesh position={[0, 0.08, 0]} rotation={[0, 0, 0.2]}>
-              <cylinderGeometry args={[0.008, 0.012, 0.12, 8]} />
-              <meshStandardMaterial color={colors.antenna} metalness={0.5} roughness={0.5} />
-            </mesh>
-            {/* Antenna LED tip */}
-            <mesh position={[0.02, 0.14, 0]}>
-              <sphereGeometry args={[0.018, 16, 16]} />
-              <meshStandardMaterial
-                color={colors.antennaLED}
-                emissive={colors.antennaLED}
-                emissiveIntensity={1}
-              />
+            {/* Lens */}
+            <mesh ref={eyeLeftRef} position={[0, 0, 0.02]} scale={[eyeScale.x, eyeScale.y, 1]}>
+              <circleGeometry args={[0.035, 32]} />
+              <meshStandardMaterial color={colors.eyeLens} metalness={0.8} roughness={0.2} />
             </mesh>
           </group>
 
-          {/* Right Antenna */}
-          <group ref={antennaRightRef} position={[0.12, 0.18, 0]}>
-            {/* Antenna base */}
-            <mesh>
-              <cylinderGeometry args={[0.015, 0.02, 0.05, 8]} />
-              <meshStandardMaterial color={colors.antenna} metalness={0.5} roughness={0.5} />
+          {/* Right eye socket - goggle style */}
+          <group position={[0.07, 0, 0.1]}>
+            {/* Outer ring */}
+            <mesh rotation={[0, 0, 0]}>
+              <torusGeometry args={[0.045, 0.008, 16, 32]} />
+              <meshStandardMaterial color={colors.eyeRing} metalness={0.3} roughness={0.6} />
             </mesh>
-            {/* Antenna stalk */}
-            <mesh position={[0, 0.08, 0]} rotation={[0, 0, -0.2]}>
-              <cylinderGeometry args={[0.008, 0.012, 0.12, 8]} />
-              <meshStandardMaterial color={colors.antenna} metalness={0.5} roughness={0.5} />
+            {/* Socket depression */}
+            <mesh position={[0, 0, 0.01]}>
+              <cylinderGeometry args={[0.042, 0.042, 0.02, 32]} />
+              <meshStandardMaterial color={colors.eyeSocket} metalness={0.2} roughness={0.8} />
             </mesh>
-            {/* Antenna LED tip */}
-            <mesh position={[-0.02, 0.14, 0]}>
-              <sphereGeometry args={[0.018, 16, 16]} />
-              <meshStandardMaterial
-                color={colors.antennaLED}
-                emissive={colors.antennaLED}
-                emissiveIntensity={1}
-              />
+            {/* Lens */}
+            <mesh ref={eyeRightRef} position={[0, 0, 0.02]} scale={[eyeScale.x, eyeScale.y, 1]}>
+              <circleGeometry args={[0.035, 32]} />
+              <meshStandardMaterial color={colors.eyeLens} metalness={0.8} roughness={0.2} />
+            </mesh>
+          </group>
+
+          {/* Left Antenna - thin wire with spring coil */}
+          <group ref={antennaLeftRef} position={[-0.08, 0.12, 0]}>
+            {/* Spring coil section (at base) */}
+            {[...Array(6)].map((_, i) => (
+              <mesh key={`spring-l-${i}`} position={[0, i * 0.012, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[0.012, 0.002, 8, 16]} />
+                <meshStandardMaterial color={colors.antennaSpring} metalness={0.6} roughness={0.4} />
+              </mesh>
+            ))}
+            {/* Thin wire stalk */}
+            <mesh position={[-0.015, 0.18, 0]} rotation={[0, 0, 0.15]}>
+              <cylinderGeometry args={[0.003, 0.003, 0.28, 8]} />
+              <meshStandardMaterial color={colors.antenna} metalness={0.7} roughness={0.3} />
+            </mesh>
+            {/* Small tip */}
+            <mesh position={[-0.035, 0.32, 0]}>
+              <sphereGeometry args={[0.006, 8, 8]} />
+              <meshStandardMaterial color={colors.antenna} metalness={0.7} roughness={0.3} />
+            </mesh>
+          </group>
+
+          {/* Right Antenna - thin wire with spring coil */}
+          <group ref={antennaRightRef} position={[0.08, 0.12, 0]}>
+            {/* Spring coil section (at base) */}
+            {[...Array(6)].map((_, i) => (
+              <mesh key={`spring-r-${i}`} position={[0, i * 0.012, 0]} rotation={[Math.PI / 2, 0, 0]}>
+                <torusGeometry args={[0.012, 0.002, 8, 16]} />
+                <meshStandardMaterial color={colors.antennaSpring} metalness={0.6} roughness={0.4} />
+              </mesh>
+            ))}
+            {/* Thin wire stalk */}
+            <mesh position={[0.015, 0.18, 0]} rotation={[0, 0, -0.15]}>
+              <cylinderGeometry args={[0.003, 0.003, 0.28, 8]} />
+              <meshStandardMaterial color={colors.antenna} metalness={0.7} roughness={0.3} />
+            </mesh>
+            {/* Small tip */}
+            <mesh position={[0.035, 0.32, 0]}>
+              <sphereGeometry args={[0.006, 8, 8]} />
+              <meshStandardMaterial color={colors.antenna} metalness={0.7} roughness={0.3} />
             </mesh>
           </group>
         </group>
@@ -269,48 +252,56 @@ export function ReachyVisualizer({
     >
       <Canvas
         shadows
-        camera={{ position: [0.8, 0.5, 0.8], fov: 45 }}
+        camera={{ position: [0, 0.4, 1.2], fov: 40 }}
         gl={{ antialias: true }}
       >
-        {/* Lighting */}
-        <ambientLight intensity={0.4} />
+        {/* Lighting - brighter to show white robot */}
+        <ambientLight intensity={0.7} />
         <directionalLight
-          position={[5, 5, 5]}
-          intensity={0.8}
+          position={[3, 5, 5]}
+          intensity={1.2}
           castShadow
           shadow-mapSize={[1024, 1024]}
         />
-        <pointLight position={[-3, 2, -3]} intensity={0.3} color="#00ffd5" />
-        <pointLight position={[3, 2, 3]} intensity={0.2} color="#ffaa00" />
+        <directionalLight
+          position={[-3, 3, 2]}
+          intensity={0.4}
+        />
+        {/* Subtle rim light */}
+        <pointLight position={[0, 2, -2]} intensity={0.3} color="#ffffff" />
+        {/* Accent light for teal glow effect */}
+        <pointLight position={[0.5, 0, 1]} intensity={0.15} color="#00ffd5" />
 
         {/* Environment for reflections */}
-        <Environment preset="night" />
+        <Environment preset="city" />
 
-        {/* The Robot */}
-        <Float speed={1} rotationIntensity={0.1} floatIntensity={0.1}>
-          <ReachyModel expression={expression} animate />
-        </Float>
+        {/* The Robot - centered at proper height */}
+        <group position={[0, -0.15, 0]}>
+          <Float speed={1.5} rotationIntensity={0.05} floatIntensity={0.05}>
+            <ReachyModel expression={expression} animate />
+          </Float>
+        </group>
 
-        {/* Floor */}
+        {/* Subtle floor reflection */}
         <mesh
           rotation={[-Math.PI / 2, 0, 0]}
-          position={[0, -0.04, 0]}
+          position={[0, -0.16, 0]}
           receiveShadow
         >
-          <circleGeometry args={[1, 64]} />
+          <circleGeometry args={[0.8, 64]} />
           <meshStandardMaterial
-            color="#0a0a0c"
-            metalness={0.8}
-            roughness={0.3}
+            color="#1a1a1f"
+            metalness={0.9}
+            roughness={0.1}
             transparent
-            opacity={0.8}
+            opacity={0.6}
           />
         </mesh>
 
-        {/* Ground glow ring */}
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.03, 0]}>
-          <ringGeometry args={[0.35, 0.4, 64]} />
-          <meshBasicMaterial color="#00ffd5" transparent opacity={0.15} />
+        {/* Subtle glow ring */}
+        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.155, 0]}>
+          <ringGeometry args={[0.18, 0.22, 64]} />
+          <meshBasicMaterial color="#00ffd5" transparent opacity={0.1} />
         </mesh>
 
         {/* Controls */}
@@ -321,9 +312,10 @@ export function ReachyVisualizer({
             minDistance={0.8}
             maxDistance={2.5}
             minPolarAngle={Math.PI / 6}
-            maxPolarAngle={Math.PI / 2}
+            maxPolarAngle={Math.PI / 2.2}
             autoRotate
             autoRotateSpeed={0.5}
+            target={[0, 0.25, 0]}
           />
         )}
       </Canvas>
