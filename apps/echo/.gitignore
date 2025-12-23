@@ -1,0 +1,14 @@
+# Runtime data (user conversations, memory)
+data/*.db
+data/*.sqlite
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+
+# Environment
+.env
+.env.*

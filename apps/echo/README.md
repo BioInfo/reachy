@@ -62,8 +62,8 @@ Echo remembers across sessions:
 - Work patterns and habits
 
 Try saying:
-- "My name is Justin"
-- "I work at AstraZeneca"
+- "My name is Alex"
+- "I'm a software engineer"
 - "What do you know about me?"
 
 ### Proactive Behaviors

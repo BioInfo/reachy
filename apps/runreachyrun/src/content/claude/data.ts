@@ -130,11 +130,11 @@ devlog/blog/*.md → parseBlogFile() → /blog` }
     summary: "First boot of the physical Reachy Mini Lite after overnight assembly. Transitioned from simulation to hardware mode with Claude Code assistance. Set up devlog system for \"building in public\" documentation. Got conversation app working with OpenAI integration.",
     codeSnippets: [
       { language: "bash", code: `# Hardware mode (physical robot)
-/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+python -m reachy_mini.daemon.app.main \\
   --headless --fastapi-port 8000
 
 # Simulation mode
-/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+python -m reachy_mini.daemon.app.main \\
   --sim --headless --fastapi-port 8000
 
 # Health check

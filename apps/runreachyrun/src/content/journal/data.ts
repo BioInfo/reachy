@@ -296,7 +296,7 @@ Claude stopped the simulation daemon and started one for the physical robot:
 pkill -f "reachy_mini.daemon"
 
 # Start daemon for physical hardware (no --sim flag)
-/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+python -m reachy_mini.daemon.app.main \\
   --headless --fastapi-port 8000 > /tmp/reachy-daemon.log 2>&1 &
 \`\`\`
 
@@ -351,11 +351,11 @@ tail -f /tmp/reachy-daemon.log
 pkill -f "reachy_mini.daemon"
 
 # Start for hardware
-/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+python -m reachy_mini.daemon.app.main \\
   --headless --fastapi-port 8000
 
 # Start for simulation
-/Users/bioinfo/apps/reachy/venv/bin/python -m reachy_mini.daemon.app.main \\
+python -m reachy_mini.daemon.app.main \\
   --sim --headless --fastapi-port 8000
 \`\`\`
 

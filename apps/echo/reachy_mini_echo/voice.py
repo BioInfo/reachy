@@ -21,7 +21,7 @@ import requests
 logger = logging.getLogger(__name__)
 
 # Backend configuration
-DEFAULT_VOICE_URL = "http://100.101.43.40:4001"  # DGX voice server
+DEFAULT_VOICE_URL = os.getenv("VOICE_URL", "http://localhost:4001")
 VOICE_BACKEND = os.getenv("VOICE_BACKEND", "local")  # "local" or "openai"
 
 # Check for OpenAI (optional for cloud backend)
