@@ -22,9 +22,10 @@ from .voice import VoiceManager, process_voice_input, generate_voice_response
 
 logger = logging.getLogger(__name__)
 
-# Default configuration
-DEFAULT_LITELLM_URL = "http://localhost:4000"
-DEFAULT_MODEL = "llama-3.3-70b-cerebras"  # Fast Cerebras inference
+# Default configuration - OpenRouter direct
+DEFAULT_LITELLM_URL = os.getenv("LITELLM_URL", "https://openrouter.ai/api")
+DEFAULT_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("LITELLM_API_KEY", "")
+DEFAULT_MODEL = os.getenv("LITELLM_MODEL", "google/gemini-2.5-flash-lite")
 
 # Available models (populated from LiteLLM)
 AVAILABLE_MODELS: List[str] = []
@@ -115,9 +116,9 @@ class ReachyMiniEcho(ReachyMiniApp):
 
         # LLM Provider
         config = LiteLLMConfig(
-            base_url=os.getenv("LITELLM_URL", DEFAULT_LITELLM_URL),
-            api_key=os.getenv("LITELLM_API_KEY"),
-            model=os.getenv("LITELLM_MODEL", DEFAULT_MODEL),
+            base_url=DEFAULT_LITELLM_URL,
+            api_key=DEFAULT_API_KEY,
+            model=DEFAULT_MODEL,
         )
         self.provider = LiteLLMProvider(config)
 
@@ -425,13 +426,13 @@ You have a physical robot body with a head and antennas. You can express emotion
                 response = ""
                 audio_path = None
 
-                # Check for proactive messages to inject
+                # Check for proactive messages to inject (Gradio 6 format)
                 while self._proactive_messages:
                     proactive_msg = self._proactive_messages.pop(0)
-                    history.append((None, f"*{proactive_msg}*"))
+                    history.append({"role": "assistant", "content": f"*{proactive_msg}*"})
 
-                # Add user message
-                history.append((message, None))
+                # Add user message (Gradio 6 format)
+                history.append({"role": "user", "content": message})
 
                 # Save to memory
                 if self.memory:
@@ -450,8 +451,8 @@ You have a physical robot body with a head and antennas. You can express emotion
                         if self.memory:
                             self.memory.add_message("assistant", response)
 
-                        # Update last message with response
-                        history[-1] = (message, response)
+                        # Add assistant response (Gradio 6 format)
+                        history.append({"role": "assistant", "content": response})
 
                         # Update system prompt with new memory context
                         self._update_system_prompt()
@@ -466,9 +467,9 @@ You have a physical robot body with a head and antennas. You can express emotion
 
                     except Exception as e:
                         logger.error(f"Provider error: {e}")
-                        history[-1] = (message, f"*Echo encountered an error: {str(e)}*")
+                        history.append({"role": "assistant", "content": f"*Echo encountered an error: {str(e)}*"})
                 else:
-                    history[-1] = (message, "*Echo is not connected to a language model.*")
+                    history.append({"role": "assistant", "content": "*Echo is not connected to a language model.*"})
 
                 return "", history, audio_path
 

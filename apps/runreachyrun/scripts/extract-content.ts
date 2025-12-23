@@ -116,7 +116,26 @@ async function main() {
   }
   console.log(`  Found ${appsModule.appsData.length} app pages`);
 
-  // 5. Claude sessions (from the Claude page data)
+  // 5. About page
+  console.log("Extracting About page...");
+  documents.push({
+    id: "about-page",
+    type: "journal", // treat as content
+    title: "About Justin Johnson",
+    content: `Justin Johnson - Executive Director of Oncology Data Science at AstraZeneca.
+Deep technical background in genomics, computational biology, data science, and AI/ML.
+Building a Reachy Mini Lite robot with Claude Code as pair programmer.
+The recursive collaboration between human and AI is visible throughout - from debugging sessions to code commits.
+Background in bioinformatics and cancer research. Building things to understand them, not just to ship them.
+Twitter: @bioinfo, Bluesky: justinhjohnson.com, LinkedIn: justinhaywardjohnson
+Also writing at rundatarun.io - AI, data science, and robotics content.`,
+    metadata: {
+      url: "/about",
+    },
+  });
+  console.log("  Added About page");
+
+  // 6. Claude sessions (from the Claude page data)
   console.log("Extracting Claude sessions...");
   // These are hardcoded in the Claude page, let's extract them
   const claudeSessions = [
