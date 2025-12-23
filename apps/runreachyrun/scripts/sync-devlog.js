@@ -255,6 +255,8 @@ function parseSessionFile(content) {
 /**
  * Parse a stream markdown file for significant entries
  * Stream format: ## Day, Month DD headers with **HH:MM** - description entries
+ *
+ * Only extracts entries that are truly significant milestones, not routine work notes.
  */
 function parseStreamFile(content, filename) {
   const entries = [];
@@ -291,19 +293,16 @@ function parseStreamFile(content, filename) {
 
     const date = `${year}-${month}-${day}`;
 
-    // Find significant entries (those with key phrases or substantial content)
-    const significantPatterns = [
-      /\bcomplete\b/i,
-      /\bfirst\b/i,
-      /\blaunched?\b/i,
-      /\bshipped\b/i,
-      /\bdeployed\b/i,
-      /\baccepted\b/i,
-      /\bMVP\b/i,
-      /\bbreakthrough\b/i,
-      /\bfinally\b.*\b(?:fixed|working|solved)\b/i,
-      /\bworking\b.*\bnow\b/i,
-      /\bstarted\b.*\*\*[^*]+\*\*/i, // Started **Project Name**
+    // Only extract entries with BOTH a clear milestone phrase AND proper structure
+    // These patterns indicate true milestones worth surfacing
+    const milestonePatterns = [
+      /\bBOTH APPS ACCEPTED\b/i,
+      /\bMVP complete\b/i,
+      /\bfirst community\b/i,
+      /\bfirst external\b/i,
+      /\blaunched?\b.*\bproduction\b/i,
+      /\bshipped\b.*\bcomplete\b/i,
+      /\bpublished to\b/i,
     ];
 
     // Parse timestamped entries
@@ -315,22 +314,44 @@ function parseStreamFile(content, filename) {
       const time = match[1];
       const entryText = match[2].trim();
 
-      // Check if this is a significant entry
-      const isSignificant = significantPatterns.some(p => p.test(entryText)) ||
-                           entryText.length > 300; // Long entries are usually significant
+      // Must match a milestone pattern - no length-based extraction
+      const isMilestone = milestonePatterns.some(p => p.test(entryText));
+      if (!isMilestone) continue;
 
-      if (!isSignificant) continue;
-
-      // Extract a title from the entry (first sentence or bold text)
+      // Extract title - prefer a clean bold phrase that looks like a title
       let title = "";
-      const boldMatch = entryText.match(/\*\*([^*]+)\*\*/);
-      if (boldMatch) {
-        title = boldMatch[1];
-      } else {
-        // Use first sentence as title
-        const firstSentence = entryText.split(/[.!?]/)[0];
-        title = firstSentence.slice(0, 60).trim();
+
+      // Look for bold text that's a proper title (3+ words, not code/technical)
+      const boldMatches = entryText.match(/\*\*([^*]+)\*\*/g);
+      if (boldMatches) {
+        for (const bold of boldMatches) {
+          const text = bold.replace(/\*\*/g, "").trim();
+          // Good title: 3+ words, starts with capital, no colons/code
+          if (text.split(/\s+/).length >= 3 &&
+              /^[A-Z]/.test(text) &&
+              !/:/.test(text) &&
+              text.length >= 15 &&
+              text.length <= 80) {
+            title = text;
+            break;
+          }
+        }
       }
+
+      // If no good bold title, construct from first sentence
+      if (!title) {
+        const firstSentence = entryText.split(/[.!]/)[0].replace(/\*\*/g, "").trim();
+        // Only use if it's a clean, complete thought
+        if (firstSentence.length >= 20 &&
+            firstSentence.length <= 80 &&
+            /^[A-Z]/.test(firstSentence) &&
+            firstSentence.split(/\s+/).length >= 4) {
+          title = firstSentence;
+        }
+      }
+
+      // Skip if we couldn't find a good title
+      if (!title) continue;
 
       // Clean up the summary
       const summary = entryText
