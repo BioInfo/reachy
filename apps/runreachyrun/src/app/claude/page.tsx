@@ -10,6 +10,7 @@ import { Card } from "@/components/ui/card";
 import { SignalLine } from "@/components/ui/signal-line";
 import { Icon } from "@/components/ui/icon";
 import { formatDate } from "@/lib/date";
+import { getClaudeSessionsSorted, type ClaudeSession as GeneratedSession } from "@/content/claude/data";
 
 interface CodeSnippet {
   language: string;
@@ -21,7 +22,7 @@ interface ClaudeSession {
   id: string;
   date: string;
   goal: string;
-  outcome: "success" | "partial" | "pivot";
+  outcome: "success" | "partial" | "pivot" | "blocked" | "in-progress";
   summary: string;
   prompts?: {
     prompt: string;
@@ -33,7 +34,8 @@ interface ClaudeSession {
   linkedFeature?: string;
 }
 
-const sessions: ClaudeSession[] = [
+// Rich hand-curated sessions with detailed prompts and insights
+const curatedSessions: ClaudeSession[] = [
   {
     id: "echo-mvp",
     date: "2025-12-22",
@@ -353,6 +355,24 @@ class AudioAnalyzer:
   },
 ];
 
+// Merge curated sessions with auto-generated ones
+// Curated sessions take precedence (have richer content with prompts/insights)
+const generatedSessions = getClaudeSessionsSorted();
+const curatedIds = new Set(curatedSessions.map((s) => s.id));
+
+// Get generated sessions that aren't already curated
+const additionalSessions: ClaudeSession[] = generatedSessions
+  .filter((s) => !curatedIds.has(s.id))
+  .map((s) => ({
+    ...s,
+    outcome: s.outcome as ClaudeSession["outcome"],
+  }));
+
+// Combine and sort by date (newest first)
+const sessions: ClaudeSession[] = [...curatedSessions, ...additionalSessions].sort(
+  (a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()
+);
+
 const tips = [
   {
     title: "Be specific about constraints",
@@ -442,9 +462,11 @@ function SessionCard({ session }: { session: ClaudeSession }) {
   const outcomeVariant =
     session.outcome === "success"
       ? "success"
-      : session.outcome === "partial"
+      : session.outcome === "partial" || session.outcome === "in-progress"
         ? "amber"
-        : "default";
+        : session.outcome === "blocked"
+          ? "default"
+          : "default";
 
   return (
     <Card variant="interactive" className="overflow-hidden">
