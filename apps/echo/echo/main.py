@@ -660,59 +660,12 @@ You have a physical robot body with a head and antennas. You can express emotion
             logger.warning(f"Idle animation failed: {e}")
 
 
-# === Standalone Testing ===
+
+# === Entry Point for Daemon ===
 
 if __name__ == "__main__":
-    import sys
-
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    )
-
-    sim_mode = "--sim" in sys.argv
-
-    if sim_mode:
-        print("Running Echo in simulation mode...")
-        print(f"LiteLLM URL: {DEFAULT_LITELLM_URL}")
-        print(f"Model: {DEFAULT_MODEL}")
-        print()
-
-        # Create mock stop event
-        stop_event = Event()
-
-        # Initialize Echo
-        echo = ReachyMiniEcho()
-        echo.reachy = None
-        echo.stop_event = stop_event
-
-        # Initialize systems
-        echo._init_systems()
-
-        # Build and launch UI
-        app = echo._build_ui()
-
-        print("Starting Gradio UI...")
-        print("Open http://localhost:7861 in your browser")
-        print()
-
-        try:
-            app.launch(
-                server_name="0.0.0.0",
-                server_port=7861,
-                show_error=True,
-            )
-        except KeyboardInterrupt:
-            print("\nShutting down...")
-            echo._cleanup()
-    else:
-        print("Reachy Echo")
-        print("=" * 40)
-        print()
-        print("Usage:")
-        print("  python -m reachy_mini_echo --sim    # Simulation mode (no robot)")
-        print()
-        print("For real robot, install via daemon:")
-        print("  cd ~/apps/reachy/apps/echo")
-        print("  pip install -e .")
-        print("  # Restart daemon, access via dashboard")
+    app = ReachyMiniEcho()
+    try:
+        app.wrapped_run()
+    except KeyboardInterrupt:
+        app.stop()

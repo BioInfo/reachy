@@ -1,4 +1,4 @@
-"""Entry point for python -m reachy_mini_echo."""
+"""Entry point for python -m echo."""
 
 import sys
 import logging
@@ -61,7 +61,7 @@ def main():
         print("A companion robot that remembers you and grows with you.")
         print()
         print("Usage:")
-        print("  python -m reachy_mini_echo --sim    # Simulation mode (no robot)")
+        print("  python -m echo --sim    # Simulation mode (no robot)")
         print()
         print("For real robot:")
         print("  1. Install:  pip install -e ~/apps/reachy/apps/echo")
