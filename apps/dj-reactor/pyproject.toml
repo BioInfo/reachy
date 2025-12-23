@@ -3,7 +3,7 @@ requires = ["setuptools>=61.0", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "reachy_mini_dj_reactor"
+name = "dj_reactor"
 version = "0.1.0"
 description = "DJ Reactor - Music visualizer for Reachy Mini that dances to your music"
 readme = "README.md"
@@ -29,11 +29,11 @@ dependencies = [
 ]
 
 [project.urls]
-Homepage = "https://huggingface.co/spaces/RyeCatcher/dj-reactor"
+Homepage = "https://huggingface.co/spaces/RyeCatcher/dj_reactor"
 
 [project.entry-points."reachy_mini_apps"]
-reachy_mini_dj_reactor = "reachy_mini_dj_reactor.main:ReachyMiniDjReactor"
+dj_reactor = "dj_reactor.main:ReachyMiniDjReactor"
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["reachy_mini_dj_reactor*"]
+include = ["dj_reactor*"]

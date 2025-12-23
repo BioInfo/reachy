@@ -6,6 +6,7 @@ colorTo: blue
 sdk: static
 pinned: false
 license: mit
+short_description: "Productivity body-double - Reachy Mini keeps you focused!"
 tags:
   - reachy_mini
   - reachy_mini_python_app

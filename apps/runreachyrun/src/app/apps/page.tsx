@@ -86,14 +86,14 @@ export default function AppsPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-[var(--text-primary)]">Focus Guardian</h3>
-                    <p className="text-xs text-[var(--text-muted)] font-mono">pip install focus-guardian</p>
+                    <p className="text-xs text-[var(--text-muted)] font-mono">pip install focus_guardian</p>
                   </div>
                 </div>
                 <p className="text-sm text-[var(--text-secondary)] mb-4">
                   Your robot accountability partner for focused work sessions.
                 </p>
                 <a
-                  href="https://huggingface.co/spaces/RyeCatcher/focus-guardian"
+                  href="https://huggingface.co/spaces/RyeCatcher/focus_guardian"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-mono text-[var(--accent-cyan)] hover:underline"
@@ -108,14 +108,14 @@ export default function AppsPage() {
                   </div>
                   <div>
                     <h3 className="font-medium text-[var(--text-primary)]">DJ Reactor</h3>
-                    <p className="text-xs text-[var(--text-muted)] font-mono">pip install dj-reactor</p>
+                    <p className="text-xs text-[var(--text-muted)] font-mono">pip install dj_reactor</p>
                   </div>
                 </div>
                 <p className="text-sm text-[var(--text-secondary)] mb-4">
                   Reachy reacts to your music with beat-synced movements.
                 </p>
                 <a
-                  href="https://huggingface.co/spaces/RyeCatcher/dj-reactor"
+                  href="https://huggingface.co/spaces/RyeCatcher/dj_reactor"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-sm font-mono text-[var(--accent-cyan)] hover:underline"

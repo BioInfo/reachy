@@ -10,7 +10,7 @@ export const appsData: AppPage[] = [
     status: "live",
     icon: "Target",
 
-    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/focus-guardian",
+    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/focus_guardian",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/focus-guardian",
 
     screenshots: [],
@@ -151,7 +151,7 @@ CELEBRATION_INTENSITY = "medium"  # low, medium, high`,
     status: "live",
     icon: "Music",
 
-    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/dj-reactor",
+    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/dj_reactor",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/dj-reactor",
 
     screenshots: [],
@@ -289,9 +289,10 @@ BEAT_SYNC = True`,
     tagline: "A companion that remembers you",
     description:
       "Echo transforms Reachy Mini from a voice assistant into a companion that builds a relationship with you. It remembers your name, preferences, and what you worked on yesterday. Unlike reactive assistants, Echo initiates — greeting you in the morning, suggesting breaks, celebrating your wins.",
-    status: "development",
+    status: "live",
     icon: "MessageCircle",
 
+    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/echo",
     githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/echo",
 
     screenshots: [],
