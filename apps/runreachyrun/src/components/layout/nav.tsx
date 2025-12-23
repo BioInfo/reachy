@@ -17,6 +17,7 @@ const navItems = [
   { label: "Journal", href: "/journal" },
   { label: "Apps", href: "/apps" },
   { label: "Claude", href: "/claude" },
+  { label: "About", href: "/about" },
 ];
 
 export function Nav() {

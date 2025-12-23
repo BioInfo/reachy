@@ -17,19 +17,17 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     setMounted(true);
-    // Check localStorage first, then system preference
+    // Check localStorage, default to dark (never follow system preference)
     const stored = localStorage.getItem("theme") as Theme | null;
-    if (stored) {
-      setTheme(stored);
-      document.documentElement.classList.toggle("light", stored === "light");
-      document.documentElement.classList.toggle("dark", stored === "dark");
+    if (stored === "light") {
+      setTheme("light");
+      document.documentElement.classList.remove("dark");
+      document.documentElement.classList.add("light");
     } else {
-      // Check system preference
-      const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const systemTheme = prefersDark ? "dark" : "light";
-      setTheme(systemTheme);
-      document.documentElement.classList.toggle("light", systemTheme === "light");
-      document.documentElement.classList.toggle("dark", systemTheme === "dark");
+      // Default to dark
+      setTheme("dark");
+      document.documentElement.classList.remove("light");
+      document.documentElement.classList.add("dark");
     }
   }, []);
 
