@@ -24,6 +24,20 @@ const OUTPUT = {
   claude: path.join(SITE_ROOT, "src/content/claude/data.ts"),
 };
 
+// Media mappings for timeline entries (preserved across syncs)
+const MEDIA_MAPPINGS_PATH = path.join(SITE_ROOT, "src/content/timeline/media-mappings.json");
+
+function loadMediaMappings() {
+  if (fs.existsSync(MEDIA_MAPPINGS_PATH)) {
+    try {
+      return JSON.parse(fs.readFileSync(MEDIA_MAPPINGS_PATH, "utf-8"));
+    } catch (e) {
+      console.log("Warning: Could not parse media-mappings.json");
+    }
+  }
+  return {};
+}
+
 // ============================================================================
 // UTILITY FUNCTIONS
 // ============================================================================
@@ -487,6 +501,9 @@ function generateTimelineTS(nodes) {
   nodes.forEach(n => { if (!seen.has(n.id)) { unique.push(n); seen.add(n.id); } });
   unique.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
 
+  // Load media mappings
+  const mediaMappings = loadMediaMappings();
+
   let output = `import { TimelineNode } from "@/types";
 
 // Auto-generated from devlog — Last synced: ${new Date().toISOString()}
@@ -494,6 +511,10 @@ function generateTimelineTS(nodes) {
 export const timelineData: TimelineNode[] = [\n`;
 
   unique.forEach(n => {
+    // Merge media from mappings file
+    const mediaMapping = mediaMappings[n.id];
+    const hasMedia = mediaMapping && mediaMapping.media && mediaMapping.media.length > 0;
+
     output += `  {
     id: "${n.id}",
     date: "${n.date}",
@@ -505,7 +526,8 @@ export const timelineData: TimelineNode[] = [\n`;
         prompt: "${escapeQuotes(n.content.claudeSnippet.prompt)}",
         response: "${escapeQuotes(n.content.claudeSnippet.response)}",${n.content.claudeSnippet.context ? `
         context: "${escapeQuotes(n.content.claudeSnippet.context)}",` : ""}
-      },` : ""}
+      },` : ""}${hasMedia ? `
+      media: ${JSON.stringify(mediaMapping.media, null, 8).replace(/^/gm, "      ").trim()},` : ""}
     },
     tags: [${n.tags.map(t => `"${t}"`).join(", ")}],
   },\n`;

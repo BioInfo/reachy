@@ -1,0 +1,42 @@
+{
+  "first-physical-robot-boot-with-claude-code-20251220": {
+    "media": [
+      {
+        "type": "image",
+        "src": "/media/reachy-desk-window.jpg",
+        "alt": "Reachy Mini Lite on desk after first boot",
+        "caption": "First boot - Reachy Mini Lite connected and running"
+      }
+    ]
+  },
+  "dj-reactor-robot-dances-to-music-20251220": {
+    "media": [
+      {
+        "type": "video",
+        "src": "/media/reachy-demo.mp4",
+        "alt": "Reachy Mini dancing to music",
+        "caption": "DJ Reactor in action - head bob and antenna bounce synced to the beat"
+      }
+    ]
+  },
+  "runreachyrun-com-launched-20251221": {
+    "media": [
+      {
+        "type": "image",
+        "src": "/media/reachy-full-setup.jpg",
+        "alt": "Development setup with Reachy Mini and multiple monitors",
+        "caption": "The dev setup - MacBook Pro, monitors, and Reachy Mini companion"
+      }
+    ]
+  },
+  "first-physical-robot-boot-devlog-setup-20251220": {
+    "media": [
+      {
+        "type": "image",
+        "src": "/media/reachy-desk-side.jpg",
+        "alt": "Reachy Mini Lite from side angle",
+        "caption": "Side view showing the Dell monitor and development station"
+      }
+    ]
+  }
+}

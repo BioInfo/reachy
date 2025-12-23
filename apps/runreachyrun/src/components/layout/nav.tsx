@@ -12,10 +12,10 @@ import { timelineData } from "@/content/timeline/data";
 import { journalEntries } from "@/content/journal/data";
 
 const navItems = [
+  { label: "Start", href: "/getting-started" },
   { label: "Timeline", href: "/timeline" },
   { label: "Journal", href: "/journal" },
   { label: "Apps", href: "/apps" },
-  { label: "Blog", href: "/blog" },
   { label: "Claude", href: "/claude" },
 ];
 
