@@ -10,6 +10,7 @@ import { AnimatedBackground, GlowOrb } from "@/components/ui/animated-background
 import { Clock, BookOpen, Bot } from "lucide-react";
 import { GitHubActivity } from "@/components/dashboard/github-activity";
 import { AppsShowcase, ClaudeShowcase } from "@/components/showcase";
+import { ReachyVisualizer } from "@/components/3d";
 import { formatDate } from "@/lib/date";
 import type { TimelineNode } from "@/types";
 
@@ -173,6 +174,74 @@ export function HomeContent({ recentTimeline }: HomeContentProps) {
                 animate={{ y: [0, 8, 0], opacity: [1, 0.5, 1] }}
                 transition={{ duration: 1.5, repeat: Infinity }}
               />
+            </motion.div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* 3D Robot Section */}
+      <section className="py-16 bg-[var(--bg-primary)]">
+        <div className="max-w-6xl mx-auto px-6">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center"
+          >
+            <div>
+              <SignalBadge variant="cyan" className="mb-4">
+                interactive
+              </SignalBadge>
+              <h2 className="text-2xl md:text-3xl font-mono font-bold text-[var(--text-primary)] mb-4">
+                Meet Reachy Mini
+              </h2>
+              <p className="text-[var(--text-secondary)] mb-6 leading-relaxed">
+                A desk-sized expressive robot with a rotating body, tilting head,
+                and bouncy antennas. Built for human-robot interaction experiments
+                — productivity apps, entertainment, and beyond.
+              </p>
+              <div className="space-y-3 text-sm">
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-[var(--accent-cyan)]" />
+                  <span className="text-[var(--text-secondary)]">
+                    6 degrees of freedom (body, head, antennas)
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-[var(--accent-cyan)]" />
+                  <span className="text-[var(--text-secondary)]">
+                    Camera, microphone, speaker built-in
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="w-2 h-2 rounded-full bg-[var(--accent-cyan)]" />
+                  <span className="text-[var(--text-secondary)]">
+                    Python SDK for custom applications
+                  </span>
+                </div>
+              </div>
+              <Link
+                href="/getting-started"
+                className="inline-flex items-center gap-2 mt-8 text-[var(--accent-cyan)] hover:text-[var(--accent-cyan-dim)] font-mono text-sm transition-colors"
+              >
+                Get started with Reachy &rarr;
+              </Link>
+            </div>
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <ReachyVisualizer
+                height="400px"
+                expression="happy"
+                className="border border-[var(--border-subtle)]"
+              />
+              <p className="text-center text-[var(--text-muted)] text-xs font-mono mt-3">
+                Drag to rotate • Scroll to zoom
+              </p>
             </motion.div>
           </motion.div>
         </div>
