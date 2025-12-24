@@ -1,4 +1,4 @@
-// Auto-generated from sessions — Last synced: 2025-12-23T18:18:42.189Z
+// Auto-generated from sessions — Last synced: 2025-12-24T10:54:11.400Z
 // Run: npm run sync-devlog
 
 export interface ClaudeSession {
@@ -14,6 +14,18 @@ export interface ClaudeSession {
 }
 
 export const claudeSessions: ClaudeSession[] = [
+  {
+    id: "website-polish",
+    date: "2025-12-24",
+    goal: "Website Polish & About Page",
+    outcome: "success",
+    summary: "Polished runreachyrun.com with visual fixes, new About page, and social sharing.",
+    codeSnippets: [
+      { language: "bash", code: `npx tsx scripts/extract-content.ts
+~/tools/mcp-servers/obsidian-search/venv/bin/python scripts/embed.py
+vercel --prod` }
+    ],
+  },
   {
     id: "app-naming-fix",
     date: "2025-12-23",

@@ -22,7 +22,8 @@ logger = logging.getLogger(__name__)
 
 # Backend configuration
 DEFAULT_VOICE_URL = os.getenv("VOICE_URL", "http://localhost:4001")
-VOICE_BACKEND = os.getenv("VOICE_BACKEND", "local")  # "local" or "openai"
+# Default to "edge" (free) - options: "edge", "openai", "local", "auto"
+VOICE_BACKEND = os.getenv("VOICE_BACKEND", "edge")
 
 # Check for OpenAI (optional for cloud backend)
 try:
@@ -31,33 +32,44 @@ try:
 except ImportError:
     OPENAI_AVAILABLE = False
 
+# Check for edge-tts (free, high quality)
+try:
+    import edge_tts
+    import asyncio
+    EDGE_TTS_AVAILABLE = True
+except ImportError:
+    EDGE_TTS_AVAILABLE = False
+
 
 class LocalVoiceManager:
     """
-    Voice manager using local models on DGX.
+    Voice manager using LiteLLM proxy for TTS.
 
-    Uses faster-whisper for STT and piper for TTS.
+    Routes through LiteLLM to OpenAI TTS or other configured backends.
+    Set LITELLM_URL and LITELLM_API_KEY environment variables.
     """
 
-    def __init__(self, voice_url: Optional[str] = None):
-        self.voice_url = voice_url or os.getenv("VOICE_URL", DEFAULT_VOICE_URL)
+    def __init__(self, litellm_url: Optional[str] = None):
+        self.litellm_url = litellm_url or os.getenv("LITELLM_URL", "http://100.101.43.40:4000")
+        self.api_key = os.getenv("LITELLM_API_KEY", "sk-1234")
+        self._voice = "alloy"
         self._connected = False
 
     @property
     def is_available(self) -> bool:
-        """Check if local voice server is available."""
+        """Check if LiteLLM is available."""
         return self._connected
 
     def connect(self) -> bool:
-        """Test connection to voice server."""
+        """Test connection to LiteLLM."""
         try:
-            response = requests.get(f"{self.voice_url}/health", timeout=5)
+            response = requests.get(f"{self.litellm_url}/health", timeout=5)
             if response.status_code == 200:
                 self._connected = True
-                logger.info(f"Local voice connected to {self.voice_url}")
+                logger.info(f"Local voice connected to LiteLLM at {self.litellm_url}")
                 return True
         except Exception as e:
-            logger.warning(f"Local voice server not available: {e}")
+            logger.warning(f"LiteLLM not available: {e}")
 
         self._connected = False
         return False
@@ -118,7 +130,7 @@ class LocalVoiceManager:
             return None
 
     def synthesize(self, text: str) -> Optional[bytes]:
-        """Synthesize text to speech using piper on DGX."""
+        """Synthesize text using OpenAI-compatible TTS via LiteLLM."""
         if not self._connected:
             logger.error("Voice manager not connected")
             return None
@@ -127,23 +139,38 @@ class LocalVoiceManager:
             return None
 
         try:
+            # Use OpenAI-compatible TTS endpoint
             response = requests.post(
-                f"{self.voice_url}/synthesize",
-                json={"text": text, "speed": 1.0},
+                f"{self.litellm_url}/v1/audio/speech",
+                headers={
+                    "Authorization": f"Bearer {self.api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "model": "tts-1",
+                    "input": text,
+                    "voice": self._voice,
+                    "speed": 1.2,
+                },
                 timeout=30,
             )
 
             if response.status_code == 200:
                 audio_bytes = response.content
-                logger.info(f"Synthesized (local) {len(audio_bytes)} bytes")
+                logger.info(f"Synthesized (LiteLLM) {len(audio_bytes)} bytes")
                 return audio_bytes
             else:
-                logger.error(f"TTS failed: {response.status_code}")
+                logger.error(f"TTS failed: {response.status_code} - {response.text[:200]}")
                 return None
 
         except Exception as e:
             logger.error(f"TTS synthesis failed: {e}")
             return None
+
+    def set_voice(self, voice: str) -> None:
+        """Set TTS voice."""
+        self._voice = voice
+        logger.info(f"Local TTS voice set to: {voice}")
 
     def synthesize_to_file(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
         """Synthesize text and save to file."""
@@ -155,8 +182,8 @@ class LocalVoiceManager:
             if output_path:
                 path = Path(output_path)
             else:
-                # Create temp file (WAV format from piper)
-                fd, path = tempfile.mkstemp(suffix=".wav")
+                # Create temp file (MP3 format from OpenAI TTS)
+                fd, path = tempfile.mkstemp(suffix=".mp3")
                 os.close(fd)
                 path = Path(path)
 
@@ -306,14 +333,142 @@ class OpenAIVoiceManager:
             logger.info(f"TTS model set to: {model}")
 
 
+class EdgeVoiceManager:
+    """
+    Voice manager using Microsoft Edge TTS (free, high quality).
+
+    No API key required. Uses edge-tts library.
+    """
+
+    def __init__(self):
+        self._voice = "en-US-AriaNeural"  # Natural female voice
+        self._rate = "+25%"  # Speak faster
+        self._connected = False
+
+    @property
+    def is_available(self) -> bool:
+        """Check if edge-tts is available."""
+        return EDGE_TTS_AVAILABLE and self._connected
+
+    def connect(self) -> bool:
+        """Initialize edge-tts (always succeeds if library is available)."""
+        if not EDGE_TTS_AVAILABLE:
+            logger.warning("edge-tts not installed - pip install edge-tts")
+            return False
+
+        self._connected = True
+        logger.info(f"Edge TTS connected (voice: {self._voice})")
+        return True
+
+    def transcribe(self, audio_path: str) -> Optional[str]:
+        """Edge TTS doesn't support transcription - use OpenAI Whisper."""
+        logger.warning("Edge TTS doesn't support transcription")
+        return None
+
+    def transcribe_array(self, audio_array: np.ndarray, sample_rate: int) -> Optional[str]:
+        """Edge TTS doesn't support transcription."""
+        logger.warning("Edge TTS doesn't support transcription")
+        return None
+
+    def synthesize(self, text: str) -> Optional[bytes]:
+        """Synthesize text using Edge TTS."""
+        if not self._connected:
+            logger.error("Edge TTS not connected")
+            return None
+
+        if not text or not text.strip():
+            return None
+
+        try:
+            # Use edge-tts CLI approach which is more reliable
+            import subprocess
+            import tempfile
+
+            with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as f:
+                temp_path = f.name
+
+            # Run edge-tts as subprocess (avoids async issues)
+            # Use full path since daemon may not have venv in PATH
+            edge_tts_path = "/Users/bioinfo/apps/reachy/venv/bin/edge-tts"
+            cmd = [
+                edge_tts_path,
+                "--voice", self._voice,
+                "--rate", self._rate,
+                "--text", text,
+                "--write-media", temp_path,
+            ]
+
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=30)
+
+            if result.returncode != 0:
+                logger.error(f"Edge TTS failed: {result.stderr}")
+                return None
+
+            # Read the generated audio
+            with open(temp_path, "rb") as f:
+                audio_bytes = f.read()
+
+            # Cleanup
+            os.unlink(temp_path)
+
+            logger.info(f"Synthesized (Edge) {len(audio_bytes)} bytes")
+            return audio_bytes
+
+        except subprocess.TimeoutExpired:
+            logger.error("Edge TTS timed out")
+            return None
+        except Exception as e:
+            logger.error(f"Edge TTS synthesis failed: {e}")
+            return None
+
+    def synthesize_to_file(self, text: str, output_path: Optional[str] = None) -> Optional[str]:
+        """Synthesize text and save to file."""
+        audio_bytes = self.synthesize(text)
+        if not audio_bytes:
+            return None
+
+        try:
+            if output_path:
+                path = Path(output_path)
+            else:
+                # Edge TTS outputs mp3
+                fd, path = tempfile.mkstemp(suffix=".mp3")
+                os.close(fd)
+                path = Path(path)
+
+            path.write_bytes(audio_bytes)
+            return str(path)
+
+        except Exception as e:
+            logger.error(f"Failed to save audio: {e}")
+            return None
+
+    def set_voice(self, voice: str) -> None:
+        """Set TTS voice. See edge-tts --list-voices for options."""
+        self._voice = voice
+        logger.info(f"Edge TTS voice set to: {voice}")
+
+    def list_voices(self) -> list:
+        """List available Edge TTS voices."""
+        # Common high-quality voices
+        return [
+            "en-US-AriaNeural",      # Female, natural
+            "en-US-GuyNeural",       # Male, natural
+            "en-US-JennyNeural",     # Female, friendly
+            "en-GB-SoniaNeural",     # Female, British
+            "en-AU-NatashaNeural",   # Female, Australian
+        ]
+
+
 class VoiceManager:
     """
     Unified voice manager that auto-selects backend.
 
     Priority:
-    1. VOICE_BACKEND=local → Use DGX voice server
-    2. VOICE_BACKEND=openai → Use OpenAI API
-    3. Auto: Try local first, fall back to OpenAI
+    1. VOICE_BACKEND=edge → Use Edge TTS (free, high quality, default)
+    2. VOICE_BACKEND=openai → Use OpenAI API (paid, best quality)
+    3. VOICE_BACKEND=local → Use DGX voice server
+    4. VOICE_BACKEND=auto → Try edge first, then openai, then local
     """
 
     def __init__(self, backend: Optional[str] = None):
@@ -328,7 +483,16 @@ class VoiceManager:
 
     def connect(self) -> bool:
         """Connect to the best available backend."""
-        if self.backend == "local":
+        if self.backend == "edge":
+            # Try Edge TTS only (free, no API key needed)
+            self._manager = EdgeVoiceManager()
+            if self._manager.connect():
+                self._backend_name = "edge"
+                logger.info("Using Edge TTS (free)")
+                return True
+            return False
+
+        elif self.backend == "local":
             # Try local only
             self._manager = LocalVoiceManager()
             if self._manager.connect():
@@ -347,18 +511,25 @@ class VoiceManager:
             return False
 
         else:
-            # Auto: try local first, then OpenAI
-            self._manager = LocalVoiceManager()
+            # Auto: try edge first (free), then openai, then local
+            self._manager = EdgeVoiceManager()
             if self._manager.connect():
-                self._backend_name = "local"
-                logger.info("Using local voice (faster-whisper + piper)")
+                self._backend_name = "edge"
+                logger.info("Using Edge TTS (free)")
                 return True
 
-            logger.info("Local voice not available, trying OpenAI...")
+            logger.info("Edge TTS not available, trying OpenAI...")
             self._manager = OpenAIVoiceManager()
             if self._manager.connect():
                 self._backend_name = "openai"
                 logger.info("Using OpenAI voice")
+                return True
+
+            logger.info("OpenAI not available, trying local...")
+            self._manager = LocalVoiceManager()
+            if self._manager.connect():
+                self._backend_name = "local"
+                logger.info("Using local voice (faster-whisper + piper)")
                 return True
 
             logger.warning("No voice backend available")

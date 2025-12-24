@@ -7,6 +7,8 @@ A companion robot that remembers you and grows with you.
 import asyncio
 import logging
 import os
+import random
+import time
 from pathlib import Path
 from threading import Event, Thread
 from typing import Optional, List
@@ -14,6 +16,7 @@ from typing import Optional, List
 import gradio as gr
 
 from reachy_mini import ReachyMiniApp
+from reachy_mini.utils import create_head_pose
 
 from .providers import LiteLLMProvider, LiteLLMConfig
 from .memory import MemoryManager
@@ -162,7 +165,7 @@ Key traits:
 - Celebrate wins, offer support during frustrations
 - Keep responses concise (you're a companion, not a lecturer)
 
-You have a physical robot body with a head and antennas. You can express emotions through movement.
+IMPORTANT: Never describe your physical movements, gestures, or body language in your responses. Don't write things like "*waves antenna*" or "My head turns toward you". Just speak naturally - your physical body handles movement separately.
 """
         # Add memory context
         memory_context = self.memory.build_context() if self.memory else ""
@@ -329,11 +332,11 @@ You have a physical robot body with a head and antennas. You can express emotion
                         avatar_images=(None, "https://api.dicebear.com/7.x/bottts/svg?seed=echo&backgroundColor=667eea"),
                     )
 
-                    # Audio output for TTS responses
+                    # Audio output for TTS responses (always visible, autoplay when available)
                     audio_output = gr.Audio(
                         label="Echo's Voice",
                         autoplay=True,
-                        visible=self._voice_enabled,
+                        visible=True,  # Always visible, will be empty if no TTS
                     )
 
                     # Input tabs: Text or Voice
@@ -389,14 +392,49 @@ You have a physical robot body with a head and antennas. You can express emotion
                         </div>
                     """)
 
-                    # Model Selection
-                    gr.Markdown("### Model")
-                    model_dropdown = gr.Dropdown(
-                        choices=self._available_models,
-                        value=self.provider.config.model if self.provider else DEFAULT_MODEL,
-                        show_label=False,
-                        interactive=True,
-                    )
+                    # LLM Settings
+                    with gr.Accordion("LLM", open=True):
+                        llm_provider_dropdown = gr.Dropdown(
+                            choices=[
+                                ("OpenRouter", "openrouter"),
+                                ("LiteLLM", "litellm"),
+                                ("OpenAI", "openai"),
+                            ],
+                            value="openrouter",
+                            label="Provider",
+                            interactive=True,
+                        )
+                        model_dropdown = gr.Dropdown(
+                            choices=self._available_models[:10] if self._available_models else [DEFAULT_MODEL],
+                            value=self.provider.config.model if self.provider else DEFAULT_MODEL,
+                            label="Model",
+                            interactive=True,
+                        )
+
+                    # Voice Settings
+                    with gr.Accordion("Voice", open=True):
+                        voice_provider_dropdown = gr.Dropdown(
+                            choices=[
+                                ("Edge TTS (Free)", "edge"),
+                                ("OpenAI TTS", "openai"),
+                                ("LiteLLM (DGX)", "local"),
+                                ("Off", "off"),
+                            ],
+                            value="edge" if self._voice_enabled else "off",
+                            label="Provider",
+                            interactive=True,
+                        )
+                        voice_dropdown = gr.Dropdown(
+                            choices=[
+                                ("Aria (Natural)", "en-US-AriaNeural"),
+                                ("Guy (Male)", "en-US-GuyNeural"),
+                                ("Jenny (Friendly)", "en-US-JennyNeural"),
+                            ],
+                            value="en-US-AriaNeural",
+                            label="Voice",
+                            interactive=True,
+                        )
+                        test_voice_btn = gr.Button("🔊 Test", size="sm")
 
                     # Behaviors
                     with gr.Accordion("Proactive Behaviors", open=False):
@@ -417,8 +455,8 @@ You have a physical robot body with a head and antennas. You can express emotion
 
             # === Event Handlers ===
 
-            async def send_message_async(message: str, history: list, generate_audio: bool = False) -> tuple:
-                """Process message and get response."""
+            async def send_message_async(message: str, history: list) -> tuple:
+                """Process message and get response with TTS."""
                 if not message.strip():
                     return "", history, None
 
@@ -458,12 +496,13 @@ You have a physical robot body with a head and antennas. You can express emotion
                         self._update_system_prompt()
                         await self.provider.set_system_prompt(self._system_prompt)
 
-                        # Animate robot response
-                        self._animate_response()
+                        # Animate robot response in background (don't block)
+                        Thread(target=self._animate_response, args=(response,), daemon=True).start()
 
-                        # Generate TTS if voice enabled
-                        if generate_audio and self._voice_enabled and self.voice:
+                        # Always generate TTS when voice is enabled
+                        if self._voice_enabled and self.voice:
                             audio_path = self.voice.synthesize_to_file(response)
+                            logger.info(f"Generated TTS: {audio_path}")
 
                     except Exception as e:
                         logger.error(f"Provider error: {e}")
@@ -474,13 +513,10 @@ You have a physical robot body with a head and antennas. You can express emotion
                 return "", history, audio_path
 
             def send_message(message: str, history: list) -> tuple:
-                """Sync wrapper for async send (text only)."""
-                result = run_async(send_message_async(message, history, generate_audio=False))
-                return result[0], result[1]  # text_out, history
-
-            def send_message_with_voice(message: str, history: list) -> tuple:
                 """Sync wrapper for async send with TTS."""
-                return run_async(send_message_async(message, history, generate_audio=True))
+                result = run_async(send_message_async(message, history))
+                # Return: (cleared input, updated history, audio path)
+                return result[0], result[1], result[2]
 
             def process_voice(audio, history: list) -> tuple:
                 """Process voice input: transcribe and get response."""
@@ -494,7 +530,7 @@ You have a physical robot body with a head and antennas. You can express emotion
 
                 # Get response with TTS
                 _, updated_history, audio_path = run_async(
-                    send_message_async(transcript, history, generate_audio=True)
+                    send_message_async(transcript, history)
                 )
 
                 return updated_history, audio_path, transcript
@@ -551,11 +587,115 @@ You have a physical robot body with a head and antennas. You can express emotion
                     """
                 return ""
 
+            def change_llm_provider(provider: str):
+                """Change the LLM provider and update model list."""
+                # Default models for each provider
+                provider_models = {
+                    "openrouter": [
+                        ("Gemini 2.5 Flash Lite", "google/gemini-2.5-flash-lite"),
+                        ("Gemini 2.0 Flash", "google/gemini-2.0-flash-exp:free"),
+                        ("Claude 3.5 Sonnet", "anthropic/claude-3.5-sonnet"),
+                        ("GPT-4o Mini", "openai/gpt-4o-mini"),
+                    ],
+                    "litellm": [
+                        ("Llama 3.3 70B", "llama-3.3-70b-cerebras"),
+                        ("Qwen 3 235B", "qwen-3-235b-cerebras"),
+                        ("Gemma 3 27B", "gemma-3-27b-ollama"),
+                        ("DeepSeek V3", "deepseek-v3.2-openrouter"),
+                    ],
+                    "openai": [
+                        ("GPT-4o", "gpt-4o"),
+                        ("GPT-4o Mini", "gpt-4o-mini"),
+                    ],
+                }
+                models = provider_models.get(provider, [("Default", "default")])
+                default = models[0][1] if models else "default"
+
+                # Update provider config with correct URL and API key
+                if provider == "openrouter":
+                    self.provider.config.base_url = "https://openrouter.ai/api"
+                    self.provider.config.api_key = os.getenv("OPENROUTER_API_KEY", "")
+                elif provider == "litellm":
+                    self.provider.config.base_url = os.getenv("LITELLM_URL", "http://100.101.43.40:4000")
+                    self.provider.config.api_key = os.getenv("LITELLM_API_KEY", "sk-1234")
+                elif provider == "openai":
+                    self.provider.config.base_url = "https://api.openai.com"
+                    self.provider.config.api_key = os.getenv("OPENAI_API_KEY", "")
+
+                self.provider.config.model = default
+                self.provider.clear_history()
+
+                # Reconnect with new settings
+                try:
+                    run_async(self.provider.connect())
+                    logger.info(f"Switched to {provider}: {default}")
+                except Exception as e:
+                    logger.error(f"Failed to connect to {provider}: {e}")
+
+                return gr.update(choices=models, value=default)
+
+            def change_voice_provider(provider: str):
+                """Change the voice provider and update voice list."""
+                if provider == "off":
+                    self._voice_enabled = False
+                    self._voice_backend = None
+                    self.voice = None
+                    return gr.update(choices=[("None", "none")], value="none")
+
+                # Reinitialize voice manager with new backend
+                from .voice import VoiceManager
+                self.voice = VoiceManager(backend=provider)
+                connected = self.voice.connect()
+
+                # Update voice choices based on provider
+                if provider == "edge":
+                    choices = [
+                        ("Aria (Natural)", "en-US-AriaNeural"),
+                        ("Guy (Male)", "en-US-GuyNeural"),
+                        ("Jenny (Friendly)", "en-US-JennyNeural"),
+                    ]
+                    default = "en-US-AriaNeural"
+                elif provider == "openai":
+                    choices = [
+                        ("Nova", "nova"),
+                        ("Alloy", "alloy"),
+                        ("Shimmer", "shimmer"),
+                    ]
+                    default = "nova"
+                else:  # local/litellm
+                    choices = [
+                        ("Alloy", "alloy"),
+                        ("Nova", "nova"),
+                        ("Shimmer", "shimmer"),
+                    ]
+                    default = "alloy"
+
+                if connected:
+                    self._voice_enabled = True
+                    self._voice_backend = provider
+                    logger.info(f"Voice provider changed to: {provider}")
+                else:
+                    self._voice_enabled = False
+                    logger.warning(f"Failed to connect to voice provider: {provider}")
+
+                return gr.update(choices=choices, value=default)
+
+            def change_voice(voice: str):
+                """Change the TTS voice."""
+                if self.voice and self.voice._manager and hasattr(self.voice._manager, 'set_voice'):
+                    self.voice._manager.set_voice(voice)
+
+            def test_voice():
+                """Test the current voice."""
+                if not self._voice_enabled or not self.voice:
+                    return None
+                return self.voice.synthesize_to_file("Hello! I'm Echo.")
+
             # Wire up events
             send_btn.click(
                 send_message,
                 inputs=[msg_input, chatbot],
-                outputs=[msg_input, chatbot],
+                outputs=[msg_input, chatbot, audio_output],
             ).then(
                 refresh_stats,
                 outputs=[memory_html],
@@ -564,7 +704,7 @@ You have a physical robot body with a head and antennas. You can express emotion
             msg_input.submit(
                 send_message,
                 inputs=[msg_input, chatbot],
-                outputs=[msg_input, chatbot],
+                outputs=[msg_input, chatbot, audio_output],
             ).then(
                 refresh_stats,
                 outputs=[memory_html],
@@ -602,6 +742,28 @@ You have a physical robot body with a head and antennas. You can express emotion
                 outputs=[memory_html],
             )
 
+            # LLM provider change
+            llm_provider_dropdown.change(
+                change_llm_provider,
+                inputs=[llm_provider_dropdown],
+                outputs=[model_dropdown],
+            )
+
+            # Voice settings
+            voice_provider_dropdown.change(
+                change_voice_provider,
+                inputs=[voice_provider_dropdown],
+                outputs=[voice_dropdown],
+            )
+            voice_dropdown.change(
+                change_voice,
+                inputs=[voice_dropdown],
+            )
+            test_voice_btn.click(
+                test_voice,
+                outputs=[audio_output],
+            )
+
             # Voice input handling (only if voice is enabled)
             if self._voice_enabled:
                 audio_input.stop_recording(
@@ -615,24 +777,180 @@ You have a physical robot body with a head and antennas. You can express emotion
 
         return app
 
-    def _animate_response(self) -> None:
-        """Animate robot during/after response."""
+    def _animate_response(self, response_text: str = "") -> None:
+        """
+        Animate robot expressively during/after response.
+
+        Creates lifelike movement with head gestures, antenna expressions,
+        and subtle body sway that makes Echo feel alive.
+        """
         if not self.reachy:
             return
 
         try:
-            # Gentle acknowledgment animation
-            self.reachy.goto_target(
-                antennas=[0.4, 0.4],
-                duration=0.3,
-            )
-            # Return to neutral
-            self.reachy.goto_target(
-                antennas=[0.2, 0.2],
-                duration=0.3,
-            )
+            # Choose animation style based on response content/length
+            response_len = len(response_text)
+
+            if response_len < 50:
+                # Short response: quick acknowledgment
+                self._animate_quick_response()
+            elif response_len < 150:
+                # Medium response: thoughtful nod
+                self._animate_thoughtful_response()
+            else:
+                # Long response: engaged listening pose
+                self._animate_engaged_response()
+
         except Exception as e:
             logger.warning(f"Animation failed: {e}")
+
+    def _animate_quick_response(self) -> None:
+        """Quick, friendly acknowledgment for short responses."""
+        # Perk up with antenna raise
+        self.reachy.goto_target(
+            antennas=[0.5, 0.5],
+            duration=0.2,
+        )
+        time.sleep(0.15)
+
+        # Slight head tilt - shows attention
+        head = create_head_pose(z=5, roll=8, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.4, 0.3],
+            duration=0.25,
+        )
+        time.sleep(0.2)
+
+        # Return to friendly neutral
+        head = create_head_pose(z=0, roll=0, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.25, 0.25],
+            duration=0.3,
+        )
+
+    def _animate_thoughtful_response(self) -> None:
+        """Thoughtful nod and engagement for medium responses."""
+        # Attentive lean forward
+        head = create_head_pose(z=8, roll=0, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.4, 0.4],
+            duration=0.3,
+        )
+        time.sleep(0.25)
+
+        # Gentle antenna wave while "thinking"
+        self.reachy.goto_target(
+            antennas=[0.5, 0.3],
+            duration=0.2,
+        )
+        time.sleep(0.15)
+        self.reachy.goto_target(
+            antennas=[0.3, 0.5],
+            duration=0.2,
+        )
+        time.sleep(0.15)
+
+        # Slight head tilt with nod
+        head = create_head_pose(z=3, roll=6, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.35, 0.35],
+            duration=0.25,
+        )
+        time.sleep(0.2)
+
+        # Return to relaxed neutral
+        head = create_head_pose(z=0, roll=0, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.2, 0.2],
+            duration=0.4,
+        )
+
+    def _animate_engaged_response(self) -> None:
+        """Full engaged animation for longer responses."""
+        # Excited perk up
+        head = create_head_pose(z=10, roll=0, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.6, 0.6],
+            duration=0.3,
+        )
+        time.sleep(0.25)
+
+        # Alternating antenna gesture - like talking with hands
+        for _ in range(2):
+            self.reachy.goto_target(
+                antennas=[0.5, 0.3],
+                duration=0.15,
+            )
+            time.sleep(0.12)
+            self.reachy.goto_target(
+                antennas=[0.3, 0.5],
+                duration=0.15,
+            )
+            time.sleep(0.12)
+
+        # Slight body sway for liveliness
+        head = create_head_pose(z=5, roll=8, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.4, 0.35],
+            duration=0.3,
+        )
+        time.sleep(0.25)
+
+        head = create_head_pose(z=5, roll=-8, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.35, 0.4],
+            duration=0.3,
+        )
+        time.sleep(0.25)
+
+        # Settle to attentive neutral
+        head = create_head_pose(z=3, roll=0, mm=True, degrees=True)
+        self.reachy.goto_target(
+            head=head,
+            antennas=[0.25, 0.25],
+            duration=0.4,
+        )
+
+    def _animate_listening(self) -> None:
+        """Subtle animation while user is typing/speaking."""
+        if not self.reachy:
+            return
+
+        try:
+            # Attentive pose with slight head tilt
+            tilt = random.choice([-5, 5])
+            head = create_head_pose(z=5, roll=tilt, mm=True, degrees=True)
+            self.reachy.goto_target(
+                head=head,
+                antennas=[0.3, 0.3],
+                duration=0.4,
+            )
+        except Exception as e:
+            logger.warning(f"Listening animation failed: {e}")
+
+    def _animate_thinking(self) -> None:
+        """Animation while waiting for LLM response."""
+        if not self.reachy:
+            return
+
+        try:
+            # Thoughtful upward gaze
+            head = create_head_pose(z=12, roll=5, mm=True, degrees=True)
+            self.reachy.goto_target(
+                head=head,
+                antennas=[0.45, 0.35],
+                duration=0.4,
+            )
+        except Exception as e:
+            logger.warning(f"Thinking animation failed: {e}")
 
     def _main_loop(self) -> None:
         """Main loop handling proactive behaviors."""

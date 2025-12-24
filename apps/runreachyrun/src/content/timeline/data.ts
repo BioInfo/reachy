@@ -1,8 +1,18 @@
 import { TimelineNode } from "@/types";
 
-// Auto-generated from devlog — Last synced: 2025-12-23T18:18:42.186Z
+// Auto-generated from devlog — Last synced: 2025-12-24T10:54:11.397Z
 // Run: npm run sync-devlog
 export const timelineData: TimelineNode[] = [
+  {
+    id: "website-polish-about-page-20251224",
+    date: "2025-12-24",
+    title: "Website Polish & About Page",
+    type: "session",
+    summary: "Polished runreachyrun.com with visual fixes, new About page, and social sharing.",
+    content: {
+    },
+    tags: ["meta"],
+  },
   {
     id: "repository-security-audit-public-release-prep-20251223",
     date: "2025-12-23",
