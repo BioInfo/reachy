@@ -15,8 +15,25 @@ from typing import Optional, List
 
 import gradio as gr
 
-from reachy_mini import ReachyMiniApp
-from reachy_mini.utils import create_head_pose
+# Make reachy_mini optional for simulation mode
+try:
+    from reachy_mini import ReachyMiniApp
+    from reachy_mini.utils import create_head_pose
+    REACHY_AVAILABLE = True
+except ImportError:
+    # Mock base class for simulation mode
+    class ReachyMiniApp:
+        custom_app_url: str | None = None
+        dont_start_webserver: bool = False
+
+        def __init__(self):
+            pass
+
+    def create_head_pose(*args, **kwargs):
+        """Mock head pose function for simulation"""
+        return None
+
+    REACHY_AVAILABLE = False
 
 from .providers import LiteLLMProvider, LiteLLMConfig
 from .memory import MemoryManager
@@ -26,8 +43,8 @@ from .voice import VoiceManager, process_voice_input, generate_voice_response
 logger = logging.getLogger(__name__)
 
 # Default configuration - OpenRouter direct
-DEFAULT_LITELLM_URL = os.getenv("LITELLM_URL", "https://openrouter.ai/api")
-DEFAULT_API_KEY = os.getenv("OPENROUTER_API_KEY") or os.getenv("LITELLM_API_KEY", "")
+DEFAULT_LITELLM_URL = os.getenv("LITELLM_URL", "http://localhost:4000")
+DEFAULT_API_KEY = os.getenv("LITELLM_API_KEY") or os.getenv("OPENROUTER_API_KEY", "")
 DEFAULT_MODEL = os.getenv("LITELLM_MODEL", "google/gemini-2.5-flash-lite")
 
 # Available models (populated from LiteLLM)
