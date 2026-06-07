@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
-const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID;
+const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_ID || "G-394L6GBENE";
 
 // Check if user has consented to cookies
 function hasConsent(): boolean {
