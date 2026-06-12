@@ -1,8 +1,46 @@
 import { JournalEntry } from "@/types";
 
-// Auto-generated from devlog/journal — Last synced: 2025-12-24T10:54:11.399Z
+// Auto-generated from devlog/journal — Last synced: 2026-06-12T17:46:53.448Z
 // Run: npm run sync-devlog
 export const journalEntries: JournalEntry[] = [
+  {
+    slug: "back-online-after-six-months",
+    title: "Back Online After Six Months",
+    date: "2026-06-12",
+    summary: "The Reachy Mini sat quiet for about six months while other projects ate the calendar. This week I plugged it back in and asked Claude Code to get it running again. The robot moves, all three apps stil",
+    content: `The Reachy Mini sat quiet for about six months while other projects ate the calendar. This week I plugged it back in and asked Claude Code to get it running again. The robot moves, all three apps still work, and almost nothing needed rebuilding.
+
+### What had drifted
+
+The SDK had moved a lot. I was pinned at \`reachy-mini 1.2.3\`; current was \`1.8.1\`. Six minor versions of changes to the daemon, the media stack, and the app framework. That's where I expected the pain.
+
+It mostly didn't come. One upgrade and the daemon came up on the new version:
+
+\`\`\`bash
+./venv/bin/pip install -U "reachy-mini[mujoco]"   # 1.2.3 -> 1.8.1
+./venv/bin/reachy-mini-daemon -p /dev/cu.usbmodem5AF71342721 --headless --fastapi-port 7860
+\`\`\`
+
+All nine motors checked out and configured on the first try: body rotation, the six Stewart-platform motors, both antennas. The robot woke up on its own.
+
+### The one red herring
+
+Startup threw a wall of gstreamer warnings about a missing \`libpython3.12.dylib\`. Looked alarming. It wasn't. One optional Python-binding plugin failed to load, and the audio capture, playback, and WebRTC relay all came up fine right after. Cosmetic. No \`--no-media\` needed.
+
+### The apps survived the jump
+
+The three apps in the Pollen app store (Focus Guardian, DJ Reactor, Echo) all still build against 1.8.1 with no code changes. They lean on \`goto_target\` and \`create_head_pose\`, and both kept identical signatures across the version gap. Focus Guardian ran live: started from the dashboard, drove the robot, stopped clean.
+
+### What I'm taking from it
+
+I came in bracing for a rewrite and got a version bump. A well-versioned SDK with stable core APIs buys you a lot when you pick a project back up cold.
+
+Next: bring Echo's voice loop and DJ Reactor's audio reactivity back, and freshen this site.`,
+    tags: ["hardware", "software", "claude-code", "camera", "audio", "simulation"],
+    mood: "struggle",
+    readingTime: 2,
+    linkedTimeline: [],
+  },
   {
     slug: "publishing-to-huggingface-ecosystem",
     title: "Publishing to HuggingFace Ecosystem",

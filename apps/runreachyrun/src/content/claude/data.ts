@@ -1,4 +1,4 @@
-// Auto-generated from sessions — Last synced: 2025-12-24T10:54:11.400Z
+// Auto-generated from sessions — Last synced: 2026-06-12T17:46:53.450Z
 // Run: npm run sync-devlog
 
 export interface ClaudeSession {
@@ -14,6 +14,14 @@ export interface ClaudeSession {
 }
 
 export const claudeSessions: ClaudeSession[] = [
+  {
+    id: "echo-voice-animations",
+    date: "2025-12-24",
+    goal: "Echo Voice & Animation Overhaul",
+    outcome: "success",
+    summary: "Added voice output (TTS) and expressive robot animations to Reachy Echo companion app. Built multi-provider architecture supporting Edge TTS (free), OpenAI TTS, and LiteLLM passthrough.",
+    linkedFeature: "Reachy Echo",
+  },
   {
     id: "website-polish",
     date: "2025-12-24",

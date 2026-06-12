@@ -110,3 +110,6 @@ htmlcov/
 # =========================
 daemon.pid
 daemon.log
+
+# Local tactical state (single source of truth, not for GitHub)
+.claude/

@@ -1,8 +1,18 @@
 import { TimelineNode } from "@/types";
 
-// Auto-generated from devlog — Last synced: 2025-12-24T10:54:11.397Z
+// Auto-generated from devlog — Last synced: 2026-06-12T17:46:53.445Z
 // Run: npm run sync-devlog
 export const timelineData: TimelineNode[] = [
+  {
+    id: "echo-voice-animation-overhaul-20251224",
+    date: "2025-12-24",
+    title: "Echo Voice & Animation Overhaul",
+    type: "session",
+    summary: "Added voice output (TTS) and expressive robot animations to Reachy Echo companion app. Built multi-provider architecture supporting Edge TTS (free), OpenAI TTS, and LiteLLM passthrough.",
+    content: {
+    },
+    tags: ["hardware", "software", "claude-code", "echo"],
+  },
   {
     id: "website-polish-about-page-20251224",
     date: "2025-12-24",
