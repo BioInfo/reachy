@@ -11,6 +11,7 @@ Set VOICE_BACKEND=local to use DGX, or VOICE_BACKEND=openai for cloud.
 import io
 import logging
 import os
+import shutil
 import tempfile
 from pathlib import Path
 from typing import Optional, Tuple
@@ -389,7 +390,7 @@ class EdgeVoiceManager:
 
             # Run edge-tts as subprocess (avoids async issues)
             # Use full path since daemon may not have venv in PATH
-            edge_tts_path = "/Users/bioinfo/apps/reachy/venv/bin/edge-tts"
+            edge_tts_path = shutil.which("edge-tts") or "edge-tts"
             cmd = [
                 edge_tts_path,
                 "--voice", self._voice,
