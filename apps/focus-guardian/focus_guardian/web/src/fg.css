@@ -1,0 +1,51 @@
+/* Focus Guardian panel layout (single ~460px column, iframed in the dashboard) */
+
+.wrap {
+  max-width: 460px;
+  margin: 0 auto;
+  padding: 22px 18px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pad { padding: 18px; }
+.center { text-align: center; }
+
+/* header */
+.hdr { display: flex; align-items: center; justify-content: space-between; }
+.brand { font-size: 20px; font-weight: 700; letter-spacing: -0.01em; }
+
+/* signal section — the hero */
+.signal { display: flex; flex-direction: column; align-items: center; gap: 18px; }
+.time { font-size: 46px; font-weight: 700; letter-spacing: -0.02em; line-height: 1; }
+
+.reaction {
+  display: flex; align-items: center; gap: 14px;
+  background: var(--bg-secondary); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius); padding: 14px 18px; width: 100%;
+}
+.robot-face {
+  font-family: var(--font-mono); font-size: 22px; color: var(--accent-cyan);
+  min-width: 56px; text-align: center; letter-spacing: 1px;
+}
+.reaction-line { font-size: 15px; font-weight: 500; }
+
+/* controls */
+.controls { display: flex; flex-direction: column; gap: 16px; }
+.row { display: flex; align-items: center; justify-content: space-between; }
+.toggles { display: flex; flex-wrap: wrap; gap: 14px 20px; }
+.actions { margin-top: 2px; }
+
+/* today strip */
+.today {}
+.strip {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;
+  background: var(--bg-secondary); border: 1px solid var(--border-subtle);
+  border-radius: var(--radius); padding: 16px 10px;
+}
+
+@media (max-width: 360px) {
+  .strip { grid-template-columns: repeat(2, 1fr); gap: 14px 10px; }
+  .toggles { gap: 12px 16px; }
+}
