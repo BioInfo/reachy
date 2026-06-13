@@ -1,23 +1,35 @@
-"""
-Reachy Mini utility functions for robot control.
+"""Reachy Mini motion utilities shared across apps (SDK 1.8.1).
 
-Provides common abstractions for:
-- Connection management
-- Movement primitives
-- Expression animations
-- Audio playback
+- `EmotionPlayer` — play named moves from the Pollen emotion/dance libraries.
+- `safe_goto` / `safe_call` / `safe_play_sound` — loop-resilient robot calls.
+- hand-rolled fallback animations (used when the emotion library is absent).
 """
 
-from .robot import ReachyConnection, get_robot
-from .animations import victory_dance, disappointed_shake, attention_wiggle
-from .expressions import set_expression, Expression
+from .emotions import EmotionPlayer, EMOTIONS_DATASET, DANCES_DATASET
+from .safe_motion import safe_call, safe_goto, safe_play_sound
+from .feedback import EmotionFeedback, FeedbackCue
+from .animations import (
+    victory_dance,
+    disappointed_shake,
+    attention_wiggle,
+    idle_breathing,
+    focus_mode_enter,
+    focus_mode_exit,
+)
 
 __all__ = [
-    "ReachyConnection",
-    "get_robot",
+    "EmotionPlayer",
+    "EMOTIONS_DATASET",
+    "DANCES_DATASET",
+    "safe_call",
+    "safe_goto",
+    "safe_play_sound",
+    "EmotionFeedback",
+    "FeedbackCue",
     "victory_dance",
     "disappointed_shake",
     "attention_wiggle",
-    "set_expression",
-    "Expression",
+    "idle_breathing",
+    "focus_mode_enter",
+    "focus_mode_exit",
 ]

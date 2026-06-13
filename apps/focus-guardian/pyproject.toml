@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "focus_guardian"
-version = "0.1.0"
+version = "2.0.0"
 description = "Focus Guardian - Productivity body-double for Reachy Mini that helps you stay focused"
 readme = "README.md"
 license = {text = "MIT"}
@@ -22,18 +22,24 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "reachy-mini>=1.0.0",
+    "reachy-mini>=1.8.0",
     "numpy>=1.24.0",
-    "gradio>=4.0.0",
-    "mediapipe>=0.10.0",
     "opencv-python>=4.8.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "websockets>=12.0",
+    "requests>=2.31.0",
 ]
+
+[project.optional-dependencies]
+# heavier detectors, not needed for the default motion-presence path
+vision = ["mediapipe>=0.10.0"]
 
 [project.urls]
 Homepage = "https://huggingface.co/spaces/RyeCatcher/focus_guardian"
 
 [project.entry-points."reachy_mini_apps"]
-focus_guardian = "focus_guardian.main:ReachyMiniFocusGuardian"
+focus_guardian = "focus_guardian.app:ReachyMiniFocusGuardian"
 
 [tool.setuptools.packages.find]
 where = ["."]

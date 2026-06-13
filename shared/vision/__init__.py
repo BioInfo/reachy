@@ -1,19 +1,25 @@
-"""
-Shared vision utilities for Reachy Mini apps.
+"""Shared vision utilities for Reachy Mini apps.
 
-Provides common abstractions for:
-- Head pose estimation
-- Gaze detection
-- Object detection (phones, etc.)
-- Face detection and tracking
+Two layers:
+- **Attention** (present + engaged): `Detector` protocol + `AttentionResult`,
+  with `MotionPresenceDetector` (zero-dep default) and `VLMAttentionDetector`
+  (real engagement via a vision LLM). `build_detector(spec)` picks one.
+- **Objects / pose** (optional, heavier deps): `ObjectDetector` (YOLO phones),
+  `HeadPoseEstimator` (MediaPipe). Import these directly when needed.
 """
 
-from .head_pose import HeadPoseEstimator, GazeDirection
-from .detector import ObjectDetector, DetectionResult
+from .base import AttentionResult, Detector, BaseDetector
+from .motion import MotionPresenceDetector
+from .vlm import VLMAttentionDetector
+from .factory import build_detector
+from . import frames
 
 __all__ = [
-    "HeadPoseEstimator",
-    "GazeDirection",
-    "ObjectDetector",
-    "DetectionResult",
+    "AttentionResult",
+    "Detector",
+    "BaseDetector",
+    "MotionPresenceDetector",
+    "VLMAttentionDetector",
+    "build_detector",
+    "frames",
 ]
