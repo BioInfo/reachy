@@ -1,13 +1,13 @@
 #!/usr/bin/env python
 """Talk to Echo on your laptop — full voice loop, no robot needed.
 
-Uses your Mac mic + speakers (LocalAudioIO) instead of the robot, the Kokoro TTS
-and faster-whisper STT services on the DGX (reached over an SSH tunnel — see
-below), and the same deepseek brain as the text chat. This is the real loop:
-   (just talk) -> VAD records -> Whisper -> deepseek -> Kokoro -> your speakers.
+Uses your local mic + speakers (LocalAudioIO) instead of the robot, the Kokoro TTS
+and faster-whisper STT services on a remote GPU host (reached over an SSH tunnel,
+see below), and the same chat brain as the text chat. This is the real loop:
+   (just talk) -> VAD records -> Whisper -> brain -> Kokoro -> your speakers.
 
-SETUP (one terminal):
-    ssh -N -L 8810:127.0.0.1:8810 -L 8811:127.0.0.1:8811 dgx
+SETUP (one terminal) -- replace <gpu-host> with the SSH host running the services:
+    ssh -N -L 8810:127.0.0.1:8810 -L 8811:127.0.0.1:8811 <gpu-host>
 THEN (another terminal):
     ./venv/bin/python apps/echo/scripts/voice_demo.py
 
