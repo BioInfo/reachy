@@ -42,5 +42,13 @@ Homepage = "https://huggingface.co/spaces/RyeCatcher/focus_guardian"
 focus_guardian = "focus_guardian.app:ReachyMiniFocusGuardian"
 
 [tool.setuptools.packages.find]
+# In the published HuggingFace Space, `shared/` is vendored at the repo root
+# next to `focus_guardian/`, so both install together. In the monorepo, shared/
+# lives at the repo root (not under this dir) so only focus_guardian is found
+# here and the _bootstrap shim puts repo `shared/` on the path for dev.
 where = ["."]
-include = ["focus_guardian*"]
+include = ["focus_guardian*", "shared*"]
+
+[tool.setuptools.package-data]
+# ship the built React UI (web/dist) as package data so the server serves it
+focus_guardian = ["web/dist/index.html", "web/dist/assets/*"]
