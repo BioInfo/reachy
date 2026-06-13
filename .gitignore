@@ -119,3 +119,7 @@ daemon.log
 
 # Local tactical state (single source of truth, not for GitHub)
 .claude/
+
+# Local working state / tool output (not tracked)
+.learnings/
+.playwright-mcp/

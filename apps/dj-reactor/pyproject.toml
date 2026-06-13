@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "dj_reactor"
-version = "0.1.0"
+version = "2.0.0"
 description = "DJ Reactor - Music visualizer for Reachy Mini that dances to your music"
 readme = "README.md"
 license = {text = "MIT"}
@@ -12,7 +12,7 @@ requires-python = ">=3.10"
 authors = [
     {name = "Justin Johnson", email = "justin@rundata.run"}
 ]
-keywords = ["reachy-mini", "robot", "music", "visualizer", "dance"]
+keywords = ["reachy-mini", "robot", "music", "visualizer", "dance", "beat-detection"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -22,18 +22,29 @@ classifiers = [
     "Programming Language :: Python :: 3.12",
 ]
 dependencies = [
-    "reachy-mini>=1.0.0",
+    "reachy-mini>=1.8.0",
     "numpy>=1.24.0",
     "sounddevice>=0.4.6",
-    "gradio>=4.0.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "websockets>=12.0",
+    "requests>=2.31.0",
 ]
 
 [project.urls]
 Homepage = "https://huggingface.co/spaces/RyeCatcher/dj_reactor"
 
 [project.entry-points."reachy_mini_apps"]
-dj_reactor = "dj_reactor.main:ReachyMiniDjReactor"
+dj_reactor = "dj_reactor.app:ReachyMiniDjReactor"
 
 [tool.setuptools.packages.find]
+# In the published HuggingFace Space, `shared/` is vendored at the repo root next
+# to `dj_reactor/`, so both install together. In the monorepo, shared/ lives at
+# the repo root (not under this dir), so only dj_reactor is found here and the
+# _bootstrap shim puts repo `shared/` on the path for dev.
 where = ["."]
-include = ["dj_reactor*"]
+include = ["dj_reactor*", "shared*"]
+
+[tool.setuptools.package-data]
+# ship the built React UI (web/dist) as package data so the server serves it
+dj_reactor = ["web/dist/index.html", "web/dist/assets/*"]

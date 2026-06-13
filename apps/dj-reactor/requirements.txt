@@ -1,12 +1,8 @@
-# DJ Reactor - Music Visualizer for Reachy Mini
-# Install: pip install -r requirements.txt
-
-# Core audio processing
+# DJ Reactor v2 dependencies (runtime)
+reachy-mini>=1.8.0
 numpy>=1.24.0
 sounddevice>=0.4.6
-
-# Web UI
-gradio>=4.0.0
-
-# Reachy Mini SDK (install separately or via pyproject.toml)
-# pip install reachy-mini>=1.0.0
+fastapi>=0.110.0
+uvicorn[standard]>=0.27.0
+websockets>=12.0
+requests>=2.31.0

@@ -18,69 +18,83 @@ tags:
 
 # DJ Reactor
 
-A music visualizer for Reachy Mini that makes your robot dance to the beat!
+A music visualizer for Reachy Mini that turns your robot into a dance partner. It
+listens to whatever's playing, finds the beat, and grooves along in real time:
+body sway on the bass, head bob on the mids, antennas on the treble, and a
+signature move when a drop hits.
 
-## Features
+v2 is a ground-up rebuild on a shared app layer (audio analysis, robot motion,
+persistence, and a live React control panel) reused across the Reachy Mini apps.
 
-- **Real-time Audio Analysis** - Analyzes bass, mid, and treble frequencies
-- **Expressive Dancing** - Full body sway, head bob, and antenna movements
-- **Beat Detection** - Extra punch on detected beats
-- **Multiple Audio Sources** - Microphone, system audio loopback, or any input
+## What it does
 
-## Installation
+- **Real-time audio analysis** - FFT splits the sound into bass / mid / treble and
+  tracks energy onsets to detect beats and estimate BPM.
+- **Beat-synced dancing** - bass drives a big body sway, mids drive the head,
+  treble bounces the antennas, and each beat punches an emphasis (headbang, nod,
+  or tilt) chosen by the genre.
+- **Genre styles** - Electronic, Rock, Hip-Hop, Pop, Jazz, Classical, Chill, each
+  with its own movement character.
+- **Drop reactions** - a heavy onset triggers a signature dance-library move that
+  briefly takes over, then the groove resumes.
+- **Live control panel** - a React UI shows the beat pulse, the three bands, BPM,
+  and your set stats, with genre / intensity / sensitivity / sound controls.
 
-```bash
-pip install git+https://huggingface.co/spaces/RyeCatcher/dj_reactor
+## How it works
+
+```
+Audio device → FFTBeatAnalyzer → AudioFeatures → DanceController → goto_target
+                     │                                   │
+                  bands + beat + BPM              smoothed, bounded motion
+                     │                                   │
+              DJSession (set events) ──── EmotionFeedback / DropDancer
+                     │
+              live state → WebSocket → React panel
 ```
 
-## Usage
+Frequency mapping:
 
-1. Start the Reachy Mini daemon:
+- **Bass (20-250 Hz)** → body sway
+- **Mid (250-2000 Hz)** → head bob and roll
+- **Treble (2000-12000 Hz)** → antenna bounce
+- **Beat / onset** → emphasis kick and drop reactions
+
+## Running
+
+1. Start the daemon (installed apps connect on port 8000):
    ```bash
-   reachy-mini-daemon  # or --sim for simulation
+   reachy-mini-daemon --fastapi-port 8000
    ```
+2. Open the dashboard at http://localhost:8000, find **DJ Reactor**, and start it.
+3. Open the control panel, pick a genre, and play some music.
 
-2. Open the dashboard at http://localhost:8000
+The panel is also reachable directly at http://localhost:7861 while the app runs.
 
-3. Find "DJ Reactor" in Applications and click Start
+## System audio (macOS)
 
-4. Select your audio input and start vibing!
+To dance to system audio (Spotify, YouTube) instead of the microphone, route
+output through a loopback device:
 
-## System Audio Setup (macOS)
-
-To capture system audio (Spotify, YouTube, etc.):
-
-1. Install [BlackHole](https://existential.audio/blackhole/) audio driver
-2. Open Audio MIDI Setup
-3. Create a Multi-Output Device with your speakers + BlackHole
-4. Set as system output
-5. Select "BlackHole 2ch" as input in DJ Reactor
-
-## How It Works
-
-DJ Reactor uses real-time FFT analysis to extract:
-- **Bass (20-250 Hz)** → Body sway intensity
-- **Mid (250-2000 Hz)** → Head movement
-- **Treble (2000-12000 Hz)** → Antenna activity
-- **Beat detection** → Extra head dip on beats
-
-The robot's movements are synchronized to an internal groove cycle that adjusts with the detected BPM.
+1. Install [BlackHole](https://existential.audio/blackhole/).
+2. In Audio MIDI Setup, make a Multi-Output Device (your speakers + BlackHole) and
+   set it as the system output.
+3. In the panel, select the BlackHole input device.
 
 ## Configuration
 
-- **Intensity Slider** - Control how dramatic the movements are (0.1-1.0)
-- **Audio Device** - Select microphone or loopback device
+Everything is env-overridable (`DJ_*`) and most is also live in the panel:
 
-## Requirements
-
-- Reachy Mini robot or simulator
-- Python 3.10+
-- Audio input device
+| Setting | Env | Default | Notes |
+|---------|-----|---------|-------|
+| Genre | `DJ_GENRE` | electronic | movement style |
+| Intensity | `DJ_INTENSITY` | 0.7 | how dramatic the motion is (0.1-1.0) |
+| Sensitivity | `DJ_SENSITIVITY` | 0.6 | how easily beats trigger (0.2-1.0) |
+| Sound | `DJ_SOUND_ENABLED` | on | reaction sounds (music app → on by default) |
+| Drop reactions | `DJ_REACT_TO_DROPS` | on | signature move on a drop |
+| Audio device | `DJ_AUDIO_DEVICE` | system default | input device index |
+| UI port | `DJ_UI_PORT` | 7861 | control panel port |
 
 ## License
 
-MIT License
-
-## Credits
-
-Built for the [Reachy Mini](https://github.com/pollen-robotics/reachy_mini) platform by Pollen Robotics.
+MIT License. Built for the [Reachy Mini](https://github.com/pollen-robotics/reachy_mini)
+platform by Pollen Robotics.
