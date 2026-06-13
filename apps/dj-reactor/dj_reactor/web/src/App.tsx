@@ -19,9 +19,10 @@ type DJState = {
   moving: boolean;
   audio_available: boolean;
   totals: { sets: number; vibing_minutes: number; beats: number; drops: number; peak_bpm: number };
-  config: { genre: string; intensity: number; sensitivity: number; sound_enabled: boolean; react_to_drops: boolean };
+  config: { genre: string; intensity: number; sensitivity: number; sound_enabled: boolean; react_to_drops: boolean; audio_device_index: number };
   genres: Genre[];
 };
+type Device = { index: number; name: string };
 
 // band hues are STRUCTURE here (one per frequency category), not decoration
 const BASS = "#00ffd5", MID = "#ff5db1", TREBLE = "#ffaa00";
@@ -106,10 +107,12 @@ export function App() {
 
   // local control mirror; seed from config once, then user owns
   const [genre, setGenre] = useState("electronic");
-  const [intensity, setIntensity] = useState(0.7);
+  const [intensity, setIntensity] = useState(0.5);
   const [sensitivity, setSensitivity] = useState(0.6);
   const [snd, setSnd] = useState(true);
   const [drops, setDrops] = useState(true);
+  const [device, setDevice] = useState(-1);
+  const [devices, setDevices] = useState<Device[]>([]);
   const [seeded, setSeeded] = useState(false);
   useEffect(() => {
     if (state && !seeded) {
@@ -118,9 +121,17 @@ export function App() {
       setSensitivity(state.config.sensitivity);
       setSnd(state.config.sound_enabled);
       setDrops(state.config.react_to_drops);
+      setDevice(state.config.audio_device_index);
       setSeeded(true);
     }
   }, [state, seeded]);
+
+  // discover audio inputs once
+  useEffect(() => {
+    command<{ result?: { devices?: Device[] } }>("devices")
+      .then((r) => setDevices(r?.result?.devices ?? []))
+      .catch(() => {});
+  }, []);
 
   if (!state) {
     return (
@@ -140,6 +151,7 @@ export function App() {
   const onSensitivity = (v: number) => { setSensitivity(v); pushConfig({ sensitivity: v }); };
   const onSound = (v: boolean) => { setSnd(v); pushConfig({ sound_enabled: v }); };
   const onDrops = (v: boolean) => { setDrops(v); pushConfig({ react_to_drops: v }); };
+  const onDevice = (v: number) => { setDevice(v); pushConfig({ audio_device_index: v }); };
 
   const start = () => command("start", {
     genre, intensity, sensitivity, sound_enabled: snd, react_to_drops: drops,
@@ -172,6 +184,21 @@ export function App() {
 
       {/* controls */}
       <section className="card pad controls">
+        <div className="field">
+          <label className="eyebrow" htmlFor="audio-src">Audio input</label>
+          <div className="select-wrap">
+            <select
+              id="audio-src" className="select" value={device}
+              onChange={(e) => onDevice(parseInt(e.target.value, 10))}
+            >
+              <option value={-1}>System default</option>
+              {devices.map((d) => (
+                <option key={d.index} value={d.index}>{d.name}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         <div>
           <div className="eyebrow" style={{ marginBottom: 10 }}>Genre</div>
           <div className="genres">

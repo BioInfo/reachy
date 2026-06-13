@@ -21,12 +21,14 @@ from shared.audio import AudioFeatures
 
 from .genres import GenrePreset
 
-# safe motion envelopes (degrees / mm / unit antenna), matching v1 clamps
-HEAD_Z_MAX = 20.0
-HEAD_ROLL_MAX = 45.0
-HEAD_PITCH_MAX = 45.0
-BODY_YAW_MAX = 55.0
-ANTENNA_MAX = 1.0
+# Safe motion envelopes (degrees / mm / unit antenna). Deliberately conservative:
+# v1's wide limits let the head roll + antennas swing far enough to hit the robot's
+# own face. These keep the groove expressive but self-collision-safe.
+HEAD_Z_MAX = 14.0
+HEAD_ROLL_MAX = 20.0
+HEAD_PITCH_MAX = 20.0
+BODY_YAW_MAX = 35.0
+ANTENNA_MAX = 0.55
 
 
 @dataclass
@@ -81,8 +83,9 @@ class DanceController:
         p = self.preset
         phase = f.beat_phase * 2 * math.pi
 
-        # always groove; audio makes it bigger (>=80% baseline, per v1)
-        energy = (0.8 + 0.2 * f.rms) * self.intensity
+        # groove scales with the music: gentle when quiet, bigger when loud.
+        # v1 pinned a 0.8 floor so it always slammed near max — that's the "crazy".
+        energy = (0.35 + 0.45 * f.rms) * self.intensity
 
         # body sway — big sweep, bass-boosted
         bass_boost = 0.8 + 0.5 * f.bass
@@ -93,20 +96,22 @@ class DanceController:
         head_z_target = p.head_bob_amplitude * energy * 1.2 * math.sin(phase * p.head_bob_speed)
         head_roll_target = p.head_bob_amplitude * 2.0 * energy * mid_boost * math.sin(phase * 0.5)
 
-        # beat emphasis — punch the beat per genre style
+        # beat emphasis — punch the beat per genre style (softened so a hard onset
+        # can't whip the head into itself; the clamp is the final guard)
         head_pitch = 0.0
         if f.beat_detected:
             strength = max(f.onset_strength, 1.2) * self.intensity
             if p.emphasis_style == "headbang":
-                head_pitch = -35.0 * strength
+                head_pitch = -16.0 * strength
             elif p.emphasis_style == "nod":
-                head_pitch = -25.0 * strength
+                head_pitch = -12.0 * strength
             elif p.emphasis_style == "tilt":
-                head_roll_target += 30.0 * strength * (1 if self.dance_time % 2 > 1 else -1)
+                head_roll_target += 14.0 * strength * (1 if self.dance_time % 2 > 1 else -1)
 
-        # antennas — bouncy, treble-boosted, counter-phased
+        # antennas — bouncy, treble-boosted, counter-phased. Lower multiplier +
+        # tighter clamp keep them off the robot's face.
         treble_boost = 0.6 + 0.6 * f.treble
-        ant_amp = p.antenna_amplitude * energy * treble_boost * 2.0
+        ant_amp = p.antenna_amplitude * energy * treble_boost
         ant_l_target = ant_amp * math.sin(phase * 2)
         ant_r_target = ant_amp * math.sin(phase * 2 + math.pi)
 

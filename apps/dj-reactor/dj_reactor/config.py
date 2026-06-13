@@ -30,7 +30,7 @@ class DJConfig(BaseAppConfig):
 
     # dance shaping
     genre: str = DEFAULT_GENRE
-    intensity: float = 0.7        # 0.1..1.0 how dramatic the motion is
+    intensity: float = 0.5        # 0.1..1.0 how dramatic the motion is (gentle default)
     react_to_drops: bool = True   # play a dance-library move on a big drop
 
     # audio
@@ -57,7 +57,7 @@ class DJConfig(BaseAppConfig):
     def from_env(cls) -> "DJConfig":
         return cls(
             genre=env_str("DJ_GENRE", DEFAULT_GENRE),
-            intensity=env_float("DJ_INTENSITY", 0.7),
+            intensity=env_float("DJ_INTENSITY", 0.5),
             react_to_drops=env_bool("DJ_REACT_TO_DROPS", True),
             audio_kind=env_str("DJ_AUDIO_KIND", "auto"),
             audio_device_index=env_int("DJ_AUDIO_DEVICE", -1),
@@ -108,6 +108,7 @@ class DJConfig(BaseAppConfig):
             "sensitivity": self.sensitivity,
             "sound_enabled": self.sound_enabled,
             "react_to_drops": self.react_to_drops,
+            "audio_device_index": self.audio_device_index,
         }
 
     def apply_overrides(self, **kwargs: Any) -> None:

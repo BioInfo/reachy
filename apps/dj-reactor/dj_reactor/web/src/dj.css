@@ -71,6 +71,26 @@
 .actions { margin-top: 2px; }
 .toggles { display: flex; flex-wrap: wrap; gap: 14px 22px; }
 
+/* audio-source picker — themed select (not the raw native control) */
+.field { display: flex; flex-direction: column; gap: 8px; }
+.field label { display: block; }
+.select-wrap { position: relative; }
+.select-wrap::after {
+  content: ""; position: absolute; right: 14px; top: 50%; width: 8px; height: 8px;
+  border-right: 2px solid var(--text-secondary); border-bottom: 2px solid var(--text-secondary);
+  transform: translateY(-70%) rotate(45deg); pointer-events: none;
+}
+.select {
+  -webkit-appearance: none; appearance: none; width: 100%; cursor: pointer;
+  background: var(--bg-tertiary); color: var(--text-primary);
+  border: 1px solid var(--border-default); border-radius: 10px;
+  font: 500 14px/1 var(--font-sans); padding: 11px 36px 11px 13px;
+  transition: border-color .15s ease;
+}
+.select:hover { border-color: var(--border-strong); }
+.select:focus { outline: none; border-color: var(--accent-cyan-dim); box-shadow: 0 0 0 3px var(--accent-cyan-glow); }
+.select option { background: var(--bg-elevated); color: var(--text-primary); }
+
 /* genre picker — collapse the genre dimension to a single recoloring picker */
 .genres { display: flex; flex-wrap: wrap; gap: 8px; }
 .genre-pill {

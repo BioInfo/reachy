@@ -100,13 +100,18 @@ class ReachyMiniDjReactor(ReachyMiniApp):
         return {"queued": "stop"}
 
     def _cmd_config(self, body: dict[str, Any]) -> dict[str, Any]:
+        body = body or {}
         with self._lock:
-            self.cfg.apply_overrides(**(body or {}))
+            old_dev = self.cfg.audio_device_index
+            self.cfg.apply_overrides(**body)
             self.controller.update_preset(self.cfg.preset())
             self.controller.update_intensity(self.cfg.intensity)
             self.audio.set_sensitivity(self.cfg.sensitivity)
             self.feedback.sound = self.cfg.sound_enabled
             self.drop_dancer.sound = self.cfg.sound_enabled
+            if self.cfg.audio_device_index != old_dev:
+                # swap the capture device in the control loop (touches the stream)
+                self._intents.append(("rebuild_audio", {}))
         return self.cfg.public_dict()
 
     def _cmd_devices(self, body: dict[str, Any]) -> dict[str, Any]:
@@ -171,13 +176,27 @@ class ReachyMiniDjReactor(ReachyMiniApp):
             intents, self._intents = self._intents, []
         for name, _body in intents:
             if name == "start":
-                self.audio.start()
+                self._rebuild_audio(start=True)  # honor the selected device at start
                 with self._lock:
                     self.controller.reset()
                     self.session.start()
                 self._safe_feedback(robot, ENTER)
             elif name == "stop":
                 self._end_set(robot)
+            elif name == "rebuild_audio":
+                self._rebuild_audio(start=self.session.active)
+
+    def _rebuild_audio(self, *, start: bool) -> None:
+        """Build a fresh audio source from current config (picks up a device change)."""
+        new = build_audio_source(self.cfg.audio_spec())
+        with self._lock:
+            old, self.audio = self.audio, new
+        try:
+            old.stop()
+        except Exception as e:  # noqa: BLE001
+            logger.debug("old audio stop error: %s", e)
+        if start:
+            new.start()
 
     def _end_set(self, robot: ReachyMini) -> None:
         with self._lock:
