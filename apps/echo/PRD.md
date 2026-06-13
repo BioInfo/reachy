@@ -1,306 +1,156 @@
-# Reachy Echo - Product Requirements Document
+# Reachy Echo — Product Requirements Document
 
-**Version:** 1.0
+**Version:** 2.1
 **Author:** Justin Johnson
-**Created:** 2025-12-22
-**Status:** In Development
+**Created:** 2025-12-22 · **Rewritten:** 2026-06-13
+**Status:** Planning (v2 POC on the shared app layer)
 
 ---
 
 ## Overview
 
-Reachy Echo transforms Reachy Mini from a voice assistant into a **companion** — a physical presence that knows you, grows with you, and adds moments of delight to your day.
+Echo is a conversation companion for Reachy Mini. You talk to it; it talks back
+and reacts with its whole body. The conversation runs through a **pluggable
+brain**, so the first public release can be a simple, well-tuned chatbot, and the
+same app can later grow into an embodied front-end for a personal assistant agent.
 
-### Problem Statement
+The reason to build this on a robot and not in a chat window is the body. A desk
+robot can look at you, turn toward your voice, hold a "thinking" pose, nod while it
+talks, and go quiet when you leave. Echo treats the robot's physical reaction as
+the product and the language model as the engine behind it.
 
-Current robot companion apps treat robots as voice interfaces with decorative movement:
-- No memory across sessions — every conversation starts fresh
-- Purely reactive — waits for commands, never initiates
-- Single LLM provider lock-in (typically OpenAI)
-- Personas are just system prompts with no real personality
-- Movement is cosmetic, not meaningful
+### Scope: a small POC first
 
-This wastes the unique potential of physical embodiment.
+This is deliberately a small first cut. Ship one good conversational loop with
+strong physical reactions, keep the brain swappable, and resist rebuilding v1's
+companion *platform* (provider hot-swap, episodic memory, proactive engine, persona
+marketplace). The genuinely exciting part — wiring Echo to a real personal assistant
+so the robot becomes its voice in the room — comes *after* the public MVP.
 
-### Solution
+### What v1 got wrong (and v2 fixes)
 
-A companion that:
-1. **Remembers** — Builds relationship through persistent memory
-2. **Initiates** — Proactively engages based on context
-3. **Adapts** — Supports multiple LLM backends (cloud and local)
-4. **Expresses** — Uses movement to communicate, not decorate
-5. **Evolves** — Learns preferences and grows with you
-
----
-
-## Target Users
-
-### Primary: Knowledge Workers (WFH)
-- Remote workers who miss office presence
-- Developers, writers, researchers
-- Value productivity and focus
-- Comfortable with AI tools
-
-### Secondary: ADHD/Focus Community
-- Benefit from body doubling
-- Need external accountability
-- Value non-judgmental presence
-
-### Tertiary: Tech Enthusiasts
-- Early adopters of robotics
-- Want to customize and tinker
-- Share creations with community
+v1 buried the movement under provider/memory/persona machinery. v2 inverts that:
+the robot's reaction is the signature, the conversation is one clean loop, and the
+brain is an interface so the product can grow without a rewrite.
 
 ---
 
-## Core Features
+## Design principles
 
-### MVP (Phase 1)
-
-#### F1: Multi-Backend Architecture
-
-Hot-swap between LLM providers without restarting:
-
-| Provider | Use Case | Priority |
-|----------|----------|----------|
-| **OpenAI Realtime** | Best voice quality, most capable | P0 |
-| **Ollama** | Privacy, offline, free | P0 |
-| **Gemini Live** | Alternative cloud option | P1 |
-| **LM Studio** | User-friendly local | P2 |
-
-Features:
-- Provider selection in UI
-- Capability detection (not all providers support all features)
-- Graceful fallback when provider unavailable
-
-#### F2: Persistent Memory
-
-Every interaction builds relationship:
-
-| Memory Type | Content | Example |
-|-------------|---------|---------|
-| **Episodic** | Specific events | "We debugged that async issue Tuesday" |
-| **Semantic** | User facts | "You prefer dark mode, work late" |
-| **Procedural** | Learned behaviors | Custom greetings, interaction style |
-
-Features:
-- Natural history references in conversation
-- Preference learning over time
-- "What do you remember about me?" introspection
-- Day 1 vs Day 100 feels different
-
-#### F3: Proactive Behaviors (3 for MVP)
-
-Robot initiates interactions based on context:
-
-| Behavior | Trigger | Action |
-|----------|---------|--------|
-| **Morning Greeting** | Face detected, first today | Personalized hello with context |
-| **Work Break Reminder** | 2+ hours unbroken work | Gentle check-in, stretch suggestion |
-| **Build Celebration** | Terminal success pattern | Excited reaction, congratulations |
-
-#### F4: Enhanced Persona (Basic)
-
-Beyond system prompts:
-- Voice selection from provider options
-- Movement style presets (calm, energetic, quirky)
-- Emotional mapping to robot expressions
-- Easy persona switching
-
-#### F5: Meaningful Movement
-
-Motion communicates state:
-- Head turns signal attention
-- Antenna positions show emotion
-- Breathing patterns indicate idle state
-- Gestures accompany speech naturally
-
-### Future Features (Phase 2+)
-
-- Full Persona Studio with visual editor
-- Calendar integration with proactive alerts
-- Additional proactive behaviors (return greeting, call end check-in)
-- ElevenLabs/XTTS voice options
-- GitHub/Slack integrations
-- Achievement/skill progression system
-- Persona marketplace for sharing
+1. **Embodiment first.** The robot's reaction is the signature, not the text.
+2. **Pluggable brain.** The conversation backend is one interface, swapped by
+   config. The app never hard-codes a provider or a model.
+3. **Extensible seam, baked in from day one.** The same interface that serves the
+   POC chatbot is what a personal-assistant backend plugs into later. Concrete
+   wiring (endpoints, keys, agent commands) lives in gitignored config, never in
+   committed code.
+4. **Third consumer of the shared layer.** Echo reuses the same `shared/`
+   foundation as Focus Guardian and DJ Reactor (config / session / persistence /
+   server / React Signal kit / emotion library / safe motion). The only genuinely
+   new shared code is the brain interface (and, later, voice I/O).
+5. **Gentle motion by default** — inherits the conservative self-collision
+   envelopes from the DJ Reactor tuning (antennas are the main risk).
 
 ---
 
-## Technical Requirements
+## The brain interface (the extensible seam)
 
-### Hardware
-- Reachy Mini (Lite or Wireless)
-- Microphone for voice input
-- Camera for face detection (proactive triggers)
+Everything routes through one interface — `Brain.respond(text, history) -> Reply`.
 
-### Software Dependencies
-- Python 3.12+
-- Gradio (web UI)
-- Reachy Mini SDK
-- LanceDB (vector embeddings)
-- SQLite (structured memory)
-- fastrtc (audio streaming for OpenAI Realtime)
+| Brain | When | Role |
+|-------|------|------|
+| **LiteLLMBrain** | **POC (now)** | Talks to a configured conversational model through an OpenAI-compatible endpoint. The whole MVP runs on this. |
+| **CommandBrain** | **Post-MVP** | Shells to a configured agent command (prompt on stdin → reply on stdout). The hook a personal-assistant backend plugs into. Generic — no agent specifics in the repo. |
 
-### Performance Requirements
-- Voice response latency: < 500ms (provider-dependent)
-- Memory retrieval: < 100ms
-- Proactive trigger detection: < 1s
-- UI updates: Real-time
-
-### Platform Support
-- macOS (primary)
-- Linux (Ubuntu 20.04+)
-- Windows (planned)
+The model and endpoint are config, not code. The committed app ships pointed at a
+configurable endpoint; the operator supplies the model and credentials via
+environment. A token-gated inbound channel (`POST /api/say`, off unless a token is
+set) is reserved for the post-MVP phase, when the assistant agent pushes messages
+to the robot.
 
 ---
 
-## Architecture Overview
+## Architecture
 
 ```
-┌─────────────────────────────────────────────────────────────┐
-│                      Gradio Web UI                          │
-├─────────────────────────────────────────────────────────────┤
-│                   Conversation Manager                       │
-│  ┌───────────┐  ┌───────────┐  ┌─────────────────────────┐  │
-│  │  Memory   │  │ Proactive │  │   Persona Manager       │  │
-│  │  System   │  │  Engine   │  │                         │  │
-│  └───────────┘  └───────────┘  └─────────────────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│                 Provider Abstraction Layer                   │
-│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌────────────┐  │
-│  │  OpenAI  │  │  Gemini  │  │  Ollama  │  │  LM Studio │  │
-│  │ Realtime │  │   Live   │  │  Local   │  │   Local    │  │
-│  └──────────┘  └──────────┘  └──────────┘  └────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│                   Reachy Control Layer                       │
-│  ┌───────────┐  ┌───────────┐  ┌─────────────────────────┐  │
-│  │  Motion   │  │  Vision   │  │         Audio           │  │
-│  │  System   │  │  System   │  │     (TTS/STT/Stream)    │  │
-│  └───────────┘  └───────────┘  └─────────────────────────┘  │
-├─────────────────────────────────────────────────────────────┤
-│                   Reachy Mini SDK Daemon                     │
-└─────────────────────────────────────────────────────────────┘
+shared/
+  brain/                      # NEW — pluggable conversational backend
+    base.py                   #   Brain protocol + Reply(text, emotion?)
+    litellm.py                #   LiteLLMBrain (OpenAI-compatible chat) — the POC brain
+    command.py                #   CommandBrain (agent hook) — post-MVP
+    factory.py                #   build_brain(spec)
+  voice/                      # NEW — staged for Phase 2 (STT in / TTS out)
+  app/ reachy_utils/ vision/ audio/ ui/   # existing shared foundation
+
+apps/echo/echo/
+  config.py                   # EchoConfig — brain/voice spec, persona, ports
+  persona.py                  # personality presets -> system prompt + emotion style
+  conversation.py             # turn manager: history + brain call + emotion-from-reply
+  session.py                  # ConversationSession state machine (idle/listening/thinking/speaking)
+  feedback.py                 # event -> emotion cue (listening pose, thinking antennas, speaking nod)
+  app.py                      # orchestrator: control loop + brain + (reserved) inbound channel
+  _bootstrap.py
+  web/                        # React panel (Signal kit) — chat + live "presence/mood" readout
 ```
 
----
-
-## User Experience
-
-### First Run Flow
-
-```
-1. User opens Echo web UI
-2. Provider selection (OpenAI recommended, Ollama for privacy)
-3. API key entry (if cloud provider)
-4. Quick persona selection (Default, Chill, Energetic)
-5. "Hi! I'm Echo. What should I call you?"
-6. Robot learns name, begins relationship
-```
-
-### Daily Flow
-
-```
-1. User sits at desk
-2. Echo detects face → "Good morning, [name]!"
-3. Proactive context: "You have that big meeting at 2pm"
-4. Natural conversation as needed
-5. Work break reminder after 2 hours
-6. Build succeeds → celebration
-7. User leaves → Echo returns to idle
-8. Next day → Echo remembers yesterday
-```
-
-### Configuration Options
-
-| Setting | Default | Description |
-|---------|---------|-------------|
-| Provider | OpenAI Realtime | LLM backend |
-| Persona | Default | Personality preset |
-| Proactive behaviors | All enabled | Which behaviors to trigger |
-| Break reminder interval | 2 hours | Time before break suggestion |
-| Morning greeting window | 6am-11am | When to greet |
-| Voice | Provider default | TTS voice selection |
+Robot control stays Python (SDK requirement). The UI is React served by the Python
+app on its port; the dashboard iframes it. The server reuses the shared `AppServer`
+(FastAPI + WebSocket live-state + serve-React).
 
 ---
 
-## Success Metrics
+## Phases
 
-### Quantitative
-- Daily active sessions > 3
-- Average session length > 10 minutes
-- Memory references per session > 2
-- Proactive interactions accepted > 70%
-- Provider switch success rate > 95%
+### Phase 1 — Conversation bot (the public MVP)
+- `Brain` interface in `shared/brain/` with `LiteLLMBrain`.
+- Text conversation in the React panel; robot reacts physically per turn
+  (listening pose, "thinking" antennas, speaking nod) via the emotion library +
+  conservative motion.
+- `ConversationSession` state machine; light per-session persistence.
+- Pointed at a strong conversational model via the operator's endpoint.
 
-### Qualitative
-- "It feels like it knows me"
-- "I look forward to the morning greeting"
-- "Day 30 feels different than Day 1"
-- "I can use it offline when I need privacy"
+### Phase 2 — Voice
+- New `shared/voice/` (STT in, TTS out), the way DJ Reactor added `shared/audio/`.
+  Turns Echo into a real talk-to-it companion.
 
----
-
-## Risks and Mitigations
-
-| Risk | Impact | Probability | Mitigation |
-|------|--------|-------------|------------|
-| OpenAI API costs | Medium | High | Ollama fallback, usage tracking |
-| Memory becomes creepy | High | Medium | Transparency, "forget" command |
-| Proactive feels intrusive | High | Medium | Easy disable, cooldowns |
-| Provider switching breaks flow | Medium | Medium | State preservation, graceful fallback |
-| Local models too slow | Medium | Medium | Expectations setting, async loading |
+### Phase 3 — Assistant bridge (the part we build together, post-MVP)
+- `CommandBrain` wired to a personal assistant agent for "ask my assistant" turns;
+  two-brain routing (fast model for banter, agent for tasks).
+- Assistant → robot push via the gated inbound channel on the agent's own cadence,
+  so the robot becomes the assistant's voice in the room.
+- Memory / proactivity return here, driven by the real agent instead of canned
+  triggers.
 
 ---
 
-## Development Phases
+## Signature element
 
-### Phase 0: Foundation
-- Project structure
-- Reachy daemon connectivity
-- Basic Gradio shell
-- Motion control verification
-
-### Phase 1: MVP
-- OpenAI Realtime provider
-- Ollama provider
-- SQLite + LanceDB memory
-- 3 proactive behaviors
-- Basic persona system
-- Full UI
-
-### Phase 2: Relationship
-- Gemini Live provider
-- Full memory system (episodic + semantic)
-- Persona Studio UI
-- Calendar integration
-- Additional proactive behaviors
-
-### Phase 3: Ecosystem
-- Plugin system
-- Achievement/skill progression
-- Persona marketplace
-- Advanced integrations
+Designed in the UI phase (via the design skill, as with FG's Focus Signal ring and
+DJ's Beat Spectrum): the robot's **presence / emotional state made visible** — a
+"mood core" that shows listening / thinking / speaking and the current feeling,
+fused with the robot face. A stranger should get *this thing is present and reacts
+to me* in five seconds, not *this is a chat box*.
 
 ---
 
-## Open Questions
+## Constraints
 
-1. Should memory have explicit "forget" commands for privacy?
-2. How to handle multiple users on same device?
-3. Should proactive behaviors have voice or just movement?
-4. Integration with existing Pollen conversation app or fresh start?
-
----
-
-## References
-
-- [Vision Document](../../docs/roadmap/companion/00-vision.md)
-- [Gap Analysis](../../docs/roadmap/companion/01-gap-analysis.md)
-- [Technical Architecture](../../docs/roadmap/companion/03-technical-architecture.md)
-- [Phased Roadmap](../../docs/roadmap/companion/04-phased-roadmap.md)
-- [Viral Factors](../../docs/roadmap/companion/06-viral-factors.md)
+- **No private infrastructure in the committed tree.** No endpoints, keys, agent
+  names, or absolute user paths in committed code. (History was scrubbed once;
+  don't reintroduce.) Concrete wiring lives in the gitignored `CLAUDE.md` + env.
+- **Robot safety.** Conservative motion envelopes by default; antennas are the main
+  self-collision risk — keep their range small. 7V-5A supply required for motion.
 
 ---
 
-*"A robot that knows you and grows with you"*
+## Open questions
+
+1. Voice from the start, or text-first MVP then voice in Phase 2? (Plan assumes
+   text-first — it keeps the POC small.)
+2. How much of v1 (memory, proactive engine, personas) returns, and when? (Plan:
+   Phase 3, behind the assistant agent — earned, not assumed.)
+
+---
+
+*"You talk to it, and it reacts with its whole body. Then we make it the voice of
+something that already knows you."*
