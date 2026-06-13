@@ -46,6 +46,7 @@ class EchoConfig(BaseAppConfig):
     request_timeout_s: float = 30.0
     max_history: int = 20                # turns of context sent to the model
     persona: str = DEFAULT_PERSONA
+    reasoning_enabled: bool = False      # OFF by default: voice wants snappy, short replies
 
     # command brain (post-MVP agent hook)
     agent_cmd: str = ""                  # ECHO_AGENT_CMD; empty = disabled
@@ -70,6 +71,7 @@ class EchoConfig(BaseAppConfig):
             request_timeout_s=env_float("ECHO_REQUEST_TIMEOUT_S", 30.0),
             max_history=env_int("ECHO_MAX_HISTORY", 20),
             persona=env_str("ECHO_PERSONA", DEFAULT_PERSONA),
+            reasoning_enabled=env_bool("ECHO_REASONING", False),
             agent_cmd=env_str("ECHO_AGENT_CMD", ""),
             agent_timeout_s=env_float("ECHO_AGENT_TIMEOUT_S", 120.0),
             inbound_token=env_str("ECHO_INBOUND_TOKEN", ""),
@@ -104,6 +106,7 @@ class EchoConfig(BaseAppConfig):
                 "max_tokens": self.max_tokens,
                 "timeout": self.request_timeout_s,
                 "max_history": self.max_history,
+                "reasoning_enabled": self.reasoning_enabled,
             },
             "command": {
                 "command": self.agent_cmd,

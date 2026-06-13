@@ -185,3 +185,56 @@ def test_config_apply_overrides_clamps_and_ignores_secrets():
     assert cfg.temperature == 2.0       # clamped
     assert cfg.max_tokens == 4096       # clamped
     assert cfg.llm_api_key == ""        # secret not overridable via UI
+
+
+# --- reasoning toggle (extra_body) -----------------------------------------
+
+class _CapturingClient:
+    """Stand-in openai client that records the create() kwargs."""
+
+    def __init__(self):
+        self.calls = []
+
+        class _Chat:
+            def __init__(self, outer):
+                self.completions = self
+
+            def create(self, **kwargs):
+                _CapturingClient._last = kwargs
+                msg = SimpleNamespace(content="ok")
+                return SimpleNamespace(choices=[SimpleNamespace(message=msg)])
+
+        self.chat = _Chat(self)
+
+
+def _brain_with_capture(reasoning_enabled):
+    b = LiteLLMBrain(base_url="http://x/v1", model="m", reasoning_enabled=reasoning_enabled)
+    cap = _CapturingClient()
+    b._ensure_client = lambda: cap  # type: ignore[method-assign]
+    return b
+
+
+def test_reasoning_none_sends_no_extra_body():
+    b = _brain_with_capture(None)
+    b.respond("hi", [])
+    assert "extra_body" not in _CapturingClient._last
+
+
+def test_reasoning_false_disables_via_extra_body():
+    b = _brain_with_capture(False)
+    b.respond("hi", [])
+    assert _CapturingClient._last["extra_body"] == {"reasoning": {"enabled": False}}
+
+
+def test_reasoning_true_enables_via_extra_body():
+    b = _brain_with_capture(True)
+    b.respond("hi", [])
+    assert _CapturingClient._last["extra_body"] == {"reasoning": {"enabled": True}}
+
+
+def test_echo_config_threads_reasoning_into_brain_spec():
+    cfg = EchoConfig(llm_base_url="http://x/v1", llm_model="m", reasoning_enabled=False)
+    spec = cfg.brain_spec()
+    assert spec["litellm"]["reasoning_enabled"] is False
+    b = build_brain(spec)
+    assert b.reasoning_enabled is False
