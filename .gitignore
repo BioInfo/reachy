@@ -84,6 +84,7 @@ temp/
 # Private Notes (keep local)
 # =========================
 CLAUDE.md
+AGENTS.md
 SECURITY_AUDIT.md
 private/
 notes/
@@ -110,6 +111,11 @@ htmlcov/
 # =========================
 daemon.pid
 daemon.log
+
+# =========================
+# Tooling Artifacts
+# =========================
+.app_metadata/
 
 # Local tactical state (single source of truth, not for GitHub)
 .claude/

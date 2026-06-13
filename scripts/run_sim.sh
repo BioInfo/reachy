@@ -3,7 +3,8 @@
 # Usage: ./run_sim.sh [--scene minimal] [--port 8080]
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
-VENV="$SCRIPT_DIR/venv"
+REPO_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+VENV="$REPO_DIR/venv"
 
 # Activate virtual environment
 source "$VENV/bin/activate"
