@@ -26,7 +26,11 @@ DEFAULT_PERSONA = (
     "You are Echo, a small desk robot with a warm, curious personality. "
     "Keep replies short and spoken-aloud natural — a sentence or two, not an essay. "
     "You have a physical body (a head and antennas) and you're talking with someone "
-    "at their desk. Be friendly and present, never robotic or listy."
+    "at their desk. Be friendly and present, never robotic or listy. "
+    "Everything you write is spoken aloud by a text-to-speech voice, so output ONLY "
+    "the words you would say. Never narrate actions, emotions, or stage directions: "
+    "no asterisks like *tilts head* or *antennas wiggle*, no parenthetical actions, "
+    "no emoji. Just speak."
 )
 
 
@@ -47,6 +51,31 @@ class EchoConfig(BaseAppConfig):
     max_history: int = 20                # turns of context sent to the model
     persona: str = DEFAULT_PERSONA
     reasoning_enabled: bool = False      # OFF by default: voice wants snappy, short replies
+
+    # voice (the POC loop): wake -> VAD -> STT -> brain -> TTS -> speaker.
+    # TTS/STT default to the SAME gateway as the brain (llm_base_url + llm_api_key),
+    # so one gateway + one vk-echo key serves chat + kokoro + faster-whisper.
+    voice_enabled: bool = True
+    media_backend: str = "default"       # ReachyMini media (audio in/out); "no_media" disables voice
+    tts_base_url: str = ""               # default -> llm_base_url
+    tts_api_key: str = ""                # default -> llm_api_key (SECRET)
+    tts_model: str = "kokoro"
+    tts_voice: str = "af_heart"
+    tts_speed: float = 1.0
+    stt_base_url: str = ""               # default -> llm_base_url
+    stt_api_key: str = ""                # default -> llm_api_key (SECRET)
+    stt_model: str = "faster-whisper"
+    stt_language: str = "en"
+    wake_kind: str = "always"            # always | openwakeword | porcupine
+    porcupine_access_key: str = ""       # SECRET — Picovoice AccessKey (free)
+    porcupine_keyword_path: str = ""     # path to a custom .ppn (optional)
+    porcupine_builtin: str = "computer"  # built-in keyword (no .ppn needed): computer|jarvis|
+                                         # picovoice|bumblebee|terminator|grasshopper|blueberry...
+    openww_model: str = "hey_jarvis"     # keyless fallback wake model (needs onnx/tflite models)
+    require_wake: bool = True            # don't always-listen without a real wake word
+    vad_silence_ms: int = 700
+    vad_min_speech_ms: int = 250
+    listen_timeout_s: float = 10.0
 
     # command brain (post-MVP agent hook)
     agent_cmd: str = ""                  # ECHO_AGENT_CMD; empty = disabled
@@ -72,6 +101,26 @@ class EchoConfig(BaseAppConfig):
             max_history=env_int("ECHO_MAX_HISTORY", 20),
             persona=env_str("ECHO_PERSONA", DEFAULT_PERSONA),
             reasoning_enabled=env_bool("ECHO_REASONING", False),
+            voice_enabled=env_bool("ECHO_VOICE", True),
+            media_backend=env_str("ECHO_MEDIA_BACKEND", "default"),
+            tts_base_url=env_str("ECHO_TTS_BASE_URL", ""),
+            tts_api_key=env_str("ECHO_TTS_API_KEY", ""),
+            tts_model=env_str("ECHO_TTS_MODEL", "kokoro"),
+            tts_voice=env_str("ECHO_TTS_VOICE", "af_heart"),
+            tts_speed=env_float("ECHO_TTS_SPEED", 1.0),
+            stt_base_url=env_str("ECHO_STT_BASE_URL", ""),
+            stt_api_key=env_str("ECHO_STT_API_KEY", ""),
+            stt_model=env_str("ECHO_STT_MODEL", "faster-whisper"),
+            stt_language=env_str("ECHO_STT_LANGUAGE", "en"),
+            wake_kind=env_str("ECHO_WAKE", "always"),
+            porcupine_access_key=env_str("ECHO_PORCUPINE_KEY", ""),
+            porcupine_keyword_path=env_str("ECHO_PORCUPINE_PPN", ""),
+            porcupine_builtin=env_str("ECHO_PORCUPINE_BUILTIN", "computer"),
+            openww_model=env_str("ECHO_OPENWW_MODEL", "hey_jarvis"),
+            require_wake=env_bool("ECHO_REQUIRE_WAKE", True),
+            vad_silence_ms=env_int("ECHO_VAD_SILENCE_MS", 700),
+            vad_min_speech_ms=env_int("ECHO_VAD_MIN_SPEECH_MS", 250),
+            listen_timeout_s=env_float("ECHO_LISTEN_TIMEOUT_S", 10.0),
             agent_cmd=env_str("ECHO_AGENT_CMD", ""),
             agent_timeout_s=env_float("ECHO_AGENT_TIMEOUT_S", 120.0),
             inbound_token=env_str("ECHO_INBOUND_TOKEN", ""),
@@ -114,14 +163,76 @@ class EchoConfig(BaseAppConfig):
             },
         }
 
+    # -- voice specs (consumed by shared.voice.build_*) --------------------
+
+    @property
+    def _tts_base(self) -> str:
+        return self.tts_base_url or self.llm_base_url
+
+    @property
+    def _stt_base(self) -> str:
+        return self.stt_base_url or self.llm_base_url
+
+    def tts_spec(self) -> dict[str, Any]:
+        return {
+            "kind": "gateway",
+            "gateway": {
+                "base_url": self._tts_base,
+                "api_key": self.tts_api_key or self.llm_api_key,
+                "model": self.tts_model,
+                "voice": self.tts_voice,
+                "speed": self.tts_speed,
+            },
+        }
+
+    def stt_spec(self) -> dict[str, Any]:
+        return {
+            "kind": "gateway",
+            "gateway": {
+                "base_url": self._stt_base,
+                "api_key": self.stt_api_key or self.llm_api_key,
+                "model": self.stt_model,
+                "language": self.stt_language,
+            },
+        }
+
+    def wake_spec(self) -> dict[str, Any]:
+        # Auto-upgrade to Porcupine when an AccessKey is provided (so dropping the
+        # key into .env is all it takes — no need to also flip ECHO_WAKE).
+        kind = self.wake_kind
+        if self.porcupine_access_key and kind == "always":
+            kind = "porcupine"
+        return {
+            "kind": kind,
+            "porcupine": {
+                "access_key": self.porcupine_access_key,
+                "keyword_path": self.porcupine_keyword_path,
+                "builtin_keyword": self.porcupine_builtin,
+            },
+            "openwakeword": {"model": self.openww_model},
+        }
+
+    def vad_spec(self) -> dict[str, Any]:
+        return {
+            "vad": {
+                "silence_ms": self.vad_silence_ms,
+                "min_speech_ms": self.vad_min_speech_ms,
+            }
+        }
+
     def public_dict(self) -> dict[str, Any]:
-        """UI-safe view — NO secrets (api key, inbound token excluded)."""
+        """UI-safe view — NO secrets (api key, inbound token, picovoice key excluded)."""
         return {
             "brain_kind": self.brain_kind,
             "llm_model": self.llm_model,
             "temperature": self.temperature,
             "max_tokens": self.max_tokens,
             "configured": bool(self.llm_base_url and self.llm_model),
+            "voice_enabled": self.voice_enabled,
+            "tts_model": self.tts_model,
+            "tts_voice": self.tts_voice,
+            "stt_model": self.stt_model,
+            "wake_kind": self.wake_kind,
         }
 
     def apply_overrides(self, **kwargs: Any) -> None:

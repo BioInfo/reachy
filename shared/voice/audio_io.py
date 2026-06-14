@@ -166,8 +166,10 @@ class RobotAudioIO:
             self._playing = True
             for i in range(0, len(data), self._play_chunk):
                 self._media.push_audio_sample(data[i : i + self._play_chunk])
-            # let the buffer drain before we stop the stream
-            time.sleep(min(2.0, len(data) / float(self.output_rate) + 0.3))
+            # Wait for the buffered audio to actually play out before stopping the
+            # stream. Must be the FULL clip duration (+ margin) — capping this cut
+            # off any reply longer than the cap mid-sentence.
+            time.sleep(len(data) / float(self.output_rate) + 0.3)
             self._media.stop_playing()
             self._playing = False
         except Exception as exc:  # noqa: BLE001
