@@ -13,6 +13,7 @@ endpoint stays importable and the loop simply hears nothing.
 from __future__ import annotations
 
 import io
+import json
 import logging
 from typing import Any
 
@@ -85,13 +86,22 @@ class GatewaySTT:
             kwargs: dict[str, Any] = {
                 "model": self.model,
                 "file": ("utterance.wav", wav, "audio/wav"),
-                "response_format": "text",
+                # json (not text): the LiteLLM gateway always returns a JSON body,
+                # so "text" hands back the raw {"text": ...} blob as a string.
+                "response_format": "json",
             }
             if self.language:
                 kwargs["language"] = self.language
             resp = client.audio.transcriptions.create(**kwargs)
             text = resp if isinstance(resp, str) else getattr(resp, "text", "")
-            return (text or "").strip()
+            text = (text or "").strip()
+            # defensive: some gateways still hand back a JSON string here — unwrap it.
+            if text.startswith("{") and '"text"' in text:
+                try:
+                    text = (json.loads(text).get("text") or "").strip()
+                except (ValueError, TypeError):
+                    pass
+            return text
         except Exception as exc:  # noqa: BLE001 — a failed transcription is just silence
             logger.warning("GatewaySTT transcribe failed: %s", exc)
             return ""
