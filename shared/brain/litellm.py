@@ -44,6 +44,7 @@ class LiteLLMBrain:
         timeout: float = 30.0,
         max_history: int = 20,
         reasoning_enabled: bool | None = None,
+        reasoning_effort: str = "",
     ) -> None:
         self.base_url = base_url.rstrip("/")
         self._api_key = api_key
@@ -53,10 +54,13 @@ class LiteLLMBrain:
         self.max_tokens = max_tokens
         self.timeout = timeout
         self.max_history = max_history
-        # None = leave the model/route default. False = explicitly off (the voice
-        # path: reasoning tokens otherwise eat a small max_tokens budget and add
-        # seconds of latency before the first spoken word). True = explicitly on.
+        # Two reasoning knobs, because backends differ:
+        #  reasoning_effort ("none"/"low"/"medium"/"high") — OpenAI / gpt-oss / Cerebras.
+        #  reasoning_enabled (bool) — DeepSeek / OpenRouter `reasoning:{enabled}`.
+        # reasoning_effort wins when set. Both keep reasoning tokens from eating the
+        # max_tokens budget (-> empty reply) and adding latency on the voice path.
         self.reasoning_enabled = reasoning_enabled
+        self.reasoning_effort = (reasoning_effort or "").strip()
         self._client: Any = None  # lazily built openai.OpenAI
 
     @property
@@ -97,9 +101,15 @@ class LiteLLMBrain:
                 temperature=self.temperature,
                 max_tokens=self.max_tokens,
             )
-            if self.reasoning_enabled is not None:
-                # OpenRouter/LiteLLM reasoning control via extra_body.
-                kwargs["extra_body"] = {"reasoning": {"enabled": self.reasoning_enabled}}
+            extra_body: dict[str, Any] = {}
+            if self.reasoning_effort:
+                # gpt-oss / Cerebras / OpenAI style (top-level param via extra_body).
+                extra_body["reasoning_effort"] = self.reasoning_effort
+            elif self.reasoning_enabled is not None:
+                # DeepSeek / OpenRouter style.
+                extra_body["reasoning"] = {"enabled": self.reasoning_enabled}
+            if extra_body:
+                kwargs["extra_body"] = extra_body
             resp = client.chat.completions.create(**kwargs)
             content = (resp.choices[0].message.content or "").strip()
             if not content:

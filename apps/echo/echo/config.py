@@ -51,6 +51,7 @@ class EchoConfig(BaseAppConfig):
     max_history: int = 20                # turns of context sent to the model
     persona: str = DEFAULT_PERSONA
     reasoning_enabled: bool = False      # OFF by default: voice wants snappy, short replies
+    reasoning_effort: str = ""           # gpt-oss/Cerebras/OpenAI: none|low|medium|high (wins over reasoning_enabled)
 
     # voice (the POC loop): wake -> VAD -> STT -> brain -> TTS -> speaker.
     # TTS/STT default to the SAME gateway as the brain (llm_base_url + llm_api_key),
@@ -103,6 +104,7 @@ class EchoConfig(BaseAppConfig):
             max_history=env_int("ECHO_MAX_HISTORY", 20),
             persona=env_str("ECHO_PERSONA", DEFAULT_PERSONA),
             reasoning_enabled=env_bool("ECHO_REASONING", False),
+            reasoning_effort=env_str("ECHO_REASONING_EFFORT", ""),
             voice_enabled=env_bool("ECHO_VOICE", True),
             media_backend=env_str("ECHO_MEDIA_BACKEND", "default"),
             tts_base_url=env_str("ECHO_TTS_BASE_URL", ""),
@@ -160,6 +162,7 @@ class EchoConfig(BaseAppConfig):
                 "timeout": self.request_timeout_s,
                 "max_history": self.max_history,
                 "reasoning_enabled": self.reasoning_enabled,
+                "reasoning_effort": self.reasoning_effort,
             },
             "command": {
                 "command": self.agent_cmd,
