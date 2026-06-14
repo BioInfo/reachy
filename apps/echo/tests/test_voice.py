@@ -81,9 +81,11 @@ def test_gateway_backends_need_config_to_be_available():
     assert tts.name == "gateway-tts" and tts.available
 
 
-def test_build_wake_falls_back_to_always_when_no_key():
+def test_build_wake_falls_back_when_no_porcupine_key():
     w = V.build_wake({"kind": "porcupine", "porcupine": {"access_key": ""}})
-    assert isinstance(w, AlwaysWake)  # no key, no openWakeWord model loaded -> always
+    # No Picovoice key -> falls back: openWakeWord when its models are installed,
+    # else AlwaysWake. Never a broken PorcupineWake; always usable.
+    assert w.name in ("openwakeword", "always")
     assert w.available and w.frame_length > 0
 
 

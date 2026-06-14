@@ -87,18 +87,24 @@ class PorcupineWake:
 
 
 class OpenWakeWord:
-    """Keyless wake word (openWakeWord) — fallback until the Picovoice key lands."""
+    """Keyless, open-source wake word (openWakeWord, Apache-2.0). Pretrained models:
+    hey_jarvis, alexa, hey_mycroft, hey_rhasspy. Custom words trainable for free.
+    Run `openwakeword.utils.download_models()` once to fetch the model files."""
 
     name = "openwakeword"
 
-    def __init__(self, *, model: str = "hey_jarvis", threshold: float = 0.5):
+    def __init__(self, *, model: str = "hey_jarvis", threshold: float = 0.5,
+                 inference_framework: str = "onnx"):
         self._model = None
         self._threshold = threshold
         self._frame_length = 1280  # openWakeWord expects 80 ms @ 16 kHz
         try:
             from openwakeword.model import Model
 
-            self._model = Model(wakeword_models=[model]) if model else Model()
+            # inference_framework="onnx": tflite-runtime usually isn't installed and
+            # openWakeWord defaults to tflite -> ValueError. onnxruntime is portable.
+            kw = {"inference_framework": inference_framework}
+            self._model = Model(wakeword_models=[model], **kw) if model else Model(**kw)
         except Exception as exc:  # noqa: BLE001
             logger.info("openWakeWord unavailable (%s)", exc)
             self._model = None

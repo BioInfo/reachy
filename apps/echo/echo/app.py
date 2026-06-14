@@ -143,6 +143,8 @@ class ReachyMiniEcho(ReachyMiniApp):
 
     def _on_voice_event(self, event: str, payload: dict) -> None:
         """Fast, robot-free: just stash state. Motion is driven by the control loop."""
+        if event in ("wake", "transcript", "error"):
+            logger.info("voice event: %s %s", event, payload.get("text") or payload.get("error") or "")
         with self._lock:
             if event in (s.value for s in VoiceState):
                 self._voice_state = event
@@ -220,6 +222,7 @@ class ReachyMiniEcho(ReachyMiniApp):
                 tts=build_tts(self.cfg.tts_spec()),
                 on_event=self._on_voice_event,
                 listen_timeout_s=self.cfg.listen_timeout_s,
+                follow_up_timeout_s=self.cfg.follow_up_timeout_s,
             )
             self._tts_for_say = self.loop.tts
             self._audio_for_say = audio

@@ -162,16 +162,20 @@ class RobotAudioIO:
         data = _to_mono(samples)
         data = resample(data, samplerate, self.output_rate)
         try:
-            self._media.start_playing()
-            self._playing = True
+            # Open the playback stream ONCE and keep it open across utterances.
+            # Calling stop_playing() after each reply releases the robot's audio
+            # device, so the next start_playing() falls back to the host's default
+            # output (the first reply plays on the robot, the rest on the Mac).
+            # We only stop the stream in stop() (shutdown).
+            if not self._playing:
+                self._media.start_playing()
+                self._playing = True
             for i in range(0, len(data), self._play_chunk):
                 self._media.push_audio_sample(data[i : i + self._play_chunk])
-            # Wait for the buffered audio to actually play out before stopping the
-            # stream. Must be the FULL clip duration (+ margin) — capping this cut
-            # off any reply longer than the cap mid-sentence.
+            # Wait for the buffered audio to actually play out before returning, so
+            # the next listen doesn't start while she's still speaking. Must be the
+            # FULL clip duration (+ margin) — capping this cut replies off mid-sentence.
             time.sleep(len(data) / float(self.output_rate) + 0.3)
-            self._media.stop_playing()
-            self._playing = False
         except Exception as exc:  # noqa: BLE001
             logger.warning("RobotAudioIO play failed: %s", exc)
 

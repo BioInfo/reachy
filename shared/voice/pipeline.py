@@ -64,6 +64,7 @@ class VoiceLoop:
         tts: TTSEngine | None = None,
         on_event: EventHandler | None = None,
         listen_timeout_s: float = 10.0,
+        follow_up_timeout_s: float = 8.0,
     ):
         self.audio = audio
         self._respond = respond
@@ -73,6 +74,7 @@ class VoiceLoop:
         self.tts = tts or SilentTTS()
         self._on_event = on_event
         self.listen_timeout_s = listen_timeout_s
+        self.follow_up_timeout_s = follow_up_timeout_s
 
         self.state = VoiceState.STOPPED
         self._thread: threading.Thread | None = None
@@ -137,7 +139,7 @@ class VoiceLoop:
         try:
             while not self._stop.is_set():
                 if self._wait_for_wake():
-                    self._handle_turn()
+                    self._converse()
                     self._set(VoiceState.WAITING)
         finally:
             self.audio.stop()
@@ -166,26 +168,41 @@ class VoiceLoop:
                     return True
         return False
 
-    def _handle_turn(self) -> None:
-        text = self._listen()
-        if not text:
-            return
-        self._emit("transcript", text=text)
-        self._set(VoiceState.THINKING)
-        try:
-            reply = self._respond(text) or ""
-        except Exception as exc:  # noqa: BLE001
-            self._emit("error", error=f"respond failed: {exc}")
-            reply = ""
-        if reply:
-            self._speak(reply)
+    def _converse(self) -> None:
+        """After the wake word, keep taking turns WITHOUT re-waking until the user
+        goes quiet — so it's a conversation, not one-shot-per-wake. The first turn
+        waits `listen_timeout_s`; follow-ups wait the shorter `follow_up_timeout_s`.
+        Ends on a silent listen (no utterance) or two no-reply (noise) turns."""
+        first = True
+        empty = 0
+        while not self._stop.is_set():
+            timeout = self.listen_timeout_s if first else self.follow_up_timeout_s
+            first = False
+            text = self._listen(timeout)
+            if not text:
+                return  # silence -> conversation over, back to waiting for the wake word
+            self._emit("transcript", text=text)
+            self._set(VoiceState.THINKING)
+            try:
+                reply = self._respond(text) or ""
+            except Exception as exc:  # noqa: BLE001
+                self._emit("error", error=f"respond failed: {exc}")
+                reply = ""
+            if reply:
+                self._speak(reply)
+                empty = 0
+            else:
+                empty += 1
+                if empty >= 2:  # two noise-only turns -> give up, require the wake word
+                    return
 
-    def _listen(self) -> str:
+    def _listen(self, timeout_s: float | None = None) -> str:
         self.vad.reset()
         self._set(VoiceState.LISTENING)
+        limit = self.listen_timeout_s if timeout_s is None else timeout_s
         t0 = time.monotonic()
         utt: np.ndarray | None = None
-        while not self._stop.is_set() and time.monotonic() - t0 < self.listen_timeout_s:
+        while not self._stop.is_set() and time.monotonic() - t0 < limit:
             chunk = self.audio.read()
             if chunk is None:
                 continue

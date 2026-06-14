@@ -72,10 +72,12 @@ class EchoConfig(BaseAppConfig):
     porcupine_builtin: str = "computer"  # built-in keyword (no .ppn needed): computer|jarvis|
                                          # picovoice|bumblebee|terminator|grasshopper|blueberry...
     openww_model: str = "hey_jarvis"     # keyless fallback wake model (needs onnx/tflite models)
+    wake_threshold: float = 0.4          # openWakeWord detection threshold (lower = more sensitive)
     require_wake: bool = True            # don't always-listen without a real wake word
     vad_silence_ms: int = 700
     vad_min_speech_ms: int = 250
-    listen_timeout_s: float = 10.0
+    listen_timeout_s: float = 10.0      # first turn after the wake word
+    follow_up_timeout_s: float = 8.0    # follow-up turns (conversation, no re-wake)
 
     # command brain (post-MVP agent hook)
     agent_cmd: str = ""                  # ECHO_AGENT_CMD; empty = disabled
@@ -117,10 +119,12 @@ class EchoConfig(BaseAppConfig):
             porcupine_keyword_path=env_str("ECHO_PORCUPINE_PPN", ""),
             porcupine_builtin=env_str("ECHO_PORCUPINE_BUILTIN", "computer"),
             openww_model=env_str("ECHO_OPENWW_MODEL", "hey_jarvis"),
+            wake_threshold=env_float("ECHO_WAKE_THRESHOLD", 0.4),
             require_wake=env_bool("ECHO_REQUIRE_WAKE", True),
             vad_silence_ms=env_int("ECHO_VAD_SILENCE_MS", 700),
             vad_min_speech_ms=env_int("ECHO_VAD_MIN_SPEECH_MS", 250),
             listen_timeout_s=env_float("ECHO_LISTEN_TIMEOUT_S", 10.0),
+            follow_up_timeout_s=env_float("ECHO_FOLLOW_UP_TIMEOUT_S", 8.0),
             agent_cmd=env_str("ECHO_AGENT_CMD", ""),
             agent_timeout_s=env_float("ECHO_AGENT_TIMEOUT_S", 120.0),
             inbound_token=env_str("ECHO_INBOUND_TOKEN", ""),
@@ -209,7 +213,7 @@ class EchoConfig(BaseAppConfig):
                 "keyword_path": self.porcupine_keyword_path,
                 "builtin_keyword": self.porcupine_builtin,
             },
-            "openwakeword": {"model": self.openww_model},
+            "openwakeword": {"model": self.openww_model, "threshold": self.wake_threshold},
         }
 
     def vad_spec(self) -> dict[str, Any]:
