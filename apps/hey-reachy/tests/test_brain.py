@@ -1,6 +1,6 @@
-"""Pure-logic tests for the brain layer + EchoConfig wiring (no network).
+"""Pure-logic tests for the brain layer + HeyReachyConfig wiring (no network).
 
-Run from the repo root:  ./venv/bin/python -m pytest apps/echo/tests/test_brain.py
+Run from the repo root:  ./venv/bin/python -m pytest apps/hey-reachy/tests/test_brain.py
 """
 
 from __future__ import annotations
@@ -9,15 +9,15 @@ import sys
 from pathlib import Path
 from types import SimpleNamespace
 
-# Make repo-root `shared/` and the `echo` package importable when run directly.
+# Make repo-root `shared/` and the `hey_reachy` package importable when run directly.
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "apps" / "echo"))
+sys.path.insert(0, str(REPO_ROOT / "apps" / "hey-reachy"))
 
 from shared.brain import build_brain, Reply             # noqa: E402
 from shared.brain.litellm import LiteLLMBrain           # noqa: E402
 from shared.brain.command import CommandBrain           # noqa: E402
-from echo.config import EchoConfig, DEFAULT_PERSONA     # noqa: E402
+from hey_reachy.config import HeyReachyConfig, DEFAULT_PERSONA     # noqa: E402
 
 
 # --- factory ---------------------------------------------------------------
@@ -138,31 +138,31 @@ def test_command_missing_binary_is_graceful():
     assert reply.ok is False and reply.error
 
 
-# --- EchoConfig ------------------------------------------------------------
+# --- HeyReachyConfig ------------------------------------------------------------
 
 def test_config_from_env_defaults(monkeypatch):
     for k in list(__import__("os").environ):
-        if k.startswith("ECHO_"):
+        if k.startswith("HEY_REACHY_"):
             monkeypatch.delenv(k, raising=False)
-    cfg = EchoConfig.from_env()
+    cfg = HeyReachyConfig.from_env()
     assert cfg.brain_kind == "litellm"
     assert cfg.ui_port == 7863
     assert cfg.persona == DEFAULT_PERSONA
 
 
 def test_config_from_env_overrides(monkeypatch):
-    monkeypatch.setenv("ECHO_BRAIN", "command")
-    monkeypatch.setenv("ECHO_LLM_MODEL", "gemma-4")
-    monkeypatch.setenv("ECHO_LLM_API_KEY", "vk-secret")
-    monkeypatch.setenv("ECHO_INBOUND_TOKEN", "tok")
-    cfg = EchoConfig.from_env()
+    monkeypatch.setenv("HEY_REACHY_BRAIN", "command")
+    monkeypatch.setenv("HEY_REACHY_LLM_MODEL", "gemma-4")
+    monkeypatch.setenv("HEY_REACHY_LLM_API_KEY", "test-api-key")
+    monkeypatch.setenv("HEY_REACHY_INBOUND_TOKEN", "tok")
+    cfg = HeyReachyConfig.from_env()
     assert cfg.brain_kind == "command"
     assert cfg.llm_model == "gemma-4"
     assert cfg.inbound_enabled is True
 
 
 def test_config_brain_spec_shape():
-    cfg = EchoConfig(llm_base_url="http://x/v1", llm_model="gemma-4", llm_api_key="vk-x")
+    cfg = HeyReachyConfig(llm_base_url="http://x/v1", llm_model="gemma-4", llm_api_key="test-api-key")
     spec = cfg.brain_spec()
     assert spec["kind"] == "litellm"
     assert spec["litellm"]["base_url"] == "http://x/v1"
@@ -171,16 +171,16 @@ def test_config_brain_spec_shape():
 
 
 def test_config_public_dict_hides_secrets():
-    cfg = EchoConfig(llm_api_key="vk-secretkey", inbound_token="inbound-secret", llm_model="gemma-4")
+    cfg = HeyReachyConfig(llm_api_key="test-api-key", inbound_token="inbound-secret", llm_model="gemma-4")
     pub = cfg.public_dict()
     flat = str(pub)
-    assert "vk-secretkey" not in flat
+    assert "test-api-key" not in flat
     assert "inbound-secret" not in flat
     assert pub["llm_model"] == "gemma-4"
 
 
 def test_config_apply_overrides_clamps_and_ignores_secrets():
-    cfg = EchoConfig()
+    cfg = HeyReachyConfig()
     cfg.apply_overrides(temperature=5.0, max_tokens=99999, llm_api_key="hacked")
     assert cfg.temperature == 2.0       # clamped
     assert cfg.max_tokens == 4096       # clamped
@@ -232,8 +232,8 @@ def test_reasoning_true_enables_via_extra_body():
     assert _CapturingClient._last["extra_body"] == {"reasoning": {"enabled": True}}
 
 
-def test_echo_config_threads_reasoning_into_brain_spec():
-    cfg = EchoConfig(llm_base_url="http://x/v1", llm_model="m", reasoning_enabled=False)
+def test_config_threads_reasoning_into_brain_spec():
+    cfg = HeyReachyConfig(llm_base_url="http://x/v1", llm_model="m", reasoning_enabled=False)
     spec = cfg.brain_spec()
     assert spec["litellm"]["reasoning_enabled"] is False
     b = build_brain(spec)

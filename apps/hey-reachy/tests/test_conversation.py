@@ -1,6 +1,6 @@
 """Pure-logic tests for ConversationManager (fake brain, no network/robot).
 
-Run from the repo root:  ./venv/bin/python -m pytest apps/echo/tests/test_conversation.py
+Run from the repo root:  ./venv/bin/python -m pytest apps/hey-reachy/tests/test_conversation.py
 """
 
 from __future__ import annotations
@@ -10,15 +10,15 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "apps" / "echo"))
+sys.path.insert(0, str(REPO_ROOT / "apps" / "hey-reachy"))
 
 from shared.brain import Reply                                   # noqa: E402
-from echo.conversation import (                                  # noqa: E402
+from hey_reachy.conversation import (                                  # noqa: E402
     ConversationManager,
     FALLBACK_LINE,
     pick_emotion,
 )
-from echo.session import ConversationState                       # noqa: E402
+from hey_reachy.session import ConversationState                       # noqa: E402
 
 
 class FakeBrain:

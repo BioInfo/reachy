@@ -1,7 +1,7 @@
 """Tests for the shared voice layer — VAD, fallbacks, factory, and the loop.
 
 Pure logic + mocks; no audio device, no robot, no network. Run from repo root:
-  ./venv/bin/python -m pytest apps/echo/tests/test_voice.py
+  ./venv/bin/python -m pytest apps/hey-reachy/tests/test_voice.py
 """
 
 from __future__ import annotations

@@ -1,8 +1,43 @@
 import { JournalEntry } from "@/types";
 
-// Auto-generated from devlog/journal — Last synced: 2026-06-12T17:46:53.448Z
+// Auto-generated from devlog/journal — Last synced: 2026-06-14T02:19:10.412Z
 // Run: npm run sync-devlog
 export const journalEntries: JournalEntry[] = [
+  {
+    slug: "echo-grows-up-and-becomes-hey-reachy",
+    title: "Echo grows up and becomes Hey, Reachy",
+    date: "2026-06-13",
+    summary: "Echo started as a companion-platform idea: memory, proactive behaviors, a model picker, a lot of surface area. When I picked it back up I wanted the opposite. One thing, done well: talk to the robot, ",
+    content: `Echo started as a companion-platform idea: memory, proactive behaviors, a model picker, a lot of surface area. When I picked it back up I wanted the opposite. One thing, done well: talk to the robot, and the robot talks back out loud. So I rebuilt it, and renamed it to what you actually say to it. Hey, Reachy.
+
+### The loop
+
+\`\`\`
+wake word  ->  listen (VAD)  ->  transcribe (STT)  ->  brain (LLM)  ->  speak (TTS)  ->  nod
+\`\`\`
+
+You say a wake word, it wakes and listens, captures your sentence and stops on silence, transcribes it, sends it to a model, and plays the reply out of its own speaker with a small nod while it talks. After it answers it keeps listening for a few seconds, so a back-and-forth doesn't need a fresh wake every turn.
+
+The wake word is keyless and on-device (openWakeWord), so the listening half needs no account and no API key. The brain, the speech-to-text, and the text-to-speech are all OpenAI-compatible endpoints, which means one gateway with one key can serve all three, and you can point the brain at whatever model you want. The brain sits behind one small interface, so swapping the engine never touches the app.
+
+### What the robot taught me
+
+Three things only the hardware tells you:
+
+- **Latency beats intelligence in a voice loop.** A reply that lands in under a second feels alive. A smarter reply that takes three feels broken. I tuned for speed, not for the cleverest model.
+- **Keep the speaker stream open.** Early on, the first reply came from the robot and every reply after fell back to the laptop. Closing the audio stream after each utterance was releasing the robot's speaker. Hold it open across the conversation and it stays on the robot.
+- **Stage directions are a trap.** Ask a model to be expressive and it starts writing things like *tilts head*, which the text-to-speech then reads aloud. The fix is boring: tell it not to, and strip anything in asterisks before it speaks.
+
+Motion is deliberately calm. A slow head-nod while speaking, antennas pinned because they're the part most likely to clip the robot's own face, and a level pose the rest of the time. Present, not fidgety.
+
+### Shipped
+
+Hey, Reachy is live on Hugging Face and built on the same shared layer as Focus Guardian and DJ Reactor, so the voice stack (wake, listen, transcribe, speak) is reusable for whatever comes next. The interesting part starts now: wiring it to a real assistant so it has something worth saying.`,
+    tags: ["hardware", "software", "claude-code", "camera", "audio", "focus-guardian"],
+    mood: "excited",
+    readingTime: 3,
+    linkedTimeline: [],
+  },
   {
     slug: "back-online-after-six-months",
     title: "Back Online After Six Months",
@@ -35,7 +70,9 @@ The three apps in the Pollen app store (Focus Guardian, DJ Reactor, Echo) all st
 
 I came in bracing for a rewrite and got a version bump. A well-versioned SDK with stable core APIs buys you a lot when you pick a project back up cold.
 
-Next: bring Echo's voice loop and DJ Reactor's audio reactivity back, and freshen this site.`,
+Next: bring Echo's voice loop and DJ Reactor's audio reactivity back, and freshen this site.
+
+---`,
     tags: ["hardware", "software", "claude-code", "camera", "audio", "simulation"],
     mood: "struggle",
     readingTime: 2,

@@ -1,4 +1,4 @@
-"""Echo v2 orchestrator — a spoken-conversation companion on Reachy Mini.
+"""Hey, Reachy — orchestrator for a spoken-conversation companion on Reachy Mini.
 
 Composes the reusable parts: `shared.voice.VoiceLoop` (ears + mouth) + a
 `ConversationManager` over a pluggable `Brain` (the engine) + `shared`
@@ -11,13 +11,13 @@ Concurrency model (the important part):
   (fast, no robot — just stashes state and queues a reaction).
 - The **control loop** runs in `run()` (the thread the daemon hands us). It is the
   ONLY place that drives robot *motion*, so gestures are serialized. It drains the
-  reaction queue and plays emotions — but **never while Echo is speaking**: the
+  reaction queue and plays emotions — but **never while Reachy is speaking**: the
   speaker owns that beat, and a move must not compete with audio over the media
   link. Motion happens around speech (wake / listen / think / settle), not during.
 - Commands (say/stop/config) just enqueue an intent the control loop drains.
 
 `request_media_backend` defaults to "default" so the robot's audio is live. Set
-`ECHO_MEDIA_BACKEND=no_media` (or `ECHO_VOICE=0`) to run mute/idle.
+`HEY_REACHY_MEDIA_BACKEND=no_media` (or `HEY_REACHY_VOICE=0`) to run mute/idle.
 """
 
 from __future__ import annotations
@@ -50,14 +50,14 @@ from shared.voice import (  # noqa: E402
     build_wake,
 )
 
-from .config import EchoConfig  # noqa: E402
+from .config import HeyReachyConfig  # noqa: E402
 from .conversation import ConversationManager  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
 _WEB_DIR = Path(__file__).resolve().parent / "web"
 
-# A gentle "talking" head-nod. Echo should be CALM — she holds still while
+# A gentle "talking" head-nod. Reachy should be CALM — she holds still while
 # listening/thinking/idle (no fidgeting) and only nods softly WHILE speaking.
 # Head-only, no antennas (antennas are the self-collision risk), small amplitude.
 _NOD_AMPLITUDE_DEG = 3.5    # peak pitch of the nod (small)
@@ -82,16 +82,16 @@ _STT_NOISE = {
 }
 
 
-class ReachyMiniEcho(ReachyMiniApp):
+class ReachyMiniHeyReachy(ReachyMiniApp):
     """A small desk robot you talk to. Wake → listen → think → speak → react."""
 
     custom_app_url: str | None = None
     dont_start_webserver: bool = True
     request_media_backend: str | None = "default"  # robot audio in/out
 
-    def __init__(self, config: Optional[EchoConfig] = None):
+    def __init__(self, config: Optional[HeyReachyConfig] = None):
         super().__init__()
-        self.cfg = config or EchoConfig.from_env()
+        self.cfg = config or HeyReachyConfig.from_env()
         self.custom_app_url = f"http://localhost:{self.cfg.ui_port}"
         # honour a configured backend (e.g. no_media) over the class default
         self.media_backend = self.cfg.media_backend
@@ -127,7 +127,7 @@ class ReachyMiniEcho(ReachyMiniApp):
         """Run one conversation turn; return the spoken reply text.
 
         Ignores whisper's silence-hallucinations so ambient noise never triggers a
-        reply (Echo is always-listening with no wake word yet)."""
+        reply (Reachy is always-listening with no wake word yet)."""
         if text.strip().lower() in _STT_NOISE or len(text.strip()) < 3:
             logger.info("ignoring noise transcript: %r", text)
             return ""
@@ -156,7 +156,7 @@ class ReachyMiniEcho(ReachyMiniApp):
     def _cmd_say(self, body: dict[str, Any]) -> dict[str, Any]:
         """Gated inbound 'speak this' (reserved for the Pulsar push, Phase 3)."""
         if not self.cfg.inbound_enabled:
-            return {"error": "inbound disabled (set ECHO_INBOUND_TOKEN)"}
+            return {"error": "inbound disabled (set HEY_REACHY_INBOUND_TOKEN)"}
         if (body or {}).get("token") != self.cfg.inbound_token:
             return {"error": "unauthorized"}
         text = (body or {}).get("text", "").strip()
@@ -232,7 +232,7 @@ class ReachyMiniEcho(ReachyMiniApp):
             if self.cfg.require_wake and wake.name == "always":
                 logger.warning(
                     "no wake word configured (wake=always) and require_wake=True -> "
-                    "NOT auto-listening. Set ECHO_PORCUPINE_KEY (+ ECHO_PORCUPINE_BUILTIN) "
+                    "NOT auto-listening. Set HEY_REACHY_PORCUPINE_KEY (+ HEY_REACHY_PORCUPINE_BUILTIN) "
                     "for a wake word, or POST /api/cmd/start_voice to listen anyway."
                 )
             else:
@@ -337,7 +337,7 @@ class ReachyMiniEcho(ReachyMiniApp):
 
 def main() -> None:
     logging.basicConfig(level=logging.INFO)
-    app = ReachyMiniEcho()
+    app = ReachyMiniHeyReachy()
     try:
         app.wrapped_run()
     except KeyboardInterrupt:

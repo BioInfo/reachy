@@ -284,119 +284,134 @@ BEAT_SYNC = True`,
   },
 
   {
-    slug: "reachy-echo",
-    title: "Reachy Echo",
-    tagline: "A companion that remembers you",
+    slug: "hey-reachy",
+    title: "Hey, Reachy",
+    tagline: "Say hi, and the robot talks back",
     description:
-      "Echo transforms Reachy Mini from a voice assistant into a companion that builds a relationship with you. It remembers your name, preferences, and what you worked on yesterday. Unlike reactive assistants, Echo initiates — greeting you in the morning, suggesting breaks, celebrating your wins.",
+      "A voice companion for Reachy Mini. Wake it with a word, talk, and it answers out loud from its own speaker, with a calm nod while it speaks. The robot's reaction is the product; the language model behind it is a pluggable, swappable engine.",
     status: "live",
-    icon: "MessageCircle",
+    icon: "AudioLines",
 
-    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/echo",
-    githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/echo",
+    huggingFaceUrl: "https://huggingface.co/spaces/RyeCatcher/hey_reachy",
+    githubUrl: "https://github.com/BioInfo/reachy/tree/main/apps/hey-reachy",
 
     screenshots: [],
 
     features: [
       {
-        icon: "Brain",
-        title: "Persistent Memory",
+        icon: "Mic",
+        title: "Keyless wake word",
         description:
-          "SQLite-backed memory stores facts about you, conversation history, and session summaries. Echo knows your name, work, and preferences across sessions.",
+          "An open-source wake word (openWakeWord) wakes the robot. No cloud, no account, no API key to start listening.",
       },
       {
-        icon: "Sparkles",
-        title: "Proactive Behaviors",
+        icon: "Cpu",
+        title: "Pluggable brain",
         description:
-          "Doesn't just respond — initiates. Morning greetings, work break reminders, build celebration dances. Trigger-based engine with cooldowns to avoid being annoying.",
+          "Conversation runs through one interface. Point it at any OpenAI-compatible model, or wire in your own agent. Swap the engine anytime.",
       },
       {
-        icon: "Server",
-        title: "Multi-Model Backend",
+        icon: "Volume2",
+        title: "Speaks from the robot",
         description:
-          "LiteLLM integration supports 18+ models via DGX Spark: Llama 3.3 70B (Cerebras), Claude Opus 4.5, GPT-5.2, Gemini 3 Pro. Hot-swap models mid-conversation.",
+          "Replies come out of Reachy's own speaker in a natural voice, and it keeps listening so you can go back and forth without re-waking it.",
       },
       {
-        icon: "Heart",
-        title: "Emotional Expression",
+        icon: "Bot",
+        title: "Calm by design",
         description:
-          "Movement that communicates, not decorates. Antenna wiggles on responses, celebration dances on achievements, attentive poses during conversation.",
+          "A small, slow head-nod while it speaks, antennas pinned, a level pose the rest of the time. Present, not fidgety.",
       },
     ],
 
     howItWorks: [
       {
         step: 1,
-        title: "First Meeting",
+        title: "Wake",
         description:
-          "Echo asks your name and learns about you through natural conversation. Facts are extracted and stored automatically.",
+          "Say the wake word. Reachy wakes and starts listening — keyless, on-device, no account.",
       },
       {
         step: 2,
-        title: "Building Relationship",
+        title: "Listen + transcribe",
         description:
-          "Each conversation adds to Echo's understanding. It remembers topics you care about, projects you mention, preferences you express.",
+          "Voice-activity detection captures your words and stops on silence, then transcribes through an OpenAI-compatible endpoint.",
       },
       {
         step: 3,
-        title: "Proactive Engagement",
+        title: "Think + speak",
         description:
-          "Based on time, context, and learned patterns, Echo initiates interactions. Good morning greetings, break reminders after long focus sessions.",
+          "A pluggable brain writes a short, spoken-style reply, and text-to-speech plays it from the robot's speaker.",
       },
       {
         step: 4,
-        title: "Growing Together",
+        title: "React + continue",
         description:
-          "Over time, Echo becomes more personalized. It knows when you need encouragement vs space, celebrates your wins, supports during setbacks.",
+          "A gentle nod while it talks, then it keeps listening for a few seconds so a back-and-forth needs no re-wake.",
       },
     ],
 
     prerequisites: [
       "Reachy Mini Lite (physical robot)",
       "Python 3.10+",
-      "LiteLLM backend (local or cloud)",
+      "An OpenAI-compatible endpoint for chat + speech (your own gateway or provider)",
       "Reachy daemon running on port 8000",
     ],
 
-    quickStart: `# Currently in development
-# MVP complete, polishing before release
+    quickStart: `# Clone the repo
+git clone https://github.com/BioInfo/reachy.git
+cd reachy/apps/hey-reachy
 
-# Architecture:
-# - LiteLLM provider (18 models via DGX Spark)
-# - SQLite memory (facts, sessions, messages)
-# - Proactive behavior engine (triggers + cooldowns)
-# - Gradio 6 UI with model selector`,
+# Install
+pip install -e .
 
-    techStack: ["Python", "Gradio 6", "LiteLLM", "SQLite", "Reachy SDK"],
+# Point it at your model + speech endpoint
+export HEY_REACHY_LLM_BASE_URL=http://your-gateway:4000/v1
+export HEY_REACHY_LLM_MODEL=your-model-id
+export HEY_REACHY_LLM_API_KEY=your-key
+
+# Start it from the dashboard, or:
+curl -X POST http://127.0.0.1:8000/api/apps/start-app/hey_reachy`,
+
+    configuration: `# environment (HEY_REACHY_*)
+HEY_REACHY_OPENWW_MODEL=hey_jarvis   # keyless wake preset
+HEY_REACHY_WAKE_THRESHOLD=0.4        # lower = more sensitive
+HEY_REACHY_TTS_MODEL=kokoro          # speech out
+HEY_REACHY_STT_MODEL=faster-whisper  # speech in
+HEY_REACHY_VOICE=1                   # 0 to run mute`,
+
+    techStack: ["Python", "openWakeWord", "faster-whisper", "Kokoro TTS", "FastAPI", "Reachy SDK"],
 
     journalEntries: [],
-    timelineNodes: ["reachy-echo-mvp-20251222"],
+    timelineNodes: [],
 
     claudeContributions: [
       {
-        title: "Memory Architecture",
+        title: "Shared voice layer",
         description:
-          "Designed the three-table SQLite schema: user_facts (persistent knowledge), conversation_sessions (summaries), daily_log (greeting tracking). Automatic fact extraction from conversation.",
+          "Built shared/voice — wake, VAD, STT, TTS, the robot audio link, and a VoiceLoop that conducts a turn — so the app stays thin and the pieces are reusable across apps.",
+        prompt:
+          "Design a voice loop where the robot speaks from its own speaker and keeps the conversation going without re-waking.",
       },
       {
-        title: "Proactive Engine",
+        title: "Pluggable brain seam",
         description:
-          "Built the trigger-based behavior system with time/duration/pattern/presence triggers. Cooldown management prevents the robot from being annoying.",
+          "One Brain interface (respond(text, history) -> Reply) with a LiteLLM brain for any OpenAI-compatible endpoint and a CommandBrain for wiring in an agent. The engine swaps without touching the app.",
       },
       {
-        title: "LiteLLM Integration",
+        title: "Calm motion tuning",
         description:
-          "Connected to DGX Spark's LiteLLM proxy with 18 models. Hot-swap capability lets users switch between fast local inference and powerful cloud models.",
+          "Reduced the robot to a small, slow head-nod while speaking with antennas pinned (the self-collision risk), holding a level pose otherwise. Present without fidgeting.",
       },
     ],
 
     learnings: [
-      "Memory transforms assistants into companions — knowing someone's name changes everything",
-      "Proactive engagement needs careful rate limiting; too eager becomes annoying",
-      "Local LLM inference (Cerebras Llama 3.3 70B) is fast enough for real-time conversation",
+      "For a voice loop, latency beats raw model intelligence — a reply under a second feels alive; a smarter one that takes three feels broken.",
+      "Keeping the speaker stream open across utterances was the fix for audio falling back to the laptop — closing it after each reply released the robot's audio device.",
+      "Stage directions are a voice trap: the model emitting *tilts head* gets read aloud by TTS, so the persona forbids them and the app strips them before speaking.",
     ],
 
-    lastUpdated: "2025-12-22",
+    lastUpdated: "2026-06-13",
   },
 ];
 

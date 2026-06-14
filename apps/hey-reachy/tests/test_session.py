@@ -1,6 +1,6 @@
 """Pure-logic tests for ConversationSession (no robot, no brain, no clock).
 
-Run from the repo root:  ./venv/bin/python -m pytest apps/echo/tests/test_session.py
+Run from the repo root:  ./venv/bin/python -m pytest apps/hey-reachy/tests/test_session.py
 """
 
 from __future__ import annotations
@@ -10,9 +10,9 @@ from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO_ROOT))
-sys.path.insert(0, str(REPO_ROOT / "apps" / "echo"))
+sys.path.insert(0, str(REPO_ROOT / "apps" / "hey-reachy"))
 
-from echo.session import ConversationSession, ConversationState  # noqa: E402
+from hey_reachy.session import ConversationSession, ConversationState  # noqa: E402
 
 
 def test_starts_idle_and_empty():

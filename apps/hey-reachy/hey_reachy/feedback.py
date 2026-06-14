@@ -1,4 +1,4 @@
-"""Echo's robot reactions — the voice-event → emotion map.
+"""Reachy's robot reactions — the voice-event → emotion map.
 
 The dispatch policy (library-first, hand-rolled fallback) lives in shared
 `EmotionFeedback`; this only declares *which* gentle emotion fits *which* beat of
@@ -6,10 +6,10 @@ a spoken turn. Keyed by app-level feedback events that `app.py` derives from the
 VoiceLoop's state ("wake", "listening", "thinking", "settle", "error") plus the
 lifecycle moments "enter" / "exit" / "breathe".
 
-Deliberately calm. Echo sits on a desk and talks with you; it should feel present,
+Deliberately calm. Reachy sits on a desk and talks with you; it should feel present,
 not perform. Antennas are the self-collision risk (the DJ Reactor lesson), so every
 cue prefers a small, settled emotion-library move and a tiny hand-rolled fallback.
-Crucially, NO cue runs while Echo is *speaking* — the speaker owns that beat, and we
+Crucially, NO cue runs while Reachy is *speaking* — the speaker owns that beat, and we
 don't want a move competing with audio over the same media link. Motion happens
 around speech (waking, listening, thinking, settling), not during it.
 """
@@ -32,7 +32,7 @@ EXIT = "exit"
 BREATHE = "breathe"
 
 
-def build_echo_feedback(player: EmotionPlayer | None = None,
+def build_reachy_feedback(player: EmotionPlayer | None = None,
                         *, sound: bool = False) -> EmotionFeedback:
     player = player or EmotionPlayer()
     cues = {

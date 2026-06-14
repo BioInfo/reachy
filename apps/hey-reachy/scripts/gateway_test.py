@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-"""Test the Echo voice stack THROUGH the LiteLLM gateway (not the direct tunnel).
+"""Test the Reachy voice stack THROUGH the LiteLLM gateway (not the direct tunnel).
 
 Part A (always): exercise the real client classes — GatewayTTS, GatewaySTT,
-LiteLLMBrain — against the gateway with the vk-echo key. Synthesizes speech,
+LiteLLMBrain — against the gateway with the gateway consumer key. Synthesizes speech,
 transcribes it back, and runs a full conversational turn (TTS -> STT -> brain ->
 TTS). No robot, no mic, no devices: a closed-loop proof the gateway routes work.
 
@@ -10,8 +10,8 @@ Part B (--robot): connect to the running daemon and play one short line out of
 Reachy's actual speaker via the SDK media API (RobotAudioIO). Needs the daemon on
 :8000 and no other app holding the robot.
 
-    ./venv/bin/python apps/echo/scripts/gateway_test.py            # Part A only
-    ./venv/bin/python apps/echo/scripts/gateway_test.py --robot    # + speaker
+    ./venv/bin/python apps/hey-reachy/scripts/gateway_test.py            # Part A only
+    ./venv/bin/python apps/hey-reachy/scripts/gateway_test.py --robot    # + speaker
 """
 from __future__ import annotations
 
@@ -24,29 +24,29 @@ import numpy as np
 
 REPO = Path(__file__).resolve().parents[3]
 sys.path.insert(0, str(REPO))
-sys.path.insert(0, str(REPO / "apps" / "echo"))
+sys.path.insert(0, str(REPO / "apps" / "hey-reachy"))
 
-env_path = REPO / "apps" / "echo" / ".env"
+env_path = REPO / "apps" / "hey-reachy" / ".env"
 for line in env_path.read_text().splitlines() if env_path.exists() else []:
     line = line.strip()
     if line and not line.startswith("#") and "=" in line:
         k, v = line.split("=", 1)
         os.environ.setdefault(k.strip(), v.strip())
 
-from echo.config import EchoConfig                  # noqa: E402
-from echo.conversation import ConversationManager   # noqa: E402
+from hey_reachy.config import HeyReachyConfig                  # noqa: E402
+from hey_reachy.conversation import ConversationManager   # noqa: E402
 from shared.brain import build_brain                # noqa: E402
 from shared.voice.tts import GatewayTTS             # noqa: E402
 from shared.voice.stt import GatewaySTT             # noqa: E402
 
-GW = os.environ.get("ECHO_LLM_BASE_URL", "").rstrip("/")
-KEY = os.environ.get("ECHO_LLM_API_KEY", "")
+GW = os.environ.get("HEY_REACHY_LLM_BASE_URL", "").rstrip("/")
+KEY = os.environ.get("HEY_REACHY_LLM_API_KEY", "")
 
 
 def part_a() -> bool:
-    print("=== Part A: Echo stack through the gateway ===")
+    print("=== Part A: Reachy stack through the gateway ===")
     print(f"gateway: {GW}")
-    cfg = EchoConfig.from_env()
+    cfg = HeyReachyConfig.from_env()
     brain = build_brain(cfg.brain_spec())
     tts = GatewayTTS(base_url=GW, api_key=KEY, model="kokoro", voice="af_heart")
     stt = GatewaySTT(base_url=GW, api_key=KEY, model="faster-whisper", language="en")
@@ -55,7 +55,7 @@ def part_a() -> bool:
     print(f"tts   : kokoro available={tts.available}")
     print(f"stt   : faster-whisper available={stt.available}")
     if not (brain.available and tts.available and stt.available):
-        print("⚠ a backend is unavailable — check ECHO_LLM_BASE_URL / ECHO_LLM_API_KEY")
+        print("⚠ a backend is unavailable — check HEY_REACHY_LLM_BASE_URL / HEY_REACHY_LLM_API_KEY")
         return False
 
     # 1. TTS -> samples
@@ -73,20 +73,20 @@ def part_a() -> bool:
 
     # 3. full turn: user line -> brain -> reply -> TTS
     mgr = ConversationManager(brain, max_history=cfg.max_history)
-    user = "Hey Echo, are you working? Answer in one short sentence."
+    user = "Hey, Reachy, are you working? Answer in one short sentence."
     t0 = time.time()
     _, prior = mgr.begin(user)
     reply = mgr.run(user, prior)
     spoken, _ = mgr.settle(reply)
     mgr.session.to_idle()
     print(f"\nTURN  : you  > {user}")
-    print(f"        echo > {spoken!r}  ({time.time()-t0:.2f}s)")
+    print(f"        reachy > {spoken!r}  ({time.time()-t0:.2f}s)")
     rsamples, rsr = tts.synth(spoken)
     print(f"        spoke reply -> {len(rsamples)} samples @ {rsr}Hz")
 
     # keep the reply audio for Part B
-    np.save("/tmp/echo_reply.npy", rsamples)
-    with open("/tmp/echo_reply_sr.txt", "w") as f:
+    np.save("/tmp/hey_reachy_reply.npy", rsamples)
+    with open("/tmp/hey_reachy_reply_sr.txt", "w") as f:
         f.write(str(rsr))
     print("\n✅ Part A passed: gateway TTS + STT + brain all green.")
     return True

@@ -1,0 +1,75 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "hey-reachy"
+version = "2.0.0"
+description = "Hey, Reachy - a voice companion for Reachy Mini: say hi, talk, the robot talks back"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.10"
+authors = [
+    {name = "Justin Johnson", email = "justin@rundata.run"}
+]
+keywords = ["reachy-mini", "robot", "voice", "conversation", "assistant", "companion"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+dependencies = [
+    "reachy-mini>=1.8.0",
+    "numpy>=1.24.0",
+    "scipy>=1.10.0",
+    "openai>=1.30.0",
+    "fastapi>=0.110.0",
+    "uvicorn[standard]>=0.27.0",
+    "websockets>=12.0",
+    "sounddevice>=0.4.6",
+    "soundfile>=0.12.0",
+    "webrtcvad-wheels>=2.0.0",
+    "openwakeword>=0.6.0",
+]
+
+[project.optional-dependencies]
+# Picovoice Porcupine wake word (needs a free AccessKey). openWakeWord is the
+# keyless default, so this is opt-in.
+porcupine = ["pvporcupine>=3.0.0"]
+dev = [
+    "pytest>=7.0.0",
+    "black>=23.0.0",
+    "ruff>=0.1.0",
+]
+
+[project.urls]
+Homepage = "https://huggingface.co/spaces/RyeCatcher/hey_reachy"
+Documentation = "https://runreachyrun.com/apps/hey-reachy"
+
+[project.entry-points."reachy_mini_apps"]
+hey_reachy = "hey_reachy.app:ReachyMiniHeyReachy"
+
+[tool.setuptools.packages.find]
+# In the published HuggingFace Space, `shared/` is vendored at the repo root next
+# to `hey_reachy/`, so both install together. In the monorepo, shared/ lives at the
+# repo root (not under this dir) so only hey_reachy is found here and the _bootstrap
+# shim puts repo `shared/` on the path for dev. The v1 parts bin lives in
+# `legacy_v1/` (not a package) so it is never collected or shipped.
+where = ["."]
+include = ["hey_reachy*", "shared*"]
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+select = ["E", "F", "I", "N", "W"]
+ignore = ["E501"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,6 +1,6 @@
 """Make the monorepo `shared` package importable.
 
-The daemon spawns installed apps as `python -m echo.app`, which puts the app
+The daemon spawns installed apps as `python -m hey_reachy.app`, which puts the app
 package on sys.path but not the repo root where `shared/` lives. This walks up
 from here to find the dir containing `shared/__init__.py` and inserts it on
 sys.path. Idempotent and silent if `shared` already imports (e.g. when vendored

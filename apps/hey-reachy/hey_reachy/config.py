@@ -1,8 +1,11 @@
-"""EchoConfig — every Echo tunable in one place.
+"""HeyReachyConfig — every tunable in one place.
 
-Same pattern as DJConfig / FocusConfig: each field is env-overridable (ECHO_*),
-the brain is built from `brain_spec()`, and secrets (api key, inbound token) are
-kept out of `public_dict()` so they never reach the UI.
+Same pattern as DJConfig / FocusConfig: each field is env-overridable, the brain
+is built from `brain_spec()`, and secrets (api key, inbound token) are kept out of
+`public_dict()` so they never reach the UI.
+
+Env vars are read as `HEY_REACHY_<NAME>`, with `ECHO_<NAME>` accepted as a legacy
+alias (this app was called "Echo" during the POC). The new prefix wins.
 
 The POC runs on the `litellm` brain (an OpenAI-compatible endpoint). The
 `command` brain + the inbound channel are reserved for the post-MVP assistant
@@ -19,11 +22,11 @@ from shared.app.config import (
     BaseAppConfig, app_data_dir, env_str, env_int, env_float, env_bool,
 )
 
-APP_NAME = "echo"
+APP_NAME = "hey_reachy"
 
-# Echo's personality. The app owns the persona; the brain just carries it.
+# Reachy's personality. The app owns the persona; the brain just carries it.
 DEFAULT_PERSONA = (
-    "You are Echo, a small desk robot with a warm, curious personality. "
+    "You are Reachy, a small desk robot with a warm, curious personality. "
     "Keep replies short and spoken-aloud natural — a sentence or two, not an essay. "
     "You have a physical body (a head and antennas) and you're talking with someone "
     "at their desk. Be friendly and present, never robotic or listy. "
@@ -34,8 +37,26 @@ DEFAULT_PERSONA = (
 )
 
 
+# -- env readers: HEY_REACHY_<NAME> wins, ECHO_<NAME> is the legacy alias --------
+
+def _es(name: str, default: str = "") -> str:
+    return env_str(f"HEY_REACHY_{name}", env_str(f"ECHO_{name}", default))
+
+
+def _ei(name: str, default: int) -> int:
+    return env_int(f"HEY_REACHY_{name}", env_int(f"ECHO_{name}", default))
+
+
+def _ef(name: str, default: float) -> float:
+    return env_float(f"HEY_REACHY_{name}", env_float(f"ECHO_{name}", default))
+
+
+def _eb(name: str, default: bool) -> bool:
+    return env_bool(f"HEY_REACHY_{name}", env_bool(f"ECHO_{name}", default))
+
+
 @dataclass
-class EchoConfig(BaseAppConfig):
+class HeyReachyConfig(BaseAppConfig):
     app_name: str = APP_NAME
 
     # brain selection
@@ -55,7 +76,7 @@ class EchoConfig(BaseAppConfig):
 
     # voice (the POC loop): wake -> VAD -> STT -> brain -> TTS -> speaker.
     # TTS/STT default to the SAME gateway as the brain (llm_base_url + llm_api_key),
-    # so one gateway + one vk-echo key serves chat + kokoro + faster-whisper.
+    # so one gateway + one consumer key serves chat + kokoro + faster-whisper.
     voice_enabled: bool = True
     media_backend: str = "default"       # ReachyMini media (audio in/out); "no_media" disables voice
     tts_base_url: str = ""               # default -> llm_base_url
@@ -81,7 +102,7 @@ class EchoConfig(BaseAppConfig):
     follow_up_timeout_s: float = 8.0    # follow-up turns (conversation, no re-wake)
 
     # command brain (post-MVP agent hook)
-    agent_cmd: str = ""                  # ECHO_AGENT_CMD; empty = disabled
+    agent_cmd: str = ""                  # HEY_REACHY_AGENT_CMD; empty = disabled
     agent_timeout_s: float = 120.0
 
     # inbound push channel (post-MVP; off unless a token is set)
@@ -92,46 +113,46 @@ class EchoConfig(BaseAppConfig):
     ui_port: int = 7863
 
     @classmethod
-    def from_env(cls) -> "EchoConfig":
+    def from_env(cls) -> "HeyReachyConfig":
         return cls(
-            brain_kind=env_str("ECHO_BRAIN", "litellm"),
-            llm_base_url=env_str("ECHO_LLM_BASE_URL", ""),
-            llm_model=env_str("ECHO_LLM_MODEL", ""),
-            llm_api_key=env_str("ECHO_LLM_API_KEY", ""),
-            temperature=env_float("ECHO_TEMPERATURE", 0.7),
-            max_tokens=env_int("ECHO_MAX_TOKENS", 512),
-            request_timeout_s=env_float("ECHO_REQUEST_TIMEOUT_S", 30.0),
-            max_history=env_int("ECHO_MAX_HISTORY", 20),
-            persona=env_str("ECHO_PERSONA", DEFAULT_PERSONA),
-            reasoning_enabled=env_bool("ECHO_REASONING", False),
-            reasoning_effort=env_str("ECHO_REASONING_EFFORT", ""),
-            voice_enabled=env_bool("ECHO_VOICE", True),
-            media_backend=env_str("ECHO_MEDIA_BACKEND", "default"),
-            tts_base_url=env_str("ECHO_TTS_BASE_URL", ""),
-            tts_api_key=env_str("ECHO_TTS_API_KEY", ""),
-            tts_model=env_str("ECHO_TTS_MODEL", "kokoro"),
-            tts_voice=env_str("ECHO_TTS_VOICE", "af_heart"),
-            tts_speed=env_float("ECHO_TTS_SPEED", 1.0),
-            stt_base_url=env_str("ECHO_STT_BASE_URL", ""),
-            stt_api_key=env_str("ECHO_STT_API_KEY", ""),
-            stt_model=env_str("ECHO_STT_MODEL", "faster-whisper"),
-            stt_language=env_str("ECHO_STT_LANGUAGE", "en"),
-            wake_kind=env_str("ECHO_WAKE", "always"),
-            porcupine_access_key=env_str("ECHO_PORCUPINE_KEY", ""),
-            porcupine_keyword_path=env_str("ECHO_PORCUPINE_PPN", ""),
-            porcupine_builtin=env_str("ECHO_PORCUPINE_BUILTIN", "computer"),
-            openww_model=env_str("ECHO_OPENWW_MODEL", "hey_jarvis"),
-            wake_threshold=env_float("ECHO_WAKE_THRESHOLD", 0.4),
-            require_wake=env_bool("ECHO_REQUIRE_WAKE", True),
-            vad_silence_ms=env_int("ECHO_VAD_SILENCE_MS", 700),
-            vad_min_speech_ms=env_int("ECHO_VAD_MIN_SPEECH_MS", 250),
-            listen_timeout_s=env_float("ECHO_LISTEN_TIMEOUT_S", 10.0),
-            follow_up_timeout_s=env_float("ECHO_FOLLOW_UP_TIMEOUT_S", 8.0),
-            agent_cmd=env_str("ECHO_AGENT_CMD", ""),
-            agent_timeout_s=env_float("ECHO_AGENT_TIMEOUT_S", 120.0),
-            inbound_token=env_str("ECHO_INBOUND_TOKEN", ""),
-            tick_hz=env_float("ECHO_TICK_HZ", 8.0),
-            ui_port=env_int("ECHO_UI_PORT", 7863),
+            brain_kind=_es("BRAIN", "litellm"),
+            llm_base_url=_es("LLM_BASE_URL", ""),
+            llm_model=_es("LLM_MODEL", ""),
+            llm_api_key=_es("LLM_API_KEY", ""),
+            temperature=_ef("TEMPERATURE", 0.7),
+            max_tokens=_ei("MAX_TOKENS", 512),
+            request_timeout_s=_ef("REQUEST_TIMEOUT_S", 30.0),
+            max_history=_ei("MAX_HISTORY", 20),
+            persona=_es("PERSONA", DEFAULT_PERSONA),
+            reasoning_enabled=_eb("REASONING", False),
+            reasoning_effort=_es("REASONING_EFFORT", ""),
+            voice_enabled=_eb("VOICE", True),
+            media_backend=_es("MEDIA_BACKEND", "default"),
+            tts_base_url=_es("TTS_BASE_URL", ""),
+            tts_api_key=_es("TTS_API_KEY", ""),
+            tts_model=_es("TTS_MODEL", "kokoro"),
+            tts_voice=_es("TTS_VOICE", "af_heart"),
+            tts_speed=_ef("TTS_SPEED", 1.0),
+            stt_base_url=_es("STT_BASE_URL", ""),
+            stt_api_key=_es("STT_API_KEY", ""),
+            stt_model=_es("STT_MODEL", "faster-whisper"),
+            stt_language=_es("STT_LANGUAGE", "en"),
+            wake_kind=_es("WAKE", "always"),
+            porcupine_access_key=_es("PORCUPINE_KEY", ""),
+            porcupine_keyword_path=_es("PORCUPINE_PPN", ""),
+            porcupine_builtin=_es("PORCUPINE_BUILTIN", "computer"),
+            openww_model=_es("OPENWW_MODEL", "hey_jarvis"),
+            wake_threshold=_ef("WAKE_THRESHOLD", 0.4),
+            require_wake=_eb("REQUIRE_WAKE", True),
+            vad_silence_ms=_ei("VAD_SILENCE_MS", 700),
+            vad_min_speech_ms=_ei("VAD_MIN_SPEECH_MS", 250),
+            listen_timeout_s=_ef("LISTEN_TIMEOUT_S", 10.0),
+            follow_up_timeout_s=_ef("FOLLOW_UP_TIMEOUT_S", 8.0),
+            agent_cmd=_es("AGENT_CMD", ""),
+            agent_timeout_s=_ef("AGENT_TIMEOUT_S", 120.0),
+            inbound_token=_es("INBOUND_TOKEN", ""),
+            tick_hz=_ef("TICK_HZ", 8.0),
+            ui_port=_ei("UI_PORT", 7863),
         )
 
     # -- derived -----------------------------------------------------------
@@ -205,7 +226,7 @@ class EchoConfig(BaseAppConfig):
 
     def wake_spec(self) -> dict[str, Any]:
         # Auto-upgrade to Porcupine when an AccessKey is provided (so dropping the
-        # key into .env is all it takes — no need to also flip ECHO_WAKE).
+        # key into .env is all it takes — no need to also flip the wake kind).
         kind = self.wake_kind
         if self.porcupine_access_key and kind == "always":
             kind = "porcupine"
